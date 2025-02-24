@@ -1,40 +1,28 @@
 package com.team1.epilogue.config;
 
+import com.team1.epilogue.auth.security.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.web.server.SecurityWebFilterChain;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 public class SecurityConfig {
 
-  /*
-   * 패스워드 인코더 Bean 생성
-   */
   @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
-
-  /*
-   * 시큐리티 설정
-   */
-  @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-        .csrf((config) -> config.disable())
-        .formLogin((form) -> form.disable());
-
-    // 인증 작업 하지 않을 경로 설정
-    http
-        .authorizeHttpRequests((request) ->
-            request.requestMatchers("/**")
-                .permitAll());
-
-    return http.build();
+  public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    return http
+            .csrf(csrf -> csrf.disable())
+            .authorizeExchange(exchange -> exchange
+                    .pathMatchers("/api/users/register").permitAll()
+                    .anyExchange().authenticated()
+            )
+            .httpBasic(withDefaults())
+            .build();
   }
 }
