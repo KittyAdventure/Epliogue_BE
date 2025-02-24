@@ -1,9 +1,9 @@
 package com.team1.epilogue.transaction.controller;
 
-import com.team1.epilogue.transaction.client.KakaoPayClient;
 import com.team1.epilogue.transaction.domain.TransactionDetail;
 import com.team1.epilogue.transaction.dto.KakaoPayApproveResponse;
 import com.team1.epilogue.transaction.dto.KakaoPayRedirectUrlDto;
+import com.team1.epilogue.transaction.service.KakaoPayService;
 import com.team1.epilogue.transaction.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TransactionController {
 
   private final TransactionService transactionService;
-  private final KakaoPayClient kakaoPayClient;
+  private final KakaoPayService kakaoPayService;
 
   /**
    * 카카오페이 결제 준비를 요청하는 기능입니다.
@@ -34,7 +34,7 @@ public class TransactionController {
       Authentication authentication,
       @RequestParam int amount) {
     String memberId = authentication.getName(); // memberId 추출
-    String redirectUrl = kakaoPayClient.prepareCharge(memberId, amount).getNextRedirectPCUrl();
+    String redirectUrl = kakaoPayService.prepareCharge(memberId, amount);
 
     // 프론트 측으로 KakaoPay 서버에서온 Url 주소 return
     return ResponseEntity.ok(KakaoPayRedirectUrlDto.builder()
@@ -53,7 +53,7 @@ public class TransactionController {
       @RequestParam int amount,
       @RequestParam String memberId,
       @RequestParam("pg_token") String pgToken) {
-    KakaoPayApproveResponse response = kakaoPayClient.approveCharge(
+    KakaoPayApproveResponse response = kakaoPayService.approveCharge(
         memberId,
         pgToken); // 준비 -> 승인 2단계에 걸쳐 카카오페이 결제가 진행된다.
     // 이 메서드가 정상적으로 처리되었다면 카카오쪽에서도 승인된것.(결제 성공)
