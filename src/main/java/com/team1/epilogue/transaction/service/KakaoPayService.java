@@ -2,6 +2,7 @@ package com.team1.epilogue.transaction.service;
 
 import com.team1.epilogue.transaction.client.KakaoPayClient;
 import com.team1.epilogue.transaction.dto.KakaoPayApproveResponse;
+import com.team1.epilogue.transaction.dto.KakaoPayResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +17,8 @@ public class KakaoPayService {
    * @param amount 포인트 충전량
    * @return Redirect 할 URL 응답
    */
-  public String prepareCharge(String memberId, int amount) {
-    return kakaoPayClient.prepareCharge(memberId, amount).getNextRedirectPCUrl();
+  public KakaoPayResponse prepareCharge(String memberId, int amount) {
+    return kakaoPayClient.prepareCharge(memberId, amount);
   }
 
   /**

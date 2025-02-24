@@ -34,7 +34,7 @@ public class TransactionController {
       Authentication authentication,
       @RequestParam int amount) {
     String memberId = authentication.getName(); // memberId 추출
-    String redirectUrl = kakaoPayService.prepareCharge(memberId, amount);
+    String redirectUrl = kakaoPayService.prepareCharge(memberId, amount).getNextRedirectPCUrl();
 
     // 프론트 측으로 KakaoPay 서버에서온 Url 주소 return
     return ResponseEntity.ok(KakaoPayRedirectUrlDto.builder()
