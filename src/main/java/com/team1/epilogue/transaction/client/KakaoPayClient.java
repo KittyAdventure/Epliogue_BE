@@ -60,8 +60,6 @@ public class KakaoPayClient {
         APPROVAL_URL,
         CANCEL_URL,
         FAIL_URL);
-    log.info(request.toString());
-    log.info(kakaoPayApiKey);
 
     KakaoPayResponse response = webClient.post()// webClient 를 이용해 POST 요청
         .uri(KAKAOPAY_PATH + KAKAOPAY_PREPARE_PATH) // path 경로 설정
