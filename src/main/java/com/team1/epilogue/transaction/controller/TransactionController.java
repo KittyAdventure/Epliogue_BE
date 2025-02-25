@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,6 +26,7 @@ public class TransactionController {
 
   /**
    * 카카오페이 결제 준비를 요청하는 기능입니다.
+   *
    * @param authentication 사용자 정보를 얻기위한 authentication 객체
    * @param amount 충전 금액
    * @return 사용자에게 보여지는 Redirect Url 을 return
@@ -44,6 +46,7 @@ public class TransactionController {
 
   /**
    * 카카오페이 결제가 승인되었을때 카카오쪽에서 redirect 되는 URL
+   *
    * @param memberId 사용자 ID
    * @param pgToken 카카오 측에서 발급해준 pgToken
    * @return 결제 성공시 200 응답
@@ -58,7 +61,8 @@ public class TransactionController {
         pgToken); // 준비 -> 승인 2단계에 걸쳐 카카오페이 결제가 진행된다.
     // 이 메서드가 정상적으로 처리되었다면 카카오쪽에서도 승인된것.(결제 성공)
 
-    transactionService.updateBalance(memberId,amount, TransactionDetail.KAKAOPAY,response.getTid());
+    transactionService.updateBalance(memberId, amount, TransactionDetail.KAKAOPAY,
+        response.getTid());
     // DB 에 저장 , 회원 포인트 정보 변경
 
     return ResponseEntity.ok("정상적으로 처리되었습니다.");
@@ -66,6 +70,7 @@ public class TransactionController {
 
   /**
    * 카카오페이 쪽에서 결제 실패했을때 redirect 되는 URL
+   *
    * @return 400 응답
    */
   @GetMapping("/api/kp/fail")
@@ -75,10 +80,26 @@ public class TransactionController {
 
   /**
    * 카카오페이 쪽에서 결제 취소됐을때 redirect 되는 URL
+   *
    * @return 400 응답
    */
   @GetMapping("/api/kp/cancel")
   public ResponseEntity<String> kakaoPayCancel() {
     return ResponseEntity.badRequest().body("결제가 취소되었습니다.");
+  }
+
+  /**
+   * 카카오페이 환불을 위한 메서드입니다.
+   *
+   * @param authentication 사용자 인증정보를 담은 authentication 객체
+   * @param transactionId  DB 내부에 존재하는 거래 정보의 PK
+   * @return 성공시 200 응답
+   */
+  @PostMapping("/api/kp/{transactionId}/refund")
+  public ResponseEntity<String> kakaoPayRefund(Authentication authentication,
+      @PathVariable Long transactionId) {
+    String memberId = authentication.getName();
+    kakaoPayService.kakaoPayRefund(memberId, transactionId);
+    return ResponseEntity.ok().body("취소 요청이 정상적으로 처리되었습니다.");
   }
 }
