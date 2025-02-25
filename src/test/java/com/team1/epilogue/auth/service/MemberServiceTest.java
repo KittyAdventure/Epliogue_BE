@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MemberService 테스트")
-public class MemberServiceTest {
+public class :qqMemberServiceTest {
 
     /**
      * [필드 레벨]
