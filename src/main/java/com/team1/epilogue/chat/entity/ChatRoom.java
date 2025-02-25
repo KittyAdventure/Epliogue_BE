@@ -1,4 +1,4 @@
-package com.team1.epilogue.chat.domain;
+package com.team1.epilogue.chat.entity;
 
 
 import jakarta.persistence.Entity;
@@ -10,17 +10,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "participations")
+@Document(collection = "chat_rooms")
 @Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Participation {
+public class ChatRoom {
   @Id
-  private String id;
-  private String roomId; //채팅방ID(참조)
-  private Long memberId; // 참여한 사용자ID
-  private LocalDateTime joinedAt; // 채팅방 참여한 시간
-
+  private String id; // MongoDB ObjectId
+  private Long bookId; // 책 ID
+  private String title; // 책 제목과 동일한 채팅방 이름
+  private LocalDateTime createAt; // 채팅방 생성 일시
 }

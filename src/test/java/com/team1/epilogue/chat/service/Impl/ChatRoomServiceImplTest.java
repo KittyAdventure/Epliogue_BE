@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import com.team1.epilogue.chat.domain.ChatRoom;
+import com.team1.epilogue.chat.entity.ChatRoom;
 import com.team1.epilogue.chat.repository.ChatRoomRepository;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;

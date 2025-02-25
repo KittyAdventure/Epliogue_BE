@@ -1,6 +1,6 @@
 package com.team1.epilogue.chat.service.Impl;
 
-import com.team1.epilogue.chat.domain.ChatRoom;
+import com.team1.epilogue.chat.entity.ChatRoom;
 import com.team1.epilogue.chat.repository.ChatRoomRepository;
 import com.team1.epilogue.chat.service.ChatRoomService;
 import java.time.LocalDateTime;

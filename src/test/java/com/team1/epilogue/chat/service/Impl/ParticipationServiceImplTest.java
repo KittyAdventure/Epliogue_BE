@@ -5,7 +5,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.team1.epilogue.chat.domain.Participation;
+import com.team1.epilogue.chat.entity.Participation;
 import com.team1.epilogue.chat.repository.ChatRoomRepository;
 import com.team1.epilogue.chat.repository.ParticipationRepository;
 import java.time.LocalDateTime;

@@ -1,6 +1,6 @@
 package com.team1.epilogue.chat.service;
 
-import com.team1.epilogue.chat.domain.ChatRoom;
+import com.team1.epilogue.chat.entity.ChatRoom;
 import reactor.core.publisher.Mono;
 
 public interface ChatRoomService {

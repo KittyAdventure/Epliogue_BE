@@ -1,4 +1,4 @@
-package com.team1.epilogue.chat.domain;
+package com.team1.epilogue.chat.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

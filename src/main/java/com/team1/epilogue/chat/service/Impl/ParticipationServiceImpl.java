@@ -1,6 +1,6 @@
 package com.team1.epilogue.chat.service.Impl;
 
-import com.team1.epilogue.chat.domain.Participation;
+import com.team1.epilogue.chat.entity.Participation;
 import com.team1.epilogue.chat.repository.ParticipationRepository;
 import com.team1.epilogue.chat.service.ParticipationService;
 import lombok.RequiredArgsConstructor;

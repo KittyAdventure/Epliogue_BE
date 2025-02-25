@@ -1,7 +1,7 @@
 package com.team1.epilogue.chat.controller;
 
 
-import com.team1.epilogue.chat.domain.ChatMessage;
+import com.team1.epilogue.chat.entity.ChatMessage;
 import com.team1.epilogue.chat.dto.ChatMessageDto;
 import com.team1.epilogue.chat.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;

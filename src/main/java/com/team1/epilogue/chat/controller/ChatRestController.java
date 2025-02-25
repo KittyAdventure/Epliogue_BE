@@ -1,6 +1,6 @@
 package com.team1.epilogue.chat.controller;
 
-import com.team1.epilogue.chat.domain.ChatRoom;
+import com.team1.epilogue.chat.entity.ChatRoom;
 import com.team1.epilogue.chat.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;

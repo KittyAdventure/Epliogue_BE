@@ -1,6 +1,6 @@
 package com.team1.epilogue.chat.service;
 
-import com.team1.epilogue.chat.domain.Participation;
+import com.team1.epilogue.chat.entity.Participation;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
