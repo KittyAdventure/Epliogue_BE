@@ -1,18 +1,16 @@
 package com.team1.epilogue.chat.service.Impl;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.team1.epilogue.chat.domain.ChatMessage;
 import com.team1.epilogue.chat.repository.ChatMessageRepository;
 import java.time.LocalDateTime;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -26,12 +24,6 @@ class ChatMessageServiceImplTest {
   @InjectMocks
   private ChatMessageServiceImpl chatMessageService; // 테스트 서비스
 
-
-//  @BeforeEach
-//  void setUp() {
-//    chatMessageRepository = Mockito.mock(ChatMessageRepository.class);
-//    chatMessageService = new ChatMessageServiceImpl(chatMessageRepository);
-//  }
 
   @Test
   void chatting_message_save_test() {

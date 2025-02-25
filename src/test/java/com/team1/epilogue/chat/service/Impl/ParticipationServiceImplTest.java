@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 import com.team1.epilogue.chat.domain.Participation;
 import com.team1.epilogue.chat.repository.ChatRoomRepository;
 import com.team1.epilogue.chat.repository.ParticipationRepository;
-import com.team1.epilogue.chat.service.ParticipationService;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
