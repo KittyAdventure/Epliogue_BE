@@ -1,12 +1,12 @@
-package com.team1.epilogue.authfix.service;
+package com.team1.epilogue.auth.service;
 
-import com.team1.epilogue.authfix.dto.RegisterRequest;
-import com.team1.epilogue.authfix.dto.MemberResponse;
-import com.team1.epilogue.authfix.exception.IdAlreadyExistException;
-import com.team1.epilogue.authfix.exception.EmailNotValidException;
-import com.team1.epilogue.authfix.exception.EmailAlreadyExistException;
-import com.team1.epilogue.authfix.model.Member;
-import com.team1.epilogue.authfix.repository.MemberRepository;
+import com.team1.epilogue.auth.dto.RegisterRequest;
+import com.team1.epilogue.auth.dto.MemberResponse;
+import com.team1.epilogue.auth.exception.IdAlreadyExistException;
+import com.team1.epilogue.auth.exception.EmailNotValidException;
+import com.team1.epilogue.auth.exception.EmailAlreadyExistException;
+import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

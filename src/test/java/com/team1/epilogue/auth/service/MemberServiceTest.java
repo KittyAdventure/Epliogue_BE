@@ -1,11 +1,11 @@
-package com.team1.epilogue.authfix.service;
+package com.team1.epilogue.auth.service;
 
-import com.team1.epilogue.authfix.dto.RegisterRequest;
-import com.team1.epilogue.authfix.dto.MemberResponse;
-import com.team1.epilogue.authfix.exception.IdAlreadyExistException;
-import com.team1.epilogue.authfix.exception.EmailAlreadyExistException;
-import com.team1.epilogue.authfix.model.Member;
-import com.team1.epilogue.authfix.repository.MemberRepository;
+import com.team1.epilogue.auth.dto.RegisterRequest;
+import com.team1.epilogue.auth.dto.MemberResponse;
+import com.team1.epilogue.auth.exception.IdAlreadyExistException;
+import com.team1.epilogue.auth.exception.EmailAlreadyExistException;
+import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,7 +47,6 @@ public class MemberServiceTest {
     /**
      * [필드 레벨]
      * 테스트 대상인 MemberService
-     * @InjectMocks를 통해 위의 Mock들이 주입
      */
     @InjectMocks
     private MemberService memberService;

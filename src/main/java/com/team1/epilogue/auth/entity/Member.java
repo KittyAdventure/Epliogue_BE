@@ -1,4 +1,4 @@
-package com.team1.epilogue.authfix.model;
+package com.team1.epilogue.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

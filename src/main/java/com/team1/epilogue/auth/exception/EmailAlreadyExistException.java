@@ -1,4 +1,4 @@
-package com.team1.epilogue.authfix.exception;
+package com.team1.epilogue.auth.exception;
 
 /**
  * [클래스 레벨]

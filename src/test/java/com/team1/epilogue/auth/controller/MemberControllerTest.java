@@ -1,20 +1,21 @@
-package com.team1.epilogue.authfix.controller;
+package com.team1.epilogue.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.team1.epilogue.authfix.dto.RegisterRequest;
-import com.team1.epilogue.authfix.dto.MemberResponse;
-import com.team1.epilogue.authfix.service.MemberService;
+import com.team1.epilogue.auth.dto.RegisterRequest;
+import com.team1.epilogue.auth.dto.MemberResponse;
+import com.team1.epilogue.auth.security.JwtTokenProvider;
+import com.team1.epilogue.auth.service.MemberService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -65,7 +66,7 @@ public class MemberControllerTest {
      * [필드 레벨]
      * MemberController의 의존성으로, 실제 빈 대신 Mockito가 제공하는 Mock Bean으로 주입
      */
-    @MockBean
+    @MockitoBean
     private MemberService memberService;
 
     /**
@@ -73,8 +74,8 @@ public class MemberControllerTest {
      * JWT 토큰과 관련된 보안 컴포넌트로, Mock Bean으로 등록
      * (MemberController에서는 직접 사용하지 않더라도, Security 설정에 의해 주입되어야 할 수 있음)
      */
-    @MockBean
-    private com.team1.epilogue.authfix.security.JwtTokenProvider jwtTokenProvider;
+    @MockitoBean
+    private JwtTokenProvider jwtTokenProvider;
 
     /**
      * [필드 레벨]

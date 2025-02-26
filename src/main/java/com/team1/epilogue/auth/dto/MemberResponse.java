@@ -1,4 +1,4 @@
-package com.team1.epilogue.authfix.dto;
+package com.team1.epilogue.auth.dto;
 
 import lombok.Builder;
 import lombok.Data;

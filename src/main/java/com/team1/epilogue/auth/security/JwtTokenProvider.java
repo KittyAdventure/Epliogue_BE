@@ -1,4 +1,4 @@
-package com.team1.epilogue.authfix.security;
+package com.team1.epilogue.auth.security;
 
 import io.jsonwebtoken.*;
 import lombok.extern.slf4j.Slf4j;

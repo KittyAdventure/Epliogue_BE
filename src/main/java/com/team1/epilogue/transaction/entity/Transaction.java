@@ -1,6 +1,6 @@
 package com.team1.epilogue.transaction.entity;
 
-import com.team1.epilogue.member.entity.Member;
+import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.transaction.domain.TransactionDetail;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

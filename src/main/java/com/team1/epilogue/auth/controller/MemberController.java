@@ -1,9 +1,9 @@
-package com.team1.epilogue.authfix.controller;
+package com.team1.epilogue.auth.controller;
 
-import com.team1.epilogue.authfix.dto.RegisterRequest;
-import com.team1.epilogue.authfix.dto.MemberResponse;
-import com.team1.epilogue.authfix.service.MemberService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.team1.epilogue.auth.dto.RegisterRequest;
+import com.team1.epilogue.auth.dto.MemberResponse;
+import com.team1.epilogue.auth.service.MemberService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/members")
+@RequiredArgsConstructor
 public class MemberController {
 
     /**
@@ -22,8 +23,7 @@ public class MemberController {
      * memberService: 사용자 등록 및 기타 사용자 관련 기능을 수행하는 서비스 클래스
      * 스프링 컨테이너에 의해 자동 주입
      */
-    @Autowired
-    private MemberService memberService;
+    private final MemberService memberService;
 
     /**
      * [메서드 레벨]

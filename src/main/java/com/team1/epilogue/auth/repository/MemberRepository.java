@@ -1,6 +1,6 @@
-package com.team1.epilogue.authfix.repository;
+package com.team1.epilogue.auth.repository;
 
-import com.team1.epilogue.authfix.model.Member;
+import com.team1.epilogue.auth.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 

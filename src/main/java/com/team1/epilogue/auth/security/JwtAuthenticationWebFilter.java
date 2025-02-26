@@ -1,4 +1,4 @@
-package com.team1.epilogue.authfix.security;
+package com.team1.epilogue.auth.security;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
