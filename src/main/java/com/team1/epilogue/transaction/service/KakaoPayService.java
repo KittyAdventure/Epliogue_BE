@@ -1,8 +1,8 @@
 package com.team1.epilogue.transaction.service;
 
-import com.team1.epilogue.member.entity.Member;
-import com.team1.epilogue.member.exception.MemberNotFoundException;
-import com.team1.epilogue.member.repository.MemberRepository;
+import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.exception.MemberNotFoundException;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.transaction.client.KakaoPayClient;
 import com.team1.epilogue.transaction.domain.TransactionDetail;
 import com.team1.epilogue.transaction.dto.KakaoPayApproveResponse;
@@ -54,7 +54,7 @@ public class KakaoPayService {
   public void kakaoPayRefund(String memberId, Long transactionId) {
     // 회원정보를 가져온다. 회원정보가 존재하지 않을땐 예외 발생
     Member member = memberRepository.findByLoginId(memberId)
-        .orElseThrow(() -> new MemberNotFoundException("존재하지 않는 회원정보입니다."));
+        .orElseThrow(() -> new MemberNotFoundException());
 
     // 거래 정보를 가져온다. 거래정보가 존재하지 않을땐 예외 발생
     Transaction transaction = transactionRepository.findById(transactionId)

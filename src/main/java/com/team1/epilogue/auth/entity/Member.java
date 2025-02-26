@@ -1,13 +1,14 @@
 package com.team1.epilogue.auth.entity;
 
+import com.team1.epilogue.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import lombok.Setter;
 
 /**
  * [클래스 레벨]
@@ -17,11 +18,12 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "member")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Member {
+@Getter
+@Setter
+public class Member extends BaseEntity {
 
     /**
      * [필드 레벨]
@@ -101,10 +103,4 @@ public class Member {
     @Column
     private String social;
 
-    /**
-     * [필드 레벨]
-     * createdAt: 회원 가입일(생성일)로, 현재 시간이 할당
-     */
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
 }
