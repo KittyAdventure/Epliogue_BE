@@ -5,7 +5,7 @@ import com.team1.epilogue.auth.dto.RegisterRequest;
 import com.team1.epilogue.auth.dto.MemberResponse;
 import com.team1.epilogue.auth.security.JwtTokenProvider;
 import com.team1.epilogue.auth.service.MemberService;
-import com.team1.epilogue.config.TestSecurityConfig;
+import com.team1.epilogue.config.SecurityConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
  * Mockito를 사용하여 MemberService와 JwtTokenProvider의 동작을 모의(mock)하여 컨트롤러의 로직만 테스트
  */
 @WebFluxTest(controllers = MemberController.class)
-@Import(TestSecurityConfig.class)
+@Import(SecurityConfig.class)
 @DisplayName("MemberController 테스트")
 public class MemberControllerTest {
 
