@@ -31,12 +31,10 @@ class ChatRoomServiceImplTest {
   @DisplayName("채팅방 생성 테스트!")
   void chatting_room_create() {
     String roomId = "rooom1234";
-    Long bookId = 1L;
     String bookName = "자유 치유할수 없는 질병";
 
     ChatRoom mockRoom = ChatRoom.builder()
         .id(roomId)
-        .bookId(bookId)
         .title(bookName)
         .createAt(LocalDateTime.now())
         .build();
@@ -45,13 +43,12 @@ class ChatRoomServiceImplTest {
     when(chatroomRepository.save(any(ChatRoom.class))).thenReturn(Mono.just(mockRoom));
 
     // 서비스 메서드 호출
-    Mono<ChatRoom> createdRoom = chatRoomService.createRoom(bookId, bookName);
+    Mono<ChatRoom> createdRoom = chatRoomService.createRoom(bookName);
 
     //then: 검증
     StepVerifier.create(createdRoom)
         .assertNext(room -> {
           assertEquals(roomId, room.getId());
-          assertEquals(bookId, room.getBookId());
           assertEquals(bookName, room.getTitle());
         })
         .verifyComplete();

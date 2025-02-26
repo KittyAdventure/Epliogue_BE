@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 public class ChatMessageDto {
   private String roomId;
   private Long memberId;
-  private Long bookId;
   private String content;
   private LocalDateTime createdAt;
 }

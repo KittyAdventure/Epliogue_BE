@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "participations")
-@Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
