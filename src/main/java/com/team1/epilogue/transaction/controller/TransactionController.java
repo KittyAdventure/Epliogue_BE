@@ -3,6 +3,8 @@ package com.team1.epilogue.transaction.controller;
 import com.team1.epilogue.transaction.domain.TransactionDetail;
 import com.team1.epilogue.transaction.dto.KakaoPayApproveResponse;
 import com.team1.epilogue.transaction.dto.KakaoPayRedirectUrlDto;
+import com.team1.epilogue.transaction.dto.TransactionHistoryRequest;
+import com.team1.epilogue.transaction.dto.TransactionHistoryResponse;
 import com.team1.epilogue.transaction.service.KakaoPayService;
 import com.team1.epilogue.transaction.service.TransactionService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -86,6 +89,19 @@ public class TransactionController {
   @GetMapping("/api/kp/cancel")
   public ResponseEntity<String> kakaoPayCancel() {
     return ResponseEntity.badRequest().body("결제가 취소되었습니다.");
+  }
+
+  /**
+   * 회원의 거래내역을 조회하는 메서드입니다.
+   *
+   * @param dto 시작할 날짜와 끝나는 날짜 , 페이지 데이터 갯수제한, 페이지 번호를 담은 DTO
+   * @return TransactionHistoryResponse 객체 return
+   */
+  @GetMapping("/api/transaction")
+  public ResponseEntity<TransactionHistoryResponse> getTransactionHistory(
+      @RequestBody TransactionHistoryRequest dto) {
+    TransactionHistoryResponse response = transactionService.getTransactionHistory(dto);
+    return ResponseEntity.ok(response);
   }
 
   /**
