@@ -3,121 +3,195 @@ package com.team1.epilogue.auth.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1.epilogue.auth.dto.RegisterRequest;
 import com.team1.epilogue.auth.dto.MemberResponse;
-import com.team1.epilogue.auth.security.JwtTokenProvider;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.auth.service.MemberService;
-import com.team1.epilogue.config.SecurityConfig;
+import com.team1.epilogue.auth.service.MemberWithdrawalService;
+import com.team1.epilogue.auth.security.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 /**
  * [클래스 레벨]
- * MemberControllerTest는 MemberController의 사용자 등록 API를 검증하는 테스트 클래스
- * Mockito를 사용하여 MemberService와 JwtTokenProvider의 동작을 모의(mock)하여 컨트롤러의 로직만 테스트
+ * 회원 등록과 회원 탈퇴 기능을 포함한 MemberController의 엔드포인트를 테스트하는 클래스
+ * WebTestClient를 사용하여 API 요청/응답을 검증하며, MemberService, MemberWithdrawalService,
+ * JwtTokenProvider를 모킹하여 컨트롤러 로직만 집중해서 확인
  */
 @WebFluxTest(controllers = MemberController.class)
-@Import(SecurityConfig.class)
-@DisplayName("MemberController 테스트")
+@DisplayName("MemberController 통합 테스트")
 public class MemberControllerTest {
 
     /**
      * [필드 레벨]
-     * WebFlux 기반의 비동기 웹 애플리케이션 테스트를 위한 클라이언트
-     * 컨트롤러에 대한 HTTP 요청을 시뮬레이션하는 데 사용
+     * 스프링 웹플럭스 환경에서 API 테스트를 수행하기 위한 클라이언트
      */
     @Autowired
     private WebTestClient webTestClient;
 
     /**
      * [필드 레벨]
-     * Java 객체와 JSON 간의 직렬화/역직렬화를 담당하는 컴포넌트
+     * JSON 직렬화/역징렬화를 담당
      */
     @Autowired
     private ObjectMapper objectMapper;
 
     /**
      * [필드 레벨]
-     * MemberController의 의존성으로, 실제 빈 대신 Mockito가 제공하는 Mock Bean으로 주입
+     * 사용자 등록 기능을 담당하는 서비스의 모킹된 빈
      */
-    @MockitoBean
+    @MockBean
     private MemberService memberService;
 
     /**
      * [필드 레벨]
-     * JWT 토큰과 관련된 보안 컴포넌트로, Mock Bean으로 등록
-     * (MemberController에서는 직접 사용하지 않더라도, Security 설정에 의해 주입되어야 할 수 있음)
+     * 회원 탈퇴 기능을 담당하는 서비스의 모킹된 빈
      */
-    @MockitoBean
-    private JwtTokenProvider jwtTokenProvider;
+    @MockBean
+    private MemberWithdrawalService memberWithdrawalService;
 
     /**
      * [필드 레벨]
-     * 각 테스트 케이스에서 사용할 사용자 등록 데이터를 담은 DTO 객체
+     * JWT 토큰 검증 관련 로직을 담당하는 컴포넌트의 모킹된 빈
      */
-    private RegisterRequest registerRequest;
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
 
     /**
-     * [메서드 레벨]
-     * setup 메서드는 각 테스트 실행 전에 registerRequest 객체를 초기화
-     * 테스트에 사용할 기본 사용자 등록 정보를 설정
+     * [내부 클래스 레벨]
+     * 테스트 환경에서 사용할 보안 설정을 구성
      */
-    @BeforeEach
-    public void setup() {
-        registerRequest = new RegisterRequest();
-        registerRequest.setLoginId("controllerMember");    // 사용자 로그인 ID 설정
-        registerRequest.setPassword("password123");          // 비밀번호 설정
-        registerRequest.setNickname("controllerNick");       // 사용자 닉네임 설정
-        registerRequest.setName("Controller Member");        // 사용자 이름 설정
-        registerRequest.setBirthDate("1990-01-01");            // 생년월일 설정 (문자열 형태)
-        registerRequest.setEmail("controller@example.com");    // 이메일 설정
-        registerRequest.setPhone("010-1234-5678");             // 전화번호 설정
-        registerRequest.setProfileUrl("http://example.com/photo.jpg"); // 프로필 사진 URL 설정
+    @TestConfiguration
+    static class TestSecurityConfig {
+        /**
+         * [메서드 레벨]
+         * CSRF를 비활성화하고 모든 요청을 허용하는 보안 설정을 구성하여 빈으로 등록
+         *
+         * @param http ServerHttpSecurity 객체
+         * @return 구성된 SecurityWebFilterChain 빈
+         */
+        @Bean
+        public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+            return http
+                    .csrf(csrf -> csrf.disable())
+                    .authorizeExchange(exchanges -> exchanges.anyExchange().permitAll())
+                    .build();
+        }
     }
 
     /**
      * [메서드 레벨]
-     * testRegisterMember 메서드는 /api/members/register 엔드포인트를 통해 사용자 등록 기능을 테스트
-     * Mockito를 사용하여 memberService.registerMember() 메서드의 호출 결과를 미리 설정한 후,
-     * HTTP POST 요청을 통해 실제 응답이 예상한 값과 일치하는지 검증
+     * 각 테스트 실행 전에 JwtTokenProvider의 validateToken 메서드를 모킹하여,
+     * 어떤 토큰이 전달되더라도 true를 반환하도록 설정
+     */
+    @BeforeEach
+    public void setUp() {
+        when(jwtTokenProvider.validateToken(anyString())).thenReturn(true);
+    }
+
+    /**
+     * [메서드 레벨]
+     * /api/members/register 엔드포인트를 통해 회원 등록 기능을 테스트
+     * 클라이언트가 전송한 JSON 형식의 RegisterRequest를 ObjectMapper로 변환 후 전송하고,
+     * MemberService가 반환한 MemberResponse의 일부 필드(loginId, email)를 검증
      *
-     * @throws Exception JSON 변환 과정에서 발생할 수 있는 예외 던짐
+     * @throws Exception JSON 직렬화 중 발생할 수 있는 예외
      */
     @Test
     @DisplayName("정상 회원가입 요청 테스트")
     public void testRegisterMember() throws Exception {
-        // given: 예상 응답 객체 생성
+        // 회원 등록 요청 데이터 생성
+        RegisterRequest request = new RegisterRequest();
+        request.setLoginId("testMember");
+        request.setPassword("password123");
+        request.setNickname("testNick");
+        request.setName("Test Member");
+        request.setBirthDate("1990-01-01");
+        request.setEmail("test@example.com");
+        request.setPhone("010-1111-2222");
+        request.setProfileUrl("http://example.com/profile.jpg");
+
+        // 예상 응답 객체 생성
         MemberResponse expectedResponse = MemberResponse.builder()
                 .id("1")
-                .loginId("controllerMember")
-                .nickname("controllerNick")
-                .name("Controller Member")
+                .loginId("testMember")
+                .nickname("testNick")
+                .name("Test Member")
                 .birthDate("1990-01-01")
-                .email("controller@example.com")
-                .phone("010-1234-5678")
-                .profileUrl("http://example.com/photo.jpg")
+                .email("test@example.com")
+                .phone("010-1111-2222")
+                .profileUrl("http://example.com/profile.jpg")
                 .build();
 
-        // memberService.registerMember 호출 시 예상 응답을 반환하도록 모의 설정
+        // memberService.registerMember 호출 시 예상 응답 반환하도록 모킹
         when(memberService.registerMember(any(RegisterRequest.class))).thenReturn(expectedResponse);
 
-        // when & then: POST 요청을 보내고, 응답의 loginId 및 email 값이 예상과 일치하는지 검증
         webTestClient.post()
                 .uri("/api/members/register")
                 .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(objectMapper.writeValueAsString(registerRequest))
+                .bodyValue(objectMapper.writeValueAsString(request))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.loginId").isEqualTo("controllerMember")
-                .jsonPath("$.email").isEqualTo("controller@example.com");
+                .jsonPath("$.loginId").isEqualTo("testMember")
+                .jsonPath("$.email").isEqualTo("test@example.com");
+    }
+
+    /**
+     * [메서드 레벨]
+     *  /api/members 엔드포인트를 통해 정상적인 회원 탈퇴 기능을 테스트
+     * SecurityMockServerConfigurers.mockUser를 사용해 인증된 사용자 정보를 SecurityContext에 주입하고,
+     * 회원 탈퇴가 정상적으로 이루어지는지 검증
+     */
+    @Test
+    @DisplayName("정상 회원 탈퇴 요청 테스트")
+    public void testWithdrawMember() {
+        Long memberId = 1L;
+        // memberWithdrawalService.withdrawMember 호출 시 아무 작업도 수행하지 않도록 모킹
+        doNothing().when(memberWithdrawalService).withdrawMember(memberId);
+
+        // 테스트용 사용자 정보 생성
+        CustomMemberDetails customUserDetails = new CustomMemberDetails(memberId, "testUser", "password", null);
+
+        WebTestClient client = webTestClient.mutateWith(SecurityMockServerConfigurers.mockUser(customUserDetails));
+
+        client.delete()
+                .uri("/api/members")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.message").isEqualTo("유저의 계정이 정상적으로 삭제");
+    }
+
+    /**
+     * [메서드 레벨]
+     * 인증 정보 없이 /api/members 엔드포인트에 DELETE 요청을 보냈을 때,
+     * 400 Bad Request 상태와 "인증되지 않은 사용자" 에러 메시지가 반환되는지 테스트
+     */
+    @Test
+    @DisplayName("인증되지 않은 회원 탈퇴 요청 테스트")
+    public void testWithdrawMemberUnauthorized() {
+        webTestClient.delete()
+                .uri("/api/members")
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo(400)
+                .jsonPath("$.errorCode").isEqualTo("UNAUTHORIZED")
+                .jsonPath("$.message").isEqualTo("인증되지 않은 사용자");
     }
 }
