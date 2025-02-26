@@ -6,7 +6,7 @@ import com.team1.epilogue.auth.exception.IdAlreadyExistException;
 import com.team1.epilogue.auth.exception.EmailNotValidException;
 import com.team1.epilogue.auth.exception.EmailAlreadyExistException;
 import com.team1.epilogue.auth.entity.Member;
-import com.team1.epilogue.repositories.jpa.MemberRepository;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.team1.epilogue.chat.entity.ChatMessage;
-import com.team1.epilogue.repositories.reactive.ChatMessageRepository;
+import com.team1.epilogue.chat.repository.ChatMessageRepository;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

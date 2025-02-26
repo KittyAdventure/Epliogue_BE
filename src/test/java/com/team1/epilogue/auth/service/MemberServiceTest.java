@@ -5,7 +5,7 @@ import com.team1.epilogue.auth.dto.MemberResponse;
 import com.team1.epilogue.auth.exception.IdAlreadyExistException;
 import com.team1.epilogue.auth.exception.EmailAlreadyExistException;
 import com.team1.epilogue.auth.entity.Member;
-import com.team1.epilogue.repositories.jpa.MemberRepository;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

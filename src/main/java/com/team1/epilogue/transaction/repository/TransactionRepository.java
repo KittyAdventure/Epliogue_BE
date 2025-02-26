@@ -1,4 +1,4 @@
-package com.team1.epilogue.repositories.jpa;
+package com.team1.epilogue.transaction.repository;
 
 import com.team1.epilogue.transaction.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;

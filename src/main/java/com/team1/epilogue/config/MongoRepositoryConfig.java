@@ -5,7 +5,7 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 
 @Configuration
 @EnableReactiveMongoRepositories(
-    basePackages = "com.team1.epilogue.repositories.reactive" // MongoDB 리포지토리가 있는 패키지 지정
+    basePackages = "com.team1.epilogue.chat.repository" // MongoDB 리포지토리가 있는 패키지 지정
 )
 public class MongoRepositoryConfig {
 
