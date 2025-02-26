@@ -33,10 +33,11 @@ out/
 /dist/
 /nbdist/
 /.nb-gradle/:
-*.class
-.DS_Store
+
 ### VS Code ###
 .vscode/
+*.class
+.DS_Store
 
 ### 테스트 데이터 제외 ###
 src/test/resources/data.sql
