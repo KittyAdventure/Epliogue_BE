@@ -32,9 +32,9 @@ out/
 /nbbuild/
 /dist/
 /nbdist/
-/.nb-gradle/
+/.nb-gradle/:
 *.class
-
+.DS_Store
 ### VS Code ###
 .vscode/
 

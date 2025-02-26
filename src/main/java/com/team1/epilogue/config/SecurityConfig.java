@@ -1,6 +1,5 @@
 package com.team1.epilogue.config;
 
-import com.team1.epilogue.auth.security.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
