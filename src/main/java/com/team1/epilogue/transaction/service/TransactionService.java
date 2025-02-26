@@ -2,10 +2,10 @@ package com.team1.epilogue.transaction.service;
 
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
-import com.team1.epilogue.auth.repository.MemberRepository;
+import com.team1.epilogue.repositories.jpa.MemberRepository;
 import com.team1.epilogue.transaction.domain.TransactionDetail;
 import com.team1.epilogue.transaction.entity.Transaction;
-import com.team1.epilogue.transaction.repository.TransactionRepository;
+import com.team1.epilogue.repositories.jpa.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

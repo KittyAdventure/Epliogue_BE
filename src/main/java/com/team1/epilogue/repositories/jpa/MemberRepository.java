@@ -1,14 +1,16 @@
-package com.team1.epilogue.auth.repository;
+package com.team1.epilogue.repositories.jpa;
 
 import com.team1.epilogue.auth.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
 /**
  * [클래스 레벨]
  * MemberRepository 인터페이스는 Member 엔티티에 대한 CRUD 작업을 수행하는 JPA Repository
  * 스프링 데이터 JPA가 자동으로 구현체를 생성
  */
+@Repository
 public interface MemberRepository extends JpaRepository<Member, Long> {
 
     /**

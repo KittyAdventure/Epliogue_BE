@@ -1,6 +1,7 @@
 package com.team1.epilogue.auth.repository;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.repositories.jpa.MemberRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

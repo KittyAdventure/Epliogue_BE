@@ -6,8 +6,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.team1.epilogue.chat.entity.Participation;
-import com.team1.epilogue.chat.repository.ChatRoomRepository;
-import com.team1.epilogue.chat.repository.ParticipationRepository;
+import com.team1.epilogue.repositories.reactive.ChatRoomRepository;
+import com.team1.epilogue.repositories.reactive.ParticipationRepository;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

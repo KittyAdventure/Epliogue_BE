@@ -1,7 +1,7 @@
 package com.team1.epilogue.chat.service.Impl;
 
 import com.team1.epilogue.chat.entity.ChatMessage;
-import com.team1.epilogue.chat.repository.ChatMessageRepository;
+import com.team1.epilogue.repositories.reactive.ChatMessageRepository;
 import com.team1.epilogue.chat.service.ChatMessageService;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;

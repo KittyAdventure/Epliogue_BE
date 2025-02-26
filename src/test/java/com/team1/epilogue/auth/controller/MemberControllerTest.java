@@ -5,16 +5,14 @@ import com.team1.epilogue.auth.dto.RegisterRequest;
 import com.team1.epilogue.auth.dto.MemberResponse;
 import com.team1.epilogue.auth.security.JwtTokenProvider;
 import com.team1.epilogue.auth.service.MemberService;
+import com.team1.epilogue.config.TestSecurityConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -27,39 +25,23 @@ import static org.mockito.Mockito.when;
  * Mockito를 사용하여 MemberService와 JwtTokenProvider의 동작을 모의(mock)하여 컨트롤러의 로직만 테스트
  */
 @WebFluxTest(controllers = MemberController.class)
-@Import(MemberControllerTest.TestSecurityConfig.class)
+@Import(TestSecurityConfig.class)
 @DisplayName("MemberController 테스트")
 public class MemberControllerTest {
-
-    /**
-     * [내부 클래스 - 테스트 전용 보안 설정]
-     * TestSecurityConfig 클래스는 테스트 환경에서 보안 관련 설정을 커스터마이징하기 위한 설정 클래스로,
-     * 모든 HTTP 요청에 대해 인증 없이 접근할 수 있도록 CSRF 보호를 비활성화하고, 모든 요청을 허용
-     */
-    @TestConfiguration
-    static class TestSecurityConfig {
-        @Bean
-        public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-            return http
-                    .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
-                    .authorizeExchange(exchanges -> exchanges.anyExchange().permitAll()) // 모든 요청 허용
-                    .build();
-        }
-    }
 
     /**
      * [필드 레벨]
      * WebFlux 기반의 비동기 웹 애플리케이션 테스트를 위한 클라이언트
      * 컨트롤러에 대한 HTTP 요청을 시뮬레이션하는 데 사용
      */
-    @org.springframework.beans.factory.annotation.Autowired
+    @Autowired
     private WebTestClient webTestClient;
 
     /**
      * [필드 레벨]
      * Java 객체와 JSON 간의 직렬화/역직렬화를 담당하는 컴포넌트
      */
-    @org.springframework.beans.factory.annotation.Autowired
+    @Autowired
     private ObjectMapper objectMapper;
 
     /**
