@@ -5,6 +5,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface ChatMessageService {
-  Mono<ChatMessage> saveMessage(Long memberId, String roomId,  Long bookId,String content);
+  Mono<ChatMessage> saveMessage(Long memberId, String roomId,String content);
   Flux<ChatMessage> getMessageByRoomId(String roomId);
 }

@@ -7,6 +7,5 @@ import reactor.core.publisher.Mono;
 public interface ParticipationService {
 
   Mono<Participation> joinRoom(Long memberId, String roomId);
-  Flux<Participation> getParticipants(String roomId);
-  Flux<Participation> getUserRooms(Long memberId);
+  Mono<Void> leaveRoom(Long memberId, String roomId);
 }
