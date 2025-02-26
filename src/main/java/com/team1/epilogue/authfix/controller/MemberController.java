@@ -9,7 +9,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * [클래스 레벨]
  * MemberController는 사용자 관련 HTTP 요청을 처리하는 REST 컨트롤러
  * 이 클래스는 "/api/members" 경로로 들어오는 요청을 수신하고,
  * 사용자 등록과 관련된 비즈니스 로직을 MemberService에 위임

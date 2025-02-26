@@ -36,7 +36,6 @@ out/
 
 ### VS Code ###
 .vscode/
-*.class
 .DS_Store
 
 ### 테스트 데이터 제외 ###
