@@ -2,6 +2,8 @@ package com.team1.epilogue.transaction.client;
 
 import com.team1.epilogue.transaction.dto.KakaoPayApproveRequest;
 import com.team1.epilogue.transaction.dto.KakaoPayApproveResponse;
+import com.team1.epilogue.transaction.dto.KakaoPayRefundRequest;
+import com.team1.epilogue.transaction.dto.KakaoPayRefundResponse;
 import com.team1.epilogue.transaction.dto.KakaoPayRequest;
 import com.team1.epilogue.transaction.dto.KakaoPayResponse;
 import jakarta.annotation.PostConstruct;
@@ -27,6 +29,7 @@ public class KakaoPayClient {
   private final String KAKAOPAY_PATH = "/online/v1/payment"; // 카카오페이 path
   private final String KAKAOPAY_PREPARE_PATH = "/ready"; // 카카오페이 준비를 위한 path
   private final String KAKAOPAY_APPROVE_PATH = "/approve";
+  private final String KAKAOPAY_CANCEL_PATH = "cancel";
   private final String APPROVAL_URL = "http://localhost:8080/api/kp/success"; // 카카오페이 성공시 redirect 할 URl
   private final String CANCEL_URL = "http://localhost:8080/api/kp/cancel"; // 카카오페이 취소시 redirect 할 URl
   private final String FAIL_URL = "http://localhost:8080/api/kp/fail"; // 카카오페이 실패시 redirect 할 URl
@@ -65,7 +68,7 @@ public class KakaoPayClient {
         .uri(KAKAOPAY_PATH + KAKAOPAY_PREPARE_PATH) // path 경로 설정
         .bodyValue(request).retrieve()
         .bodyToMono(KakaoPayResponse.class) // KakaoPayResponse class 정보로 응답 받기
-        .block(); // block 메서드로 비동기 방식으로 작업 (카카오에서 응답 올때까지 대기)
+        .block(); // block 메서드로 동기 방식으로 작업 (카카오에서 응답 올때까지 대기)
 
     String redisKey = "kp: " + memberId; // Redis 에 Tid 임시 저장을 위한 Key 생성
     // TID 를 Redis 에 임시저장. 1분간 저장된다.
@@ -95,10 +98,31 @@ public class KakaoPayClient {
         )).retrieve()
         // 요청에 대한 응답값을 KakaoPayApproveResponse 로 받아서 return
         .bodyToMono(KakaoPayApproveResponse.class)
-        .block(); // 비동기 처리
+        .block(); // 동기 방식으로 처리
 
     redisTemplate.delete(redisKey); // 결제 승인이 완료되었으니 redis 에서 삭제해준다.
 
     return response;
+  }
+
+  /**
+   * 카카오페이 환불 요청을 하는 메서드입니다.
+   * @param tid 거래했던 거래정보를 담은 tid
+   * @param amount 충전했던 포인트
+   * @return 카카오서버에서 가져온 status 를 return
+   */
+  public String refund(String tid, int amount) {
+    KakaoPayRefundResponse response = webClient.post()
+        .uri(KAKAOPAY_PATH + KAKAOPAY_CANCEL_PATH)
+        .bodyValue(KakaoPayRefundRequest.makeRequest(
+            kakaoPayCid,
+            tid,
+            amount,
+            0
+        )).retrieve()
+        .bodyToMono(KakaoPayRefundResponse.class)
+        .block(); // 동기 방식으로 처리
+
+    return response.getStatus();
   }
 }
