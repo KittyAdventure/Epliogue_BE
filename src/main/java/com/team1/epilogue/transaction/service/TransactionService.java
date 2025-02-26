@@ -1,8 +1,8 @@
 package com.team1.epilogue.transaction.service;
 
-import com.team1.epilogue.member.entity.Member;
-import com.team1.epilogue.member.exception.MemberNotFoundException;
-import com.team1.epilogue.member.repository.MemberRepository;
+import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.exception.MemberNotFoundException;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.transaction.domain.TransactionDetail;
 import com.team1.epilogue.transaction.entity.Transaction;
 import com.team1.epilogue.transaction.repository.TransactionRepository;
@@ -29,7 +29,7 @@ public class TransactionService {
   public void updateBalance(String memberId, int amount, TransactionDetail detail,String tid) {
     // 사용자 정보 가져오기 존재하지않다면 Exception
     Member member = memberRepository.findByLoginId(memberId)
-        .orElseThrow(() -> new MemberNotFoundException("회원정보가 존재하지 않습니다."));
+        .orElseThrow(() -> new MemberNotFoundException());
 
     // 거래정보 저장을 위한 Transaction 객체 생성
     Transaction data = Transaction.builder()
