@@ -2,7 +2,7 @@ package com.team1.epilogue.auth.service;
 
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.entity.Member;
-import com.team1.epilogue.repositories.jpa.MemberRepository;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
