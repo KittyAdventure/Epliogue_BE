@@ -6,22 +6,22 @@ import com.team1.epilogue.transaction.dto.KakaoPayRefundRequest;
 import com.team1.epilogue.transaction.dto.KakaoPayRefundResponse;
 import com.team1.epilogue.transaction.dto.KakaoPayRequest;
 import com.team1.epilogue.transaction.dto.KakaoPayResponse;
-import jakarta.annotation.PostConstruct;
 import java.util.concurrent.TimeUnit;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-@Component
+@Service
 @Slf4j
+@RequiredArgsConstructor
 public class KakaoPayClient {
 
   private final StringRedisTemplate redisTemplate;
-  private WebClient webClient;
-  private final String KAKAOPAY_BASE_URL = "https://open-api.kakaopay.com";
+  private final WebClient webClient;
   @Value("${kakao.pay.cid}")
   private String kakaoPayCid; // 카카오페이 결제를 위한 cid
   @Value("${kakao.pay.apikey}")
@@ -34,18 +34,6 @@ public class KakaoPayClient {
   private final String CANCEL_URL = "http://localhost:8080/api/kp/cancel"; // 카카오페이 취소시 redirect 할 URl
   private final String FAIL_URL = "http://localhost:8080/api/kp/fail"; // 카카오페이 실패시 redirect 할 URl
 
-  public KakaoPayClient(StringRedisTemplate redis) {
-    this.redisTemplate = redis; // 생성자 방식으로 DI
-  }
-
-  @PostConstruct
-  private void initWebClient() {
-    this.webClient = WebClient.builder()
-        .baseUrl(KAKAOPAY_BASE_URL) // base Url 설정
-        .defaultHeader(HttpHeaders.AUTHORIZATION, "SECRET_KEY " + kakaoPayApiKey) // api key 설정
-        .defaultHeader(HttpHeaders.CONTENT_TYPE, "application/json")
-        .build();
-  }
 
   /**
    * 카카오페이 결제 준비 API 를 호출하는 기능입니다.
@@ -54,7 +42,7 @@ public class KakaoPayClient {
    * @param amount   충전하려는 금액
    * @return 카카오 서버에서 응답한 정보를 return
    */
-  public KakaoPayResponse prepareCharge(String memberId, int amount) {
+  public KakaoPayResponse prepareCharge(String url, String memberId, int amount) {
     KakaoPayRequest request = KakaoPayRequest.makeRequest(
         // KakaoPayRequest 의 static 메서드를 이용해 요청생성
         kakaoPayCid,
@@ -65,8 +53,10 @@ public class KakaoPayClient {
         FAIL_URL);
 
     KakaoPayResponse response = webClient.post()// webClient 를 이용해 POST 요청
-        .uri(KAKAOPAY_PATH + KAKAOPAY_PREPARE_PATH) // path 경로 설정
-        .bodyValue(request).retrieve()
+        .uri(url + KAKAOPAY_PATH + KAKAOPAY_PREPARE_PATH) // path 경로 설정
+        .bodyValue(request)
+        .header(HttpHeaders.AUTHORIZATION, "SECRET_KEY " + kakaoPayApiKey)
+        .retrieve()
         .bodyToMono(KakaoPayResponse.class) // KakaoPayResponse class 정보로 응답 받기
         .block(); // block 메서드로 동기 방식으로 작업 (카카오에서 응답 올때까지 대기)
 
@@ -84,12 +74,12 @@ public class KakaoPayClient {
    * @param pgToken  카카오서버에서 발급받은 pg_token
    * @return 카카오서버에서 승인받은 TID 를 담은 객체 return
    */
-  public KakaoPayApproveResponse approveCharge(String memberId, String pgToken) {
+  public KakaoPayApproveResponse approveCharge(String url, String memberId, String pgToken) {
     String redisKey = "kp: " + memberId;
     String tid = redisTemplate.opsForValue().get(redisKey); // Key 로 TID 를 redis 에서 찾는다
 
     KakaoPayApproveResponse response = webClient.post() // webClient 를 이용해 POST 요청
-        .uri(KAKAOPAY_PATH + KAKAOPAY_APPROVE_PATH)
+        .uri(url + KAKAOPAY_PATH + KAKAOPAY_APPROVE_PATH)
         .bodyValue(KakaoPayApproveRequest.makeRequest( // 카카오페이 충전 승인 요청을 위한 요청 생성
             kakaoPayCid,
             tid,
@@ -107,13 +97,14 @@ public class KakaoPayClient {
 
   /**
    * 카카오페이 환불 요청을 하는 메서드입니다.
-   * @param tid 거래했던 거래정보를 담은 tid
+   *
+   * @param tid    거래했던 거래정보를 담은 tid
    * @param amount 충전했던 포인트
    * @return 카카오서버에서 가져온 status 를 return
    */
-  public String refund(String tid, int amount) {
+  public String refund(String url, String tid, int amount) {
     KakaoPayRefundResponse response = webClient.post()
-        .uri(KAKAOPAY_PATH + KAKAOPAY_CANCEL_PATH)
+        .uri(url + KAKAOPAY_PATH + KAKAOPAY_CANCEL_PATH)
         .bodyValue(KakaoPayRefundRequest.makeRequest(
             kakaoPayCid,
             tid,

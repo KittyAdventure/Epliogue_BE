@@ -44,7 +44,10 @@ public class SecurityConfig {
     return http
             .csrf(csrf -> csrf.disable()) // CSRF 보호를 비활성화
             .authorizeExchange(exchange -> exchange
-                    .pathMatchers("/api/members/register").permitAll() // 해당 경로는 인증 없이 접근 가능
+                    .pathMatchers("/api/members/register",
+                        "/api/books" ,"/book/*/reviews"
+                        ,"/api/kp/success","/api/kp/fail","/api/kp/cancel"
+                    ).permitAll() // 해당 경로는 인증 없이 접근 가능
                     .anyExchange().authenticated() // 그 외 모든 요청은 인증을 필요
             ).authenticationManager(authenticationManager(userDetailsService))
             .httpBasic(withDefaults()) // 기본 HTTP Basic 인증을 사용

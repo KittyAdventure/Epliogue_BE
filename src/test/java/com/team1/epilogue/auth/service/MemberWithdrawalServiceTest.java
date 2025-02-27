@@ -3,7 +3,6 @@ package com.team1.epilogue.auth.service;
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.repository.MemberRepository;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,6 @@ import static org.mockito.Mockito.*;
  * 이 클래스는 회원 탈퇴 로직의 정상 동작 및 예외 처리가 제대로 동작하는지 검증
  */
 @DisplayName("MemberWithdrawalService 테스트")
-@RequiredArgsConstructor
 public class MemberWithdrawalServiceTest {
 
     /**
