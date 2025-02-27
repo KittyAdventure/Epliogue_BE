@@ -4,8 +4,11 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
@@ -37,14 +40,29 @@ public class SecurityConfig {
    * @return 구성된 SecurityWebFilterChain 객체를 반환
    */
   @Bean
-  public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+   public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http,ReactiveUserDetailsService userDetailsService) {
     return http
-        .csrf(csrf -> csrf.disable()) // CSRF 보호를 비활성화
-        .authorizeExchange(exchange -> exchange
-            .pathMatchers("/api/members/register").permitAll() // 해당 경로는 인증 없이 접근 가능
-            .anyExchange().authenticated() // 그 외 모든 요청은 인증을 필요
-        )
-        .httpBasic(withDefaults()) // 기본 HTTP Basic 인증을 사용
-        .build(); // 보안 필터 체인을 구성하여 반환
+            .csrf(csrf -> csrf.disable()) // CSRF 보호를 비활성화
+            .authorizeExchange(exchange -> exchange
+                    .pathMatchers("/api/members/register").permitAll() // 해당 경로는 인증 없이 접근 가능
+                    .anyExchange().authenticated() // 그 외 모든 요청은 인증을 필요
+            ).authenticationManager(authenticationManager(userDetailsService))
+            .httpBasic(withDefaults()) // 기본 HTTP Basic 인증을 사용
+            .build(); // 보안 필터 체인을 구성하여 반환
+  }
+
+  /**
+   * [메서드 레벨]
+   * `ReactiveAuthenticationManager` 빈을 생성하여 Spring Security에서 인증을 담당
+   * `UserDetailsRepositoryReactiveAuthenticationManager`를 사용하여 사용자 정보를 조회하고 인증 처리
+   *
+   * @param userDetailsService 사용자 정보를 제공하는 `ReactiveUserDetailsService`
+   * @return `ReactiveAuthenticationManager` 인스턴스
+   */
+  @Bean
+  public ReactiveAuthenticationManager authenticationManager(ReactiveUserDetailsService userDetailsService) {
+    return new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
   }
 }
+
+
