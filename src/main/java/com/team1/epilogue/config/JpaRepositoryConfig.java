@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
     basePackages = {"com.team1.epilogue.auth.repository" // JPA용 Repository만 포함
         , "com.team1.epilogue.transaction.repository"
         , "com.team1.epilogue.book.repository"
+        , "com.team1.epilogue.review.repository"
     }
 )
 public class JpaRepositoryConfig {
