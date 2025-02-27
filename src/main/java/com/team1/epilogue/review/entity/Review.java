@@ -1,7 +1,7 @@
 package com.team1.epilogue.review.entity;
 
 import com.team1.epilogue.auth.entity.Member;
-import com.team1.epilogue.book.Book;
+import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

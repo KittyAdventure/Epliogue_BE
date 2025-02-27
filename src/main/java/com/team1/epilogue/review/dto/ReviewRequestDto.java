@@ -1,7 +1,7 @@
 package com.team1.epilogue.review.dto;
 
 import com.team1.epilogue.auth.entity.Member;
-import com.team1.epilogue.book.Book;
+import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.review.entity.Review;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

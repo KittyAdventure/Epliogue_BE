@@ -1,8 +1,8 @@
 package com.team1.epilogue.review.service;
 
 import com.team1.epilogue.auth.entity.Member;
-import com.team1.epilogue.book.Book;
-import com.team1.epilogue.book.BookRepository;
+import com.team1.epilogue.book.entity.Book;
+import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.review.dto.ReviewRequestDto;
 import com.team1.epilogue.review.dto.ReviewResponseDto;
 import com.team1.epilogue.review.entity.Review;
