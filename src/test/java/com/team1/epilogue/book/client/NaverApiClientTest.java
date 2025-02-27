@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 @ExtendWith(MockitoExtension.class)
 class NaverApiClientTest {
 
-  @Autowired
   private NaverApiClient naverApiClient;
 
 
