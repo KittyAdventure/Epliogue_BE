@@ -2,11 +2,13 @@ package com.team1.epilogue.transaction.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class KakaoPayResponse {
   private String tid; // 결제 고유 번호, 20자
   // 요청한 클라이언트(Client)가 모바일 앱일 경우

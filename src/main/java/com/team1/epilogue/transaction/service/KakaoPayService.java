@@ -13,6 +13,7 @@ import com.team1.epilogue.transaction.exception.InvalidTransactionException;
 import com.team1.epilogue.transaction.exception.TransactionNotFoundException;
 import com.team1.epilogue.transaction.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,6 +25,9 @@ public class KakaoPayService {
   private final TransactionRepository transactionRepository;
   private final TransactionService transactionService;
 
+  @Value("${kakao.pay.url}")
+  private String kakaoPayUrl;
+
   /**
    * 카카오페이 결제 준비 단계 API 호출
    *
@@ -32,7 +36,7 @@ public class KakaoPayService {
    * @return Redirect 할 URL 응답
    */
   public KakaoPayResponse prepareCharge(String memberId, int amount) {
-    return kakaoPayClient.prepareCharge(memberId, amount);
+    return kakaoPayClient.prepareCharge(kakaoPayUrl,memberId, amount);
   }
 
   /**
@@ -43,7 +47,7 @@ public class KakaoPayService {
    * @return 카카오서버에서 승인받은 TID 를 담은 객체 return
    */
   public KakaoPayApproveResponse approveCharge(String memberId, String pgToken) {
-    return kakaoPayClient.approveCharge(memberId, pgToken);
+    return kakaoPayClient.approveCharge(kakaoPayUrl,memberId, pgToken);
   }
 
   /**
@@ -67,7 +71,7 @@ public class KakaoPayService {
     }
 
     // kakaoPayClient 에서 카카오페이 서버로 요청을 보낸다.
-    String response = kakaoPayClient.refund(transaction.getTid(), transaction.getAmount());
+    String response = kakaoPayClient.refund(kakaoPayUrl,transaction.getTid(), transaction.getAmount());
 
     // 카카오에서 응답해준 status 가 CANCEL_PAYMENT 가 아니라면 예외 발생
     if (!response.equals("CANCEL_PAYMENT")) {
