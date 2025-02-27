@@ -5,11 +5,13 @@ import com.team1.epilogue.review.dto.ReviewRequestDto;
 import com.team1.epilogue.review.dto.ReviewResponseDto;
 import com.team1.epilogue.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -37,14 +39,21 @@ public class ReviewController {
     }
 
     /**
-     * 특정 책의 모든 리뷰를 조회합니다
+     * 특정 책의 모든 리뷰를 페이징하여 조회합니다
+     * - 기본 정렬: 최신순 (createdAt DESC)
+     * - 향후 좋아요순(likesCount DESC) 정렬 기능 추가 예정
      *
-     * @param bookId 리뷰를 조회할 책의 ID
-     * @return 해당 책의 리뷰 목록을 담은 DTO 리스트
+     * @param bookId 조회할 책의 ID
+     * @param page   조회할 페이지 번호 (1부터 시작)
+     * @param size   한 페이지당 조회할 리뷰 개수
+     * @return 해당 책의 리뷰 목록을 담은 페이징된 DTO 리스트
      */
     @GetMapping("/book/{bookId}/reviews")
-    public ResponseEntity<List<ReviewResponseDto>> getReviews(@PathVariable Long bookId) {
-        List<ReviewResponseDto> reviews = reviewService.getReviews(bookId);
+    public ResponseEntity<Page<ReviewResponseDto>> getReviews(@PathVariable Long bookId,
+                                                              @RequestParam("page") int page,
+                                                              @RequestParam("size") int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<ReviewResponseDto> reviews = reviewService.getReviews(bookId, pageable);
 
         return ResponseEntity.ok().body(reviews);
     }

@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 /**
  * 클라이언트로부터 전달받은 리뷰 생성/수정 데이터를 담는 DTO입니다
  */

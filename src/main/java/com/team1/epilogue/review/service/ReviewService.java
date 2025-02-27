@@ -6,13 +6,15 @@ import com.team1.epilogue.book.BookRepository;
 import com.team1.epilogue.review.dto.ReviewRequestDto;
 import com.team1.epilogue.review.dto.ReviewResponseDto;
 import com.team1.epilogue.review.entity.Review;
+import com.team1.epilogue.review.exception.BookNotFoundException;
+import com.team1.epilogue.review.exception.ReviewNotFoundException;
+import com.team1.epilogue.review.exception.UnauthorizedReviewAccessException;
 import com.team1.epilogue.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +34,7 @@ public class ReviewService {
     @Transactional
     public ReviewResponseDto createReview(Long bookId, ReviewRequestDto reviewRequestDto, Member member) {
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 책입니다."));
+                .orElseThrow(() -> new BookNotFoundException("존재하지 않는 책입니다."));
 
         Review review = reviewRequestDto.toEntity(book, member);
         reviewRepository.save(review);
@@ -41,19 +43,18 @@ public class ReviewService {
     }
 
     /**
-     * 특정 책의 모든 리뷰를 조회합니다
+     * 특정 책의 모든 리뷰를 페이징하여 조회합니다 (최신순 정렬)
      *
-     * @param bookId 리뷰를 조회할 책의 ID
-     * @return 해당 책의 리뷰 목록을 담은 DTO 리스트
+     * @param bookId   조회할 책의 ID
+     * @param pageable 페이징 및 정렬 정보
+     * @return 해당 책의 리뷰 목록을 담은 페이징된 DTO 리스트
      */
     @Transactional(readOnly = true)
-    public List<ReviewResponseDto> getReviews(Long bookId) {
-        // 아직 정렬순서 안정함
-        List<Review> reviews = reviewRepository.findByBookId(bookId);
+    public Page<ReviewResponseDto> getReviews(Long bookId, Pageable pageable) {
+        // 좋아요순, 최신순 추가 예정
+        Page<Review> reviews = reviewRepository.findByBookId(bookId, pageable);
 
-        return reviews.stream()
-                .map(ReviewResponseDto::of)
-                .collect(Collectors.toList());
+        return reviews.map(ReviewResponseDto::of);
     }
 
     /**
@@ -65,7 +66,7 @@ public class ReviewService {
     @Transactional(readOnly = true)
     public ReviewResponseDto getReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
         return ReviewResponseDto.of(review);
     }
@@ -81,10 +82,10 @@ public class ReviewService {
     @Transactional
     public ReviewResponseDto updateReview(Long reviewId, ReviewRequestDto reviewRequestDto, Member member) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
         if (!review.getMember().getId().equals(member.getId())) {
-            throw new IllegalArgumentException("리뷰 작성자만 수정할 수 있습니다.");
+            throw new UnauthorizedReviewAccessException("리뷰 작성자만 수정할 수 있습니다.");
         }
 
         if (review.getContent().equals(reviewRequestDto.getContent())) {
@@ -104,10 +105,10 @@ public class ReviewService {
     @Transactional
     public void deleteReview(Long reviewId, Member member) {
         Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
         if (!review.getMember().getId().equals(member.getId())) {
-            throw new IllegalArgumentException("리뷰 작성자만 삭제할 수 있습니다.");
+            throw new UnauthorizedReviewAccessException("리뷰 작성자만 삭제할 수 있습니다.");
         }
 
         reviewRepository.delete(review);

@@ -2,16 +2,13 @@ package com.team1.epilogue.review.entity;
 
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.book.Book;
+import com.team1.epilogue.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor
@@ -20,7 +17,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-public class Review {
+public class Review extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,16 +39,6 @@ public class Review {
     // 리뷰에 첨부된 이미지 URL
     @Column(name = "image_url")
     private String imageUrl;
-
-    // 생성 시간
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    // 수정 시간
-    @LastModifiedDate
-    @Column(name = "modified_at")
-    private LocalDateTime modifiedAt;
 
     /**
      * 리뷰 내용을 수정합니다
