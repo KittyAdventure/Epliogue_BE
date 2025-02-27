@@ -1,4 +1,4 @@
-package com.team1.epilogue.repositories.jpa;
+package com.team1.epilogue.auth.repository;
 
 import com.team1.epilogue.auth.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;

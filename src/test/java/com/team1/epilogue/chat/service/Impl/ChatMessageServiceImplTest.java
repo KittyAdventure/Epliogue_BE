@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.team1.epilogue.chat.entity.ChatMessage;
-import com.team1.epilogue.repositories.reactive.ChatMessageRepository;
+import com.team1.epilogue.chat.repository.ChatMessageRepository;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +30,6 @@ class ChatMessageServiceImplTest {
     //given : 테스트에 사용할 Mock 데이터
     String messageId = "msg1234";
     String roomId = "room123";
-    Long bookId = 123L;
     Long memberId = 12L;
     String content = "안녕하세요! 반갑습니다!.";
 
@@ -38,7 +37,6 @@ class ChatMessageServiceImplTest {
         .id(messageId)
         .roomId(roomId)
         .memberId(memberId)
-        .bookId(bookId)
         .content(content)
         .createdAt(LocalDateTime.now())
         .build();
@@ -47,14 +45,13 @@ class ChatMessageServiceImplTest {
         .thenReturn(Mono.just(mockMessage));
 
 
-    Mono<ChatMessage> savedMessage = chatMessageService.saveMessage(memberId,roomId,bookId,content);
+    Mono<ChatMessage> savedMessage = chatMessageService.saveMessage(memberId,roomId,content);
 
     //then
     StepVerifier.create(savedMessage)
         .assertNext(message -> {
           assertEquals(messageId, message.getId());
           assertEquals(roomId, message.getRoomId());
-          assertEquals(bookId,message.getBookId());
           assertEquals(content,message.getContent());
         })
         .verifyComplete();

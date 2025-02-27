@@ -1,7 +1,7 @@
 package com.team1.epilogue.chat.service.Impl;
 
 import com.team1.epilogue.chat.entity.ChatMessage;
-import com.team1.epilogue.repositories.reactive.ChatMessageRepository;
+import com.team1.epilogue.chat.repository.ChatMessageRepository;
 import com.team1.epilogue.chat.service.ChatMessageService;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -21,12 +21,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
    * @param roomId 메세지가 속한 채팅방 ID
    * @param content 책 ID (채팅방과 동일)
    * @return 저장된 ChatMessage
-   * 메세지 저장.
    */
-  public Mono<ChatMessage> saveMessage(Long memberId, String roomId, Long bookId, String content){
+  @Override
+  public Mono<ChatMessage> saveMessage(Long memberId, String roomId, String content){
     ChatMessage message = ChatMessage.builder()
         .memberId(memberId)
-        .bookId(bookId)
         .roomId(roomId)
         .content(content)
         .createdAt(LocalDateTime.now())
@@ -35,6 +34,13 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     return chatMessageRepository.save(message);
   }
 
+  /**
+   *
+   * @param roomId
+   * @return
+   * 특정 채팅방의 메시지 불러오기
+   * 순서는 최신순!
+   */
   public Flux<ChatMessage> getMessageByRoomId(String roomId) {
     return chatMessageRepository.findByRoomIdOrderByCreatedAtAsc(roomId);
   }

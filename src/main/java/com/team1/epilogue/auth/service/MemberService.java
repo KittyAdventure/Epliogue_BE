@@ -6,13 +6,12 @@ import com.team1.epilogue.auth.exception.IdAlreadyExistException;
 import com.team1.epilogue.auth.exception.EmailNotValidException;
 import com.team1.epilogue.auth.exception.EmailAlreadyExistException;
 import com.team1.epilogue.auth.entity.Member;
-import com.team1.epilogue.repositories.jpa.MemberRepository;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +55,6 @@ public class MemberService {
                 .profileUrl(request.getProfileUrl())
                 .point(0)
                 .social(null)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         // [저장 단계] 회원 정보를 데이터베이스에 저장.

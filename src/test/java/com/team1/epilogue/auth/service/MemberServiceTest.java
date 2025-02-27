@@ -5,7 +5,7 @@ import com.team1.epilogue.auth.dto.MemberResponse;
 import com.team1.epilogue.auth.exception.IdAlreadyExistException;
 import com.team1.epilogue.auth.exception.EmailAlreadyExistException;
 import com.team1.epilogue.auth.entity.Member;
-import com.team1.epilogue.repositories.jpa.MemberRepository;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -108,7 +107,6 @@ public class MemberServiceTest {
                 .profileUrl(registerRequest.getProfileUrl())
                 .point(0)
                 .social(null)
-                .createdAt(LocalDateTime.now())
                 .build();
 
         Member savedMember = Member.builder()
@@ -123,7 +121,6 @@ public class MemberServiceTest {
                 .profileUrl(memberToSave.getProfileUrl())
                 .point(memberToSave.getPoint())
                 .social(memberToSave.getSocial())
-                .createdAt(memberToSave.getCreatedAt())
                 .build();
 
         when(memberRepository.save(any(Member.class))).thenReturn(savedMember);

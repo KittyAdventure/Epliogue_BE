@@ -1,4 +1,4 @@
-package com.team1.epilogue.repositories.reactive;
+package com.team1.epilogue.chat.repository;
 
 import com.team1.epilogue.chat.entity.ChatMessage;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
