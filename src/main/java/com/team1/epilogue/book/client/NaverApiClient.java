@@ -18,13 +18,12 @@ public class NaverApiClient {
   private String cid; // 네이버 client ID
   @Value("${naver.api.key}")
   private String apikey; // 네이버 api 호출을 위한 key
-  private final String NAVER_BASE_URL = "https://openapi.naver.com"; // 네이버 base url
   private final String NAVER_BOOK_SERACH_PATH = "/v1/search/book.json"; // 책검색 api 를 위한 path
 
 
-  public NaverBookSearchResponse getBookInfoFromNaver(BookInfoRequest dto) {
+  public NaverBookSearchResponse getBookInfoFromNaver(String url,BookInfoRequest dto) {
     NaverBookSearchResponse response = webClient.get()
-        .uri(NAVER_BASE_URL + NAVER_BOOK_SERACH_PATH + "?query=" + dto.getQuery() + "&display="
+        .uri(url + NAVER_BOOK_SERACH_PATH + "?query=" + dto.getQuery() + "&display="
             + dto.getDisplay()
             + "&start=" + dto.getStart() + "&sort=" + dto.getSort())
         .header("X-Naver-Client-Id", cid)

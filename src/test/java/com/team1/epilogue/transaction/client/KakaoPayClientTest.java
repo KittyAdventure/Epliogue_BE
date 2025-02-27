@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1.epilogue.transaction.dto.KakaoPayApproveResponse;
+import com.team1.epilogue.transaction.dto.KakaoPayRefundResponse;
 import com.team1.epilogue.transaction.dto.KakaoPayResponse;
 import java.util.concurrent.TimeUnit;
 import okhttp3.mockwebserver.MockResponse;
@@ -111,8 +112,22 @@ class KakaoPayClientTest {
 
   @Test
   @DisplayName("카카오페이 환불 API 테스트")
-  void refund() {
+  void refund() throws Exception{
+    //give
+    mockWebServer.enqueue( // enqueue 메서드로 MockWebSever 의 응답을 지정해준다.
+        new MockResponse().setResponseCode(200).addHeader("Content-Type", "application/json")
+            .setBody(objectMapper.writeValueAsString(
+                KakaoPayRefundResponse.builder()
+                    .status("CANCEL_PAYMENT")
+                    .build()
+            ))
+    );
 
+    //when
+    String response = kakaoPayClient.refund("","test", 10000);
+
+    //then
+    assertEquals("CANCEL_PAYMENT", response);
 
   }
 }
