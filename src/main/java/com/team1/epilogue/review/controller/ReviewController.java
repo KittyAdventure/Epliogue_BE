@@ -10,7 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,13 +25,14 @@ public class ReviewController {
      *
      * @param bookId           리뷰를 작성할 책의 ID
      * @param reviewRequestDto 클라이언트가 전달한 리뷰 데이터
-     * @param member           현재 인증된 사용자
+     * @param authentication   현재 인증된 사용자
      * @return 생성된 리뷰의 상세 정보를 담은 DTO
      */
     @PostMapping("/book/{bookId}/reviews")
     public ResponseEntity<ReviewResponseDto> createReview(@PathVariable Long bookId,
                                                           @RequestBody ReviewRequestDto reviewRequestDto,
-                                                          @AuthenticationPrincipal Member member) {
+                                                          Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal(); // Authentication 에서 Member 객체 추출
         ReviewResponseDto reviewResponseDto =
                 reviewService.createReview(bookId, reviewRequestDto, member);
 
@@ -76,13 +77,14 @@ public class ReviewController {
      *
      * @param reviewId         수정할 리뷰의 ID
      * @param reviewRequestDto 클라이언트가 전달한 수정 데이터
-     * @param member           현재 인증된 사용자
+     * @param authentication   현재 인증된 사용자
      * @return 수정된 리뷰의 상세 정보를 담은 DTO
      */
     @PutMapping("/review/{reviewId}")
     public ResponseEntity<ReviewResponseDto> updateReview(@PathVariable Long reviewId,
                                                           @RequestBody ReviewRequestDto reviewRequestDto,
-                                                          @AuthenticationPrincipal Member member) {
+                                                          Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
         ReviewResponseDto updatedReview = reviewService.updateReview(reviewId, reviewRequestDto, member);
 
         return ResponseEntity.ok().body(updatedReview);
@@ -91,13 +93,14 @@ public class ReviewController {
     /**
      * 특정 리뷰를 삭제합니다
      *
-     * @param reviewId 삭제할 리뷰의 ID
-     * @param member   현재 인증된 사용자
+     * @param reviewId       삭제할 리뷰의 ID
+     * @param authentication 현재 인증된 사용자
      * @return 삭제 완료 메시지
      */
     @DeleteMapping("/review/{reviewId}")
     public ResponseEntity<String> deleteReview(@PathVariable Long reviewId,
-                                               @AuthenticationPrincipal Member member) {
+                                               Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
         reviewService.deleteReview(reviewId, member);
 
         return ResponseEntity.ok().body("리뷰가 성공적으로 삭제되었습니다.");
