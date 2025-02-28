@@ -23,7 +23,6 @@ public class NaverApiClient {
   private final String NAVER_BOOK_SERACH_PATH = "/v1/search/book.json"; // 책검색 api 를 위한 path
   private final String NAVER_BOOK_DETAIL_PATH = "/v1/search/book_adv.json"; // 책 상세 정보 조회를 위한 path
 
-
   public NaverBookSearchResponse getBookInfoFromNaver(String url, BookInfoRequest dto) {
     NaverBookSearchResponse response = webClient.get()
         .uri(url + NAVER_BOOK_SERACH_PATH + "?query=" + dto.getQuery() + "&display="

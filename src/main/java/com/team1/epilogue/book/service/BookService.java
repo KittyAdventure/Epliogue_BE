@@ -8,10 +8,12 @@ import com.team1.epilogue.book.dto.BookInfoRequest;
 import com.team1.epilogue.book.dto.NaverBookSearchResponse;
 import com.team1.epilogue.book.dto.xml.Item;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class BookService {
   private final NaverApiClient naverApiClient;
@@ -26,7 +28,8 @@ public class BookService {
 
   public BookDetailResponse getBookDetail(BookDetailRequest dto) {
     BookDetailXMLResponse response = naverApiClient.getBookDetail(naverUrl, dto);
-    Item item = response.getChannel().getItems().get(0);
+
+    Item item = response.getItems().get(0);
 
     BookDetailResponse build = BookDetailResponse.builder()
         .title(item.getTitle())

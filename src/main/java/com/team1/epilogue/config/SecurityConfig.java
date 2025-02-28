@@ -41,7 +41,7 @@ public class SecurityConfig {
         .csrf(csrf -> csrf.disable()) // CSRF 보호를 비활성화
         .authorizeHttpRequests(request -> request
             .requestMatchers("/api/members/register",
-                "/api/books", "/book/*/reviews"
+                "/api/books", "/api/book/*/reviews","/api/books/detail"
                 , "/api/kp/success", "/api/kp/fail", "/api/kp/cancel"
             ).permitAll() // 해당 경로는 인증 없이 접근 가능
             .anyRequest().authenticated() // 그 외 모든 요청은 인증을 필요

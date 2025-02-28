@@ -1,11 +1,13 @@
 package com.team1.epilogue.book.dto.xml;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class Item {
 
   @JacksonXmlProperty(localName = "title")
