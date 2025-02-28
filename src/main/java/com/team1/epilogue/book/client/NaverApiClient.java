@@ -23,6 +23,13 @@ public class NaverApiClient {
   private final String NAVER_BOOK_SERACH_PATH = "/v1/search/book.json"; // 책검색 api 를 위한 path
   private final String NAVER_BOOK_DETAIL_PATH = "/v1/search/book_adv.json"; // 책 상세 정보 조회를 위한 path
 
+  /**
+   * 책 제목으로 검색하는 메서드입니다.
+   *
+   * @param url 네이버 base url
+   * @param dto 책 정보를 담은 DTO
+   * @return 네이버에서 온 응답값을 return
+   */
   public NaverBookSearchResponse getBookInfoFromNaver(String url, BookInfoRequest dto) {
     NaverBookSearchResponse response = webClient.get()
         .uri(url + NAVER_BOOK_SERACH_PATH + "?query=" + dto.getQuery() + "&display="
@@ -39,6 +46,13 @@ public class NaverApiClient {
     return response;
   }
 
+  /**
+   * 책 제목 / ISBN 번호로 상세정보 검색하는 메서드입니다.
+   *
+   * @param url 네이버 base url
+   * @param dto 책 정보를 담은 DTO
+   * @return 네이버에서 온 응답값을 return
+   */
   public BookDetailXMLResponse getBookDetail(String url, BookDetailRequest dto) {
     BookDetailXMLResponse response = webClient.get()
         .uri(url + NAVER_BOOK_DETAIL_PATH + "?" + dto.getType() + "=" + dto.getQuery())

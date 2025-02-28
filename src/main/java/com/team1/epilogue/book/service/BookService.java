@@ -21,16 +21,29 @@ public class BookService {
   @Value("${naver.base.url}")
   String naverUrl;
 
+  /**
+   * 책 제목으로 검색하는 메서드입니다.
+   *
+   * @param dto 책 정보를 담은 DTO
+   * @return 네이버에서 온 응답값을 return
+   */
   public NaverBookSearchResponse searchBookInfo(BookInfoRequest dto) {
     NaverBookSearchResponse response = naverApiClient.getBookInfoFromNaver(naverUrl,dto);
     return response;
   }
 
+  /**
+   * 책 제목 or ISBN 번호로 상세검색하는 메서드입니다.
+   *
+   * @param dto 책 제목 / ISBN 번호를 담은 DTO
+   * @return 네이버에서 온 응답값을 return
+   */
   public BookDetailResponse getBookDetail(BookDetailRequest dto) {
     BookDetailXMLResponse response = naverApiClient.getBookDetail(naverUrl, dto);
 
     Item item = response.getItems().get(0);
 
+    // DTO 로 반환 형식에 맞춰 return
     BookDetailResponse build = BookDetailResponse.builder()
         .title(item.getTitle())
         .image(item.getImage())
