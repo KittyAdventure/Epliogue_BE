@@ -28,7 +28,7 @@ public class ReviewController {
      * @param authentication   현재 인증된 사용자
      * @return 생성된 리뷰의 상세 정보를 담은 DTO
      */
-    @PostMapping("/book/{bookId}/reviews")
+    @PostMapping("/books/{bookId}/reviews")
     public ResponseEntity<ReviewResponseDto> createReview(@PathVariable Long bookId,
                                                           @RequestBody ReviewRequestDto reviewRequestDto,
                                                           Authentication authentication) {
@@ -49,7 +49,7 @@ public class ReviewController {
      * @param size   한 페이지당 조회할 리뷰 개수
      * @return 해당 책의 리뷰 목록을 담은 페이징된 DTO 리스트
      */
-    @GetMapping("/book/{bookId}/reviews")
+    @GetMapping("/books/{bookId}/reviews")
     public ResponseEntity<Page<ReviewResponseDto>> getReviews(@PathVariable Long bookId,
                                                               @RequestParam("page") int page,
                                                               @RequestParam("size") int size) {
@@ -65,7 +65,7 @@ public class ReviewController {
      * @param reviewId 조회할 리뷰의 ID
      * @return 해당 리뷰의 상세 정보를 담은 DTO
      */
-    @GetMapping("/review/{reviewId}")
+    @GetMapping("/reviews/{reviewId}")
     public ResponseEntity<ReviewResponseDto> getReview(@PathVariable Long reviewId) {
         ReviewResponseDto reviewResponseDto = reviewService.getReview(reviewId);
 
@@ -80,7 +80,7 @@ public class ReviewController {
      * @param authentication   현재 인증된 사용자
      * @return 수정된 리뷰의 상세 정보를 담은 DTO
      */
-    @PutMapping("/review/{reviewId}")
+    @PutMapping("/reviews/{reviewId}")
     public ResponseEntity<ReviewResponseDto> updateReview(@PathVariable Long reviewId,
                                                           @RequestBody ReviewRequestDto reviewRequestDto,
                                                           Authentication authentication) {
@@ -97,7 +97,7 @@ public class ReviewController {
      * @param authentication 현재 인증된 사용자
      * @return 삭제 완료 메시지
      */
-    @DeleteMapping("/review/{reviewId}")
+    @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<String> deleteReview(@PathVariable Long reviewId,
                                                Authentication authentication) {
         Member member = (Member) authentication.getPrincipal();
