@@ -1,5 +1,7 @@
 package com.team1.epilogue.book.controller;
 
+import com.team1.epilogue.book.dto.BookDetailRequest;
+import com.team1.epilogue.book.dto.BookDetailResponse;
 import com.team1.epilogue.book.dto.BookInfoRequest;
 import com.team1.epilogue.book.dto.NaverBookSearchResponse;
 import com.team1.epilogue.book.service.BookService;
@@ -19,5 +21,12 @@ public class BookController {
   public ResponseEntity<?> searchBookInfo(@RequestBody BookInfoRequest dto) {
     NaverBookSearchResponse naverBookSearchResponse = bookService.searchBookInfo(dto);
     return ResponseEntity.ok(naverBookSearchResponse);
+  }
+
+  @GetMapping("/api/books/detail")
+  public ResponseEntity<?> getBookDetail(@RequestBody BookDetailRequest dto) {
+    BookDetailResponse bookDetail = bookService.getBookDetail(dto);
+    return ResponseEntity.ok(bookDetail);
+
   }
 }
