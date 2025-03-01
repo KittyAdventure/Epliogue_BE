@@ -52,7 +52,7 @@ public class ReviewServiceTest {
                 .build();
 
         testBook = Book.builder()
-                .id(1L)
+                .id("1111111111111")
                 .title("테스트 책")
                 .build();
 
