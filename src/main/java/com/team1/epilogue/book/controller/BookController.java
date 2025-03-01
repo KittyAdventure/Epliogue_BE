@@ -39,6 +39,5 @@ public class BookController {
   public ResponseEntity<?> getBookDetail(@RequestBody BookDetailRequest dto) {
     BookDetailResponse bookDetail = bookService.getBookDetail(dto);
     return ResponseEntity.ok(bookDetail);
-
   }
 }

@@ -2,9 +2,8 @@ package com.team1.epilogue.book.entity;
 
 import com.team1.epilogue.common.entity.BaseEntity;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,13 +17,13 @@ import lombok.NoArgsConstructor;
 public class Book extends BaseEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private String id;
 
   private String title;
 
   private String author;
 
+  @Lob
   private String description;
 
   private double avgRating;

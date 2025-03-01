@@ -13,5 +13,5 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      * @param pageable 페이징 정보를 포함한 객체
      * @return 해당 책의 리뷰 목록 (페이징 적용)
      */
-    Page<Review> findByBookId(Long bookId, Pageable pageable);
+    Page<Review> findByBookId(String bookId, Pageable pageable);
 }
