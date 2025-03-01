@@ -1,7 +1,6 @@
 package com.team1.epilogue.chat.entity;
 
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import java.util.HashSet;

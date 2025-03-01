@@ -16,8 +16,8 @@ public class BookService {
   @Value("${naver.base.url}")
   String naverUrl;
 
-  public NaverBookSearchResponse searchBookInfo(BookInfoRequest dto) {
-    NaverBookSearchResponse response = naverApiClient.getBookInfoFromNaver(naverUrl,dto);
-    return response;
-  }
+//  public NaverBookSearchResponse searchBookInfo(BookInfoRequest dto) {
+//    NaverBookSearchResponse response = naverApiClient.getBookInfoFromNaver(naverUrl,dto);
+//    return response;
+//  }
 }

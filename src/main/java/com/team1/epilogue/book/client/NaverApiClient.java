@@ -6,14 +6,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class NaverApiClient {
 
-  private final WebClient webClient;
+//  private final WebClient webClient;
   @Value("${naver.cid}")
   private String cid; // 네이버 client ID
   @Value("${naver.api.key}")
@@ -21,19 +20,19 @@ public class NaverApiClient {
   private final String NAVER_BOOK_SERACH_PATH = "/v1/search/book.json"; // 책검색 api 를 위한 path
 
 
-  public NaverBookSearchResponse getBookInfoFromNaver(String url,BookInfoRequest dto) {
-    NaverBookSearchResponse response = webClient.get()
-        .uri(url + NAVER_BOOK_SERACH_PATH + "?query=" + dto.getQuery() + "&display="
-            + dto.getDisplay()
-            + "&start=" + dto.getStart() + "&sort=" + dto.getSort())
-        .header("X-Naver-Client-Id", cid)
-        .header("X-Naver-Client-Secret", apikey)
-        .retrieve()
-        .bodyToMono(NaverBookSearchResponse.class)
-        .block();// 동기 방식으로 작업
-
-    log.info(response.toString());
-
-    return response;
-  }
+//  public NaverBookSearchResponse getBookInfoFromNaver(String url,BookInfoRequest dto) {
+//    NaverBookSearchResponse response = webClient.get()
+//        .uri(url + NAVER_BOOK_SERACH_PATH + "?query=" + dto.getQuery() + "&display="
+//            + dto.getDisplay()
+//            + "&start=" + dto.getStart() + "&sort=" + dto.getSort())
+//        .header("X-Naver-Client-Id", cid)
+//        .header("X-Naver-Client-Secret", apikey)
+//        .retrieve()
+//        .bodyToMono(NaverBookSearchResponse.class)
+//        .block();// 동기 방식으로 작업
+//
+//    log.info(response.toString());
+//
+//    return response;
+//  }
 }
