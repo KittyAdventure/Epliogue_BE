@@ -53,13 +53,12 @@ public class NaverApiClient {
    * @return 네이버에서 온 응답값을 return
    */
   public BookDetailXMLResponse getBookDetail(String url, BookDetailRequest dto) {
-    BookDetailXMLResponse response = webClient.get()
+    BookDetailXMLResponse response = restClient.get()
         .uri(url + NAVER_BOOK_DETAIL_PATH + "?" + dto.getType() + "=" + dto.getQuery())
         .header("X-Naver-Client-Id", cid)
         .header("X-Naver-Client-Secret", apikey)
         .retrieve()
-        .bodyToMono(BookDetailXMLResponse.class)
-        .block();// 동기 방식으로 작업
+        .body(BookDetailXMLResponse.class);
 
     return response;
   }
