@@ -4,6 +4,7 @@ import com.team1.epilogue.common.entity.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,11 +24,17 @@ public class Book extends BaseEntity {
 
   private String author;
 
+  private Integer price;
+
   @Lob
   private String description;
 
   private double avgRating;
 
   private String coverUrl;
+
+  private String publisher;
+
+  private LocalDate pubDate;
 
 }
