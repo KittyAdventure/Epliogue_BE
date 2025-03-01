@@ -2,9 +2,12 @@ package com.team1.epilogue.book.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.team1.epilogue.book.dto.BookDetailRequest;
 import com.team1.epilogue.book.dto.BookInfoRequest;
 import com.team1.epilogue.book.dto.NaverBookResponseDto;
 import com.team1.epilogue.book.dto.NaverBookSearchResponse;
+import com.team1.epilogue.book.dto.xml.BookDetailXMLResponse;
+import com.team1.epilogue.book.dto.xml.Item;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -94,5 +97,44 @@ class NaverApiClientTest {
 //    assertEquals(2,response.getTotal());
 //    assertEquals(2, response.getItems().size());
 //    assertEquals("타이탄의 도구들",response.getItems().get(1).getTitle());
+//  }
+
+//  @Test
+//  @DisplayName("네이버 책 상세정보 호출 API 테스트")
+//  void get_book_detail_from_naver() throws Exception {
+//    //given
+//    // 테스트를 위한 응답값 만들기
+//    List<Item> items = new ArrayList<>();
+//    Item build = Item.builder()
+//        .title("데미안")
+//        .link("http://naver.com/1113")
+//        .author("헤르만 헤세")
+//        .price(10000)
+//        .publisher("출판사")
+//        .pubDate("1999-01-01")
+//        .description("헤르만 헤세의 데미안입니다.")
+//        .image("http://dddd.ddd.dd")
+//        .isbn("11111111 111111").build();
+//
+//    items.add(build);
+//
+//    mockWebServer.enqueue( // enqueue 메서드로 응답값 설정
+//        new MockResponse().setResponseCode(200).addHeader("Content-Type", "application/json")
+//            .setBody(objectMapper.writeValueAsString(BookDetailXMLResponse.builder()
+//                .items(items) // 위에서 만든 응답값을 넣어준다.
+//                .build())));
+//
+//    // 요청 값 생성
+//    BookDetailRequest request = BookDetailRequest.builder()
+//        .type("d_titl")
+//        .query("데미안")
+//        .build();
+//
+//    //when
+//    BookDetailXMLResponse response = naverApiClient.getBookDetail("", request);
+//
+//    //then
+//    assertEquals("데미안", response.getItems().get(0).getTitle());
+//    assertEquals("헤르만 헤세", response.getItems().get(0).getAuthor());
 //  }
 }
