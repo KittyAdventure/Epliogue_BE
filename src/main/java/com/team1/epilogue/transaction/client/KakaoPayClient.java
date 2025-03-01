@@ -13,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 
 @Service
 @Slf4j
@@ -21,7 +21,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class KakaoPayClient {
 
   private final StringRedisTemplate redisTemplate;
-  private final WebClient webClient;
+  private final RestClient restClient;
   @Value("${kakao.pay.cid}")
   private String kakaoPayCid; // 카카오페이 결제를 위한 cid
   @Value("${kakao.pay.apikey}")
@@ -52,13 +52,12 @@ public class KakaoPayClient {
         CANCEL_URL,
         FAIL_URL);
 
-    KakaoPayResponse response = webClient.post()// webClient 를 이용해 POST 요청
+    KakaoPayResponse response = restClient.post()// webClient 를 이용해 POST 요청
         .uri(url + KAKAOPAY_PATH + KAKAOPAY_PREPARE_PATH) // path 경로 설정
-        .bodyValue(request)
+        .body(request)
         .header(HttpHeaders.AUTHORIZATION, "SECRET_KEY " + kakaoPayApiKey)
         .retrieve()
-        .bodyToMono(KakaoPayResponse.class) // KakaoPayResponse class 정보로 응답 받기
-        .block(); // block 메서드로 동기 방식으로 작업 (카카오에서 응답 올때까지 대기)
+        .body(KakaoPayResponse.class); // KakaoPayResponse class 정보로 응답 받기
 
     String redisKey = "kp: " + memberId; // Redis 에 Tid 임시 저장을 위한 Key 생성
     // TID 를 Redis 에 임시저장. 1분간 저장된다.
@@ -78,17 +77,16 @@ public class KakaoPayClient {
     String redisKey = "kp: " + memberId;
     String tid = redisTemplate.opsForValue().get(redisKey); // Key 로 TID 를 redis 에서 찾는다
 
-    KakaoPayApproveResponse response = webClient.post() // webClient 를 이용해 POST 요청
+    KakaoPayApproveResponse response = restClient.post() // webClient 를 이용해 POST 요청
         .uri(url + KAKAOPAY_PATH + KAKAOPAY_APPROVE_PATH)
-        .bodyValue(KakaoPayApproveRequest.makeRequest( // 카카오페이 충전 승인 요청을 위한 요청 생성
+        .body(KakaoPayApproveRequest.makeRequest( // 카카오페이 충전 승인 요청을 위한 요청 생성
             kakaoPayCid,
             tid,
             pgToken,
             memberId
         )).retrieve()
         // 요청에 대한 응답값을 KakaoPayApproveResponse 로 받아서 return
-        .bodyToMono(KakaoPayApproveResponse.class)
-        .block(); // 동기 방식으로 처리
+        .body(KakaoPayApproveResponse.class);
 
     redisTemplate.delete(redisKey); // 결제 승인이 완료되었으니 redis 에서 삭제해준다.
 
@@ -103,16 +101,15 @@ public class KakaoPayClient {
    * @return 카카오서버에서 가져온 status 를 return
    */
   public String refund(String url, String tid, int amount) {
-    KakaoPayRefundResponse response = webClient.post()
+    KakaoPayRefundResponse response = restClient.post()
         .uri(url + KAKAOPAY_PATH + KAKAOPAY_CANCEL_PATH)
-        .bodyValue(KakaoPayRefundRequest.makeRequest(
+        .body(KakaoPayRefundRequest.makeRequest(
             kakaoPayCid,
             tid,
             amount,
             0
         )).retrieve()
-        .bodyToMono(KakaoPayRefundResponse.class)
-        .block(); // 동기 방식으로 처리
+        .body(KakaoPayRefundResponse.class);
 
     return response.getStatus();
   }

@@ -29,7 +29,7 @@ public class ReviewController {
      * @return 생성된 리뷰의 상세 정보를 담은 DTO
      */
     @PostMapping("/books/{bookId}/reviews")
-    public ResponseEntity<ReviewResponseDto> createReview(@PathVariable Long bookId,
+    public ResponseEntity<ReviewResponseDto> createReview(@PathVariable String bookId,
                                                           @RequestBody ReviewRequestDto reviewRequestDto,
                                                           Authentication authentication) {
         Member member = (Member) authentication.getPrincipal(); // Authentication 에서 Member 객체 추출
@@ -50,7 +50,7 @@ public class ReviewController {
      * @return 해당 책의 리뷰 목록을 담은 페이징된 DTO 리스트
      */
     @GetMapping("/books/{bookId}/reviews")
-    public ResponseEntity<Page<ReviewResponseDto>> getReviews(@PathVariable Long bookId,
+    public ResponseEntity<Page<ReviewResponseDto>> getReviews(@PathVariable String bookId,
                                                               @RequestParam("page") int page,
                                                               @RequestParam("size") int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));

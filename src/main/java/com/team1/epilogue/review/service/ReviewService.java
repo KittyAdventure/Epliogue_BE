@@ -32,7 +32,7 @@ public class ReviewService {
      * @return 생성된 리뷰의 상세 정보를 담은 DTO
      */
     @Transactional
-    public ReviewResponseDto createReview(Long bookId, ReviewRequestDto reviewRequestDto, Member member) {
+    public ReviewResponseDto createReview(String bookId, ReviewRequestDto reviewRequestDto, Member member) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("존재하지 않는 책입니다."));
 
@@ -50,7 +50,7 @@ public class ReviewService {
      * @return 해당 책의 리뷰 목록을 담은 페이징된 DTO 리스트
      */
     @Transactional(readOnly = true)
-    public Page<ReviewResponseDto> getReviews(Long bookId, Pageable pageable) {
+    public Page<ReviewResponseDto> getReviews(String bookId, Pageable pageable) {
         // 좋아요순, 최신순 추가 예정
         Page<Review> reviews = reviewRepository.findByBookId(bookId, pageable);
 

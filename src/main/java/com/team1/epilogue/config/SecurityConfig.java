@@ -42,7 +42,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(request -> request
             .requestMatchers("/api/members/register",
                 "/api/books", "/book/*/reviews"
-                , "/api/kp/success", "/api/kp/fail", "/api/kp/cancel"
+                , "/api/kp/success", "/api/kp/fail", "/api/kp/cancel","/api/books/detail"
             ).permitAll() // 해당 경로는 인증 없이 접근 가능
             .anyRequest().authenticated() // 그 외 모든 요청은 인증을 필요
         )
