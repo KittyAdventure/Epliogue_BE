@@ -96,6 +96,7 @@ Notion : https://political-plant-c63.notion.site/Epilogue-09c96bb22068442a82cec1
     - 인증된 사용자가 특정 리소스(책, 리뷰)에 대한 URI 공유
     - 인증된 사용자가 특정 리소스(책, 리뷰)를 카카오 메시지 보내기 API를 사용해 공유
 - 책 정보 조회
+  ref. https://developers.naver.com/docs/serviceapi/search/book/book.md
     - 회원은 한 책에 대한 상세 정보를 조회할 수 있다 (네이버 책검색 API)
         - 책 제목
         - 책 작가
