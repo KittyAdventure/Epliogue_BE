@@ -9,5 +9,5 @@ import lombok.Data;
 @Data
 public class SocialLoginRequest {
     private String provider;
-    private String token;
+    private String accessToken;
 }
