@@ -1,5 +1,6 @@
 package com.team1.epilogue.review.exception;
 
+import com.team1.epilogue.rating.exception.RatingNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -33,5 +34,13 @@ public class ReviewExceptionHandler {
     @ExceptionHandler(UnauthorizedReviewAccessException.class)
     public ResponseEntity<String> handleUnauthorizedReviewAccessException(UnauthorizedReviewAccessException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+    }
+
+    /**
+     * 해당 별점을 찾을 수 없을 때 예외 처리
+     */
+    @ExceptionHandler(RatingNotFoundException.class)
+    public ResponseEntity<String> handleRatingNotFoundException(RatingNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 }
