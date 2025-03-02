@@ -1,5 +1,6 @@
 package com.team1.epilogue.book.dto;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,5 +17,6 @@ public class BookDetailResponse {
   private String description;
   private String pubDate;
   private String isbn;
+  private List<SameAuthorBookTitleIsbn> sameAuthor;
 
 }
