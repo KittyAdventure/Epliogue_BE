@@ -2,11 +2,8 @@ package com.team1.epilogue.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -35,8 +32,7 @@ public class SecurityConfig {
    * @return 구성된 SecurityWebFilterChain 객체를 반환
    */
   @Bean
-  public SecurityFilterChain filterChain(HttpSecurity http,
-      ReactiveUserDetailsService userDetailsService) throws Exception {
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     return http
         .csrf(csrf -> csrf.disable()) // CSRF 보호를 비활성화
         .authorizeHttpRequests(request -> request
@@ -47,19 +43,6 @@ public class SecurityConfig {
             .anyRequest().authenticated() // 그 외 모든 요청은 인증을 필요
         )
         .build(); // 보안 필터 체인을 구성하여 반환
-  }
-
-  /**
-   * [메서드 레벨] `ReactiveAuthenticationManager` 빈을 생성하여 Spring Security에서 인증을 담당
-   * `UserDetailsRepositoryReactiveAuthenticationManager`를 사용하여 사용자 정보를 조회하고 인증 처리
-   *
-   * @param userDetailsService 사용자 정보를 제공하는 `ReactiveUserDetailsService`
-   * @return `ReactiveAuthenticationManager` 인스턴스
-   */
-  @Bean
-  public ReactiveAuthenticationManager authenticationManager(
-      ReactiveUserDetailsService userDetailsService) {
-    return new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
   }
 }
 
