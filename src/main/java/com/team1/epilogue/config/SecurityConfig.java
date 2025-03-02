@@ -68,15 +68,18 @@ public class SecurityConfig {
    * - CSRF 비활성화, 세션은 STATELESS, 특정 URL은 permitAll, 그 외는 인증 필요
    */
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
-    return http
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+            .cors(cors -> cors.disable())  // CORS 비활성화 (필요시 수정)
+            .csrf(csrf -> csrf.disable())   // CSRF 비활성화
+            .sessionManagement(session ->
+                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(
                             "/api/members/register",
                             "/api/members/login",
-                            "/api/members/social",
+                            "/api/members/login/social",
+                            "/login/oauth2/**",    // OAuth2 로그인 콜백 URL 허용
                             "/api/books/**",
                             "/api/kp/success",
                             "/api/kp/fail",
@@ -84,8 +87,9 @@ public class SecurityConfig {
                     ).permitAll()
                     .anyRequest().authenticated()
             )
-            .authenticationManager(authenticationManager)
-            .httpBasic(httpBasic -> httpBasic.disable())
-            .build();
+            .oauth2Login(withDefaults())  // OAuth2 로그인 활성화 (기본 설정 적용)
+            .httpBasic(httpBasic -> httpBasic.disable());
+
+    return http.build();
   }
 }

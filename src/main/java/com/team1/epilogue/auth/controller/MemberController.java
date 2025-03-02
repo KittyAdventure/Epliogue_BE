@@ -30,7 +30,8 @@ public class MemberController {
   private final MemberWithdrawalService memberWithdrawalService;
 
   /**
-   * [회원 가입 API]
+   * [메서드 레벨]
+   * 회원 가입 API
    *
    * @param request 회원 가입 요청 데이터
    * @return 생성된 회원 정보 반환
@@ -41,7 +42,8 @@ public class MemberController {
   }
 
   /**
-   * [회원 탈퇴 API]
+   * [메서드 레벨]
+   * 회원 탈퇴 API
    *
    * @param authentication 현재 인증된 사용자 정보
    * @return 성공 메시지 반환
@@ -49,7 +51,7 @@ public class MemberController {
   @DeleteMapping
   public ResponseEntity<?> withdrawMember(Authentication authentication) {
     if (authentication == null || !authentication.isAuthenticated()) {
-      return createErrorResponse(400, "UNAUTHORIZED", "인증되지 않은 사용자");
+      return createErrorResponse(401, "UNAUTHORIZED", "인증되지 않은 사용자");
     }
     Long memberId = ((CustomMemberDetails) authentication.getPrincipal()).getId();
     memberWithdrawalService.withdrawMember(memberId);
@@ -58,7 +60,8 @@ public class MemberController {
   }
 
   /**
-   * [회원 정보 수정 API]
+   * [메서드 레벨]
+   * 회원 정보 수정 API
    *
    * @param request        회원 정보 수정 요청 데이터
    * @param authentication 현재 인증된 사용자 정보
@@ -80,7 +83,8 @@ public class MemberController {
   }
 
   /**
-   * [에러 응답 생성 메서드]
+   * [메서드 레벨]
+   * 에러 응답 생성 메서드
    *
    * @param status    HTTP 상태 코드
    * @param errorCode 오류 코드
@@ -96,7 +100,8 @@ public class MemberController {
   }
 
   /**
-   * [성공 응답 생성 메서드]
+   * [메서드 레벨]
+   * 성공 응답 생성 메서드
    *
    * @param message 성공 메시지
    * @return 성공 응답 ResponseEntity

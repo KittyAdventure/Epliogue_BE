@@ -3,7 +3,6 @@ package com.team1.epilogue.auth.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1.epilogue.auth.dto.GeneralLoginRequest;
 import com.team1.epilogue.auth.dto.LoginResponse;
-import com.team1.epilogue.auth.dto.SocialLoginRequest;
 import com.team1.epilogue.auth.service.AuthService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,8 +20,12 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * [클래스 레벨]
+ * AuthController에 대한 단위 테스트 클래스.
+ */
 @WebMvcTest(AuthController.class)
-@MockitoSettings(strictness = Strictness.LENIENT) // Mockito 설정
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("AuthController 테스트")
 public class AuthControllerTest {
 
@@ -40,6 +43,10 @@ public class AuthControllerTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    /**
+     * [메서드 레벨]
+     * 정상적인 일반 로그인 테스트.
+     */
     @Test
     @DisplayName("일반 로그인 요청 성공 테스트")
     public void testGeneralLogin() throws Exception {
@@ -64,6 +71,10 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.user.userId").value("1"));
     }
 
+    /**
+     * [메서드 레벨]
+     * 잘못된 로그인 정보 입력 시 실패하는 테스트.
+     */
     @Test
     @DisplayName("일반 로그인 실패 - 잘못된 아이디/패스워드")
     public void testGeneralLoginFailure() throws Exception {

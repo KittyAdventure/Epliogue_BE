@@ -1,13 +1,8 @@
 package com.team1.epilogue.auth.service;
 
-import com.team1.epilogue.auth.dto.GeneralLoginRequest;
-import com.team1.epilogue.auth.dto.GoogleUserInfo;
-import com.team1.epilogue.auth.dto.KakaoUserInfo;
-import com.team1.epilogue.auth.dto.LoginResponse;
-import com.team1.epilogue.auth.dto.SocialLoginRequest;
+import com.team1.epilogue.auth.dto.*;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.repository.MemberRepository;
-import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.auth.security.JwtTokenProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,7 +22,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@DisplayName("AuthServiceImplTest 테스트")
+/**
+ * [클래스 레벨]
+ * AuthServiceImpl에 대한 단위 테스트 클래스.
+ */
+@DisplayName("AuthServiceImpl 테스트")
 @ExtendWith(MockitoExtension.class)
 public class AuthServiceImplTest {
 
@@ -52,6 +51,10 @@ public class AuthServiceImplTest {
     private Member existingMember;
     private GeneralLoginRequest generalLoginRequest;
 
+    /**
+     * [설정 메서드]
+     * 각 테스트 실행 전, 기본 데이터를 초기화하는 메서드.
+     */
     @BeforeEach
     public void setUp() {
         existingMember = Member.builder()
@@ -73,10 +76,13 @@ public class AuthServiceImplTest {
         generalLoginRequest.setPassword("plainPassword");
     }
 
+    /**
+     * [테스트 메서드]
+     * 일반 로그인 성공 테스트 - 아이디와 비밀번호가 올바를 경우.
+     */
     @Test
     @DisplayName("일반 로그인 성공 테스트")
     public void testGeneralLoginSuccess() {
-        // 회원 존재 및 비밀번호 일치
         when(memberRepository.findByLoginId("testUser")).thenReturn(Optional.of(existingMember));
         when(passwordEncoder.matches("plainPassword", "encodedPassword")).thenReturn(true);
         when(jwtTokenProvider.generateToken(anyString())).thenReturn("jwt-token");
@@ -89,6 +95,10 @@ public class AuthServiceImplTest {
         verify(memberRepository, times(1)).findByLoginId("testUser");
     }
 
+    /**
+     * [테스트 메서드]
+     * 일반 로그인 실패 테스트 - 사용자가 존재하지 않을 경우.
+     */
     @Test
     @DisplayName("일반 로그인 실패 - 사용자 미존재")
     public void testGeneralLoginUserNotFound() {
@@ -99,6 +109,10 @@ public class AuthServiceImplTest {
         verify(memberRepository, times(1)).findByLoginId("testUser");
     }
 
+    /**
+     * [테스트 메서드]
+     * 일반 로그인 실패 테스트 - 비밀번호가 틀린 경우.
+     */
     @Test
     @DisplayName("일반 로그인 실패 - 비밀번호 불일치")
     public void testGeneralLoginPasswordMismatch() {
@@ -110,6 +124,10 @@ public class AuthServiceImplTest {
         verify(memberRepository, times(1)).findByLoginId("testUser");
     }
 
+    /**
+     * [테스트 메서드]
+     * 구글 소셜 로그인 성공 테스트.
+     */
     @Test
     @DisplayName("소셜 로그인 - 구글 성공 테스트")
     public void testSocialLoginGoogleSuccess() {
@@ -125,7 +143,6 @@ public class AuthServiceImplTest {
         googleUser.setPicture("http://example.com/google.jpg");
 
         when(googleAuthService.getGoogleUserInfo("google-token")).thenReturn(googleUser);
-        // 이미 가입된 경우
         when(memberRepository.findByEmail("google@example.com")).thenReturn(Optional.of(existingMember));
         when(jwtTokenProvider.generateToken(anyString())).thenReturn("jwt-google-token");
 
@@ -136,6 +153,10 @@ public class AuthServiceImplTest {
         assertEquals("testUser", response.getUser().getUserId());
     }
 
+    /**
+     * [테스트 메서드]
+     * 카카오 소셜 로그인 성공 테스트.
+     */
     @Test
     @DisplayName("소셜 로그인 - 카카오 성공 테스트")
     public void testSocialLoginKakaoSuccess() {

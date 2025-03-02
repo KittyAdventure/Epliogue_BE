@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1.epilogue.auth.dto.RegisterRequest;
 import com.team1.epilogue.auth.dto.MemberResponse;
 import com.team1.epilogue.auth.dto.UpdateMemberRequest;
-import com.team1.epilogue.auth.security.JwtTokenProvider;
 import com.team1.epilogue.auth.service.MemberService;
 import com.team1.epilogue.auth.service.MemberWithdrawalService;
 import org.junit.jupiter.api.DisplayName;
@@ -22,8 +21,12 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(MemberController.class)  // WebMvc 환경에서 테스트 (Spring Context 부담 감소)
-@MockitoSettings(strictness = Strictness.LENIENT) // Mockito 경고 억제
+/**
+ * [클래스 레벨]
+ * MemberController에 대한 단위 테스트 클래스.
+ */
+@WebMvcTest(MemberController.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("MemberController 테스트")
 public class MemberControllerTest {
 
@@ -36,9 +39,6 @@ public class MemberControllerTest {
     @Mock
     private MemberWithdrawalService memberWithdrawalService;
 
-    @Mock
-    private JwtTokenProvider jwtTokenProvider;
-
     @InjectMocks
     private MemberController memberController;
 
@@ -47,6 +47,10 @@ public class MemberControllerTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    /**
+     * [메서드 레벨]
+     * 회원가입 요청 성공 테스트.
+     */
     @Test
     @DisplayName("회원가입 성공 테스트")
     public void testRegisterMemberSuccess() throws Exception {
@@ -81,6 +85,10 @@ public class MemberControllerTest {
                 .andExpect(jsonPath("$.email").value("new@example.com"));
     }
 
+    /**
+     * [메서드 레벨]
+     * 회원정보 수정 요청 성공 테스트.
+     */
     @Test
     @DisplayName("회원정보 수정 성공 테스트")
     public void testUpdateMemberSuccess() throws Exception {
@@ -112,6 +120,10 @@ public class MemberControllerTest {
                 .andExpect(jsonPath("$.user.nickname").value("updatedNick"));
     }
 
+    /**
+     * [메서드 레벨]
+     * 회원 탈퇴 요청 성공 테스트.
+     */
     @Test
     @DisplayName("회원 탈퇴 성공 테스트")
     public void testWithdrawMemberSuccess() throws Exception {

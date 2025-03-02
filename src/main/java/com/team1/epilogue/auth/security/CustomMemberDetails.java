@@ -10,7 +10,7 @@ import java.util.Collections;
 /**
  * [클래스 레벨]
  * UserDetails 인터페이스를 구현한 커스텀 사용자 정보 클래스.
- * 회원의 추가 정보(예: 사용자 ID, 이름, 프로필 이미지 등)를 포함하여 인증 및 인가에 활용됨.
+ * 인증 및 인가에 필요한 사용자 정보를 제공.
  */
 public class CustomMemberDetails implements UserDetails {
 
@@ -81,7 +81,7 @@ public class CustomMemberDetails implements UserDetails {
 
     /**
      * [메서드 레벨]
-     * Member 엔티티로부터 CustomMemberDetails 객체를 생성하는 정적 팩토리 메서드.
+     * Member 엔티티를 CustomMemberDetails 객체로 변환하는 정적 팩토리 메서드.
      *
      * @param member Member 엔티티
      * @return CustomMemberDetails 객체

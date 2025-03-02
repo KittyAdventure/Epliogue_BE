@@ -40,7 +40,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (BadCredentialsException ex) {
             Map<String, String> error = new HashMap<>();
-            error.put("에러", ex.getMessage());
+            error.put("error", ex.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         }
     }
@@ -60,7 +60,7 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException ex) {
             Map<String, String> error = new HashMap<>();
-            error.put("에러", ex.getMessage());
+            error.put("error", ex.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
