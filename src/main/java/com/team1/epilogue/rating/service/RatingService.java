@@ -33,9 +33,9 @@ public class RatingService {
                 .orElseThrow(() -> new BookNotFoundException("존재하지 않는 책입니다."));
 
         Rating rating = ratingRequestDto.toEntity(book, member);
-        ratingRepository.save(rating);
+        Rating savedRating = ratingRepository.save(rating);
 
-        return RatingResponseDto.from(rating);
+        return RatingResponseDto.from(savedRating);
     }
 
     /**
@@ -52,9 +52,9 @@ public class RatingService {
                 .orElseThrow(() -> new RatingNotFoundException("해당 책에 대한 별점이 존재하지 않습니다."));
 
         rating.updateScore(ratingRequestDto.getScore());
-        ratingRepository.save(rating);
+        Rating updatedRating = ratingRepository.save(rating);
 
-        return RatingResponseDto.from(rating);
+        return RatingResponseDto.from(updatedRating);
     }
 
     /**
