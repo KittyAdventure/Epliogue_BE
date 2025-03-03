@@ -31,7 +31,7 @@ public class Rating extends BaseEntity {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;  // 별점을 작성한 사용자
 
-    private Double score;   // 별점 (1~5)
+    private Double score;   // 별점 (0.5 ~ 5)
 
     /**
      * 별점을 업데이트합니다

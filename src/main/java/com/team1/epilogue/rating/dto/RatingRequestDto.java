@@ -18,7 +18,7 @@ public class RatingRequestDto {
 
     @DecimalMin("0.5")
     @DecimalMax("5")
-    private Double score;  // 1~5 사이의 점수를 받습니다
+    private Double score;  // 0.5 ~ 5 사이의 점수를 받습니다
 
     public Rating toEntity(Book book, Member member) {
         return Rating.builder()
