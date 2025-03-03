@@ -3,11 +3,13 @@ package com.team1.epilogue.auth.service;
 import com.team1.epilogue.auth.dto.GeneralLoginRequest;
 import com.team1.epilogue.auth.dto.LoginResponse;
 import com.team1.epilogue.auth.dto.SocialLoginRequest;
+import org.springframework.stereotype.Service;
 
 /**
  * [클래스 레벨]
  * 로그인 관련 비즈니스 로직을 정의하는 서비스 인터페이스 (동기 방식)
  */
+@Service
 public interface AuthService {
     /**
      * [메서드 레벨]

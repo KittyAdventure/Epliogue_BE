@@ -26,6 +26,7 @@ public class CustomUserDetailsService implements UserDetailsService {
      *
      * @param memberRepository 사용자 정보를 관리하는 Repository
      */
+
     public CustomUserDetailsService(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
     }

@@ -1,6 +1,6 @@
 package com.team1.epilogue.auth.dto;
 
-import lombok.Data;
+import lombok.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -10,6 +10,11 @@ import jakarta.validation.constraints.Pattern;
  * UpdateMemberRequest 클래스는 회원 정보 수정 요청을 담는 DTO
  */
 @Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UpdateMemberRequest {
     @NotBlank(message = "닉네임은 필수입니다.")
     private String nickname;

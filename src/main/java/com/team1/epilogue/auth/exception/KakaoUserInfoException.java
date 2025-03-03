@@ -42,4 +42,9 @@ public class KakaoUserInfoException extends RuntimeException {
     public static KakaoUserInfoException fromUnknownError(Throwable cause) {
         return new KakaoUserInfoException("알 수 없는 카카오 API 오류가 발생했습니다.", cause);
     }
+
+    public static KakaoUserInfoException fromEmptyResponse() {
+        return new KakaoUserInfoException("카카오 사용자 정보 응답이 비어 있습니다.");
+    }
 }
+
