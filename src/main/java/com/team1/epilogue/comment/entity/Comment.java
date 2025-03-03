@@ -33,4 +33,6 @@ public class Comment extends BaseEntity {
 
   @ManyToOne
   private Review review;
+
+  private String color; // 댓글 색
 }

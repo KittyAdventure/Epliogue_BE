@@ -1,5 +1,6 @@
 package com.team1.epilogue.auth.entity;
 
+import com.team1.epilogue.auth.domain.COMMENT_COLOR_ITEM;
 import com.team1.epilogue.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -102,5 +103,11 @@ public class Member extends BaseEntity {
      */
     @Column
     private String social;
+
+    /**
+     * 장착중인 댓글 색깔을 위한 컬럼
+     */
+    @Enumerated(EnumType.STRING)
+    private COMMENT_COLOR_ITEM commentColor;
 
 }
