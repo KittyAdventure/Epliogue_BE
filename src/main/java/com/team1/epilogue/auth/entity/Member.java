@@ -106,7 +106,4 @@ public class Member extends BaseEntity {
      */
     @Column
     private String social;
-
-    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
-    private List<Rating> ratings = new ArrayList<>();
 }

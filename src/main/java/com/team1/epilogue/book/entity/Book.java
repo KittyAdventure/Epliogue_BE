@@ -39,7 +39,4 @@ public class Book extends BaseEntity {
   private String publisher;
 
   private LocalDate pubDate;
-
-  @OneToMany(mappedBy = "book", fetch = FetchType.LAZY)
-  private List<Rating> ratings = new ArrayList<>();
 }
