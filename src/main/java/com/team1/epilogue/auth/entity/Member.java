@@ -1,6 +1,7 @@
 package com.team1.epilogue.auth.entity;
 
 import com.team1.epilogue.common.entity.BaseEntity;
+import com.team1.epilogue.rating.entity.Rating;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.Setter;
 
 /**
@@ -102,5 +106,7 @@ public class Member extends BaseEntity {
      */
     @Column
     private String social;
-
+    
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    private List<Rating> ratings = new ArrayList<>();;;
 }
