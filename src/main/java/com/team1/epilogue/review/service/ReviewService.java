@@ -39,7 +39,7 @@ public class ReviewService {
         Review review = reviewRequestDto.toEntity(book, member);
         reviewRepository.save(review);
 
-        return ReviewResponseDto.of(review);
+        return ReviewResponseDto.from(review);
     }
 
     /**
@@ -49,12 +49,11 @@ public class ReviewService {
      * @param pageable 페이징 및 정렬 정보
      * @return 해당 책의 리뷰 목록을 담은 페이징된 DTO 리스트
      */
-    @Transactional(readOnly = true)
     public Page<ReviewResponseDto> getReviews(String bookId, Pageable pageable) {
         // 좋아요순, 최신순 추가 예정
         Page<Review> reviews = reviewRepository.findByBookId(bookId, pageable);
 
-        return reviews.map(ReviewResponseDto::of);
+        return reviews.map(ReviewResponseDto::from);
     }
 
     /**
@@ -63,12 +62,11 @@ public class ReviewService {
      * @param reviewId 조회할 리뷰의 ID
      * @return 해당 리뷰의 상세 정보를 담은 DTO
      */
-    @Transactional(readOnly = true)
     public ReviewResponseDto getReview(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
-        return ReviewResponseDto.of(review);
+        return ReviewResponseDto.from(review);
     }
 
     /**
@@ -88,12 +86,8 @@ public class ReviewService {
             throw new UnauthorizedReviewAccessException("리뷰 작성자만 수정할 수 있습니다.");
         }
 
-        if (review.getContent().equals(reviewRequestDto.getContent())) {
-            return ReviewResponseDto.of(review);
-        }
-
         review.updateReview(reviewRequestDto.getContent());
-        return ReviewResponseDto.of(review);
+        return ReviewResponseDto.from(review);
     }
 
     /**
@@ -102,7 +96,6 @@ public class ReviewService {
      * @param reviewId 삭제할 리뷰의 ID
      * @param member   삭제 요청을 보낸 사용자
      */
-    @Transactional
     public void deleteReview(Long reviewId, Member member) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));

@@ -72,7 +72,8 @@ public class ReviewServiceTest {
         // given
         ReviewRequestDto requestDto = new ReviewRequestDto("정말 좋은 책입니다.");
         when(bookRepository.findById(testBook.getId())).thenReturn(Optional.of(testBook));
-        when(reviewRepository.save(any(Review.class))).thenReturn(testReview);
+        when(reviewRepository.save(argThat(review -> review.getContent().equals("정말 좋은 책입니다."))))
+                .thenReturn(testReview);
 
         // when
         ReviewResponseDto response = reviewService.createReview(testBook.getId(), requestDto, testMember);

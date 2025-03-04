@@ -24,7 +24,7 @@ public class ReviewResponseDto {
      * @param review 변환할 Review 엔티티
      * @return 변환된 ReviewResponseDto 객체
      */
-    public static ReviewResponseDto of(Review review) {
+    public static ReviewResponseDto from(Review review) {
         return ReviewResponseDto.builder()
                 .id(review.getId())
                 .content(review.getContent())
