@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: cat_mariadb
+    restart: always
+    environment:
+      MYSQL_DATABASE: cat_db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ""
+      MYSQL_ROOT_PASSWORD: ""
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - cat_network
+
+  mongodb:
+    image: mongo:latest
+    container_name: cat_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - cat_network
+
+  redis:
+    image: redis:latest
+    container_name: cat_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - cat_network
+    command: ["redis-server", "--appendonly", "yes"]
+
+volumes:
+  mariadb_data:
+  mongodb_data:
+  redis_data:
+
+networks:
+  cat_network:

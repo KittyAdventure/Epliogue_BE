@@ -9,9 +9,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableTransactionManagement
 @EnableJpaAuditing
 public class EpilogueApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(EpilogueApplication.class, args);
 	}
-
 }

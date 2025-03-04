@@ -1,6 +1,6 @@
 package com.team1.epilogue.auth.dto;
 
-import lombok.Data;
+import lombok.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -11,6 +11,11 @@ import jakarta.validation.constraints.Size;
  * RegisterRequest 클래스는 사용자 등록 시 클라이언트로부터 전달받은 데이터를 담는 DTO
  * 새 스키마에 따라 필드명이 loginId, birthDate, profileUrl 등으로 변경되었으며, nickname 필드도 포함
  */
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Data
 public class RegisterRequest {
 
