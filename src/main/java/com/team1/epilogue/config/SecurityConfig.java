@@ -2,9 +2,13 @@ package com.team1.epilogue.config;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import com.team1.epilogue.auth.repository.MemberRepository;
+import com.team1.epilogue.auth.security.JwtAuthenticationWebFilter;
+import com.team1.epilogue.auth.security.JwtTokenProvider;
 import java.util.List;
 
 import com.team1.epilogue.auth.security.CustomUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,10 +21,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+  private final JwtTokenProvider jwtTokenProvider;
+  private final MemberRepository memberRepository;
 
   /**
    * [메서드 레벨]
@@ -87,6 +95,7 @@ public class SecurityConfig {
                     ).permitAll()
                     .anyRequest().authenticated()
             )
+            .addFilterBefore(new JwtAuthenticationWebFilter(jwtTokenProvider,memberRepository), UsernamePasswordAuthenticationFilter.class)
             .oauth2Login(withDefaults())  // OAuth2 로그인 활성화 (기본 설정 적용)
             .httpBasic(httpBasic -> httpBasic.disable());
 
