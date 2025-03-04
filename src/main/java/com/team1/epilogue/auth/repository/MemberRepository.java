@@ -1,8 +1,11 @@
 package com.team1.epilogue.auth.repository;
 
 import com.team1.epilogue.auth.entity.Member;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -48,4 +51,15 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
      * @return 존재하면 true, 없으면 false를 반환
      */
     boolean existsByEmail(String email);
+
+    /**
+     * 사용자 정보 Lock 을 걸기위한 메서드. 이 메서드로 호출한 Member 정보는 해당 작업이 끝날때까지
+     * <쓰기> 에 대한 접근이 제한된다.
+     *
+     * @param loginId 사용자 ID
+     * @return 사용자 정보를 Optional 에 담아 return
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT m FROM Member m WHERE m.loginId = :loginId")
+    Optional<Member> findByLoginIdWithLock(String loginId);
 }

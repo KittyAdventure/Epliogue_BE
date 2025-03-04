@@ -36,7 +36,7 @@ public class TransactionService {
   @Transactional
   public void updateBalance(String memberId, int amount, TransactionDetail detail, String tid) {
     // 사용자 정보 가져오기 존재하지않다면 Exception
-    Member member = memberRepository.findByLoginId(memberId)
+    Member member = memberRepository.findByLoginIdWithLock(memberId)
         .orElseThrow(() -> new MemberNotFoundException());
 
     // 거래정보 저장을 위한 Transaction 객체 생성
