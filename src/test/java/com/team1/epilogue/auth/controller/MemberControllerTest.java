@@ -8,17 +8,16 @@ import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.auth.security.CustomUserDetailsService;
 import com.team1.epilogue.auth.service.MemberService;
 import com.team1.epilogue.auth.service.MemberWithdrawalService;
-import com.team1.epilogue.config.SecurityConfig;
+import com.team1.epilogue.config.TestSecurityConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -37,7 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Import(SecurityConfig.class)  // SecurityConfig를 테스트 컨텍스트에 포함
+@Import(TestSecurityConfig.class)  // SecurityConfig를 테스트 컨텍스트에 포함
 @WebMvcTest(MemberController.class)
 @DisplayName("MemberController 테스트")
 public class MemberControllerTest {
@@ -48,14 +47,14 @@ public class MemberControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private MemberService memberService;
 
-    @MockBean
+    @MockitoBean
     private MemberWithdrawalService memberWithdrawalService;
 
     // SecurityConfig에서 요구하는 CustomUserDetailsService 빈 모킹
-    @MockBean
+    @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
 
     // 인증된 사용자를 위한 CustomMemberDetails
@@ -184,6 +183,7 @@ public class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.메시지").value("인증 실패"));
+                .andExpect(jsonPath("$.메시지").value("인증되지 않은 사용자"));
+
     }
 }

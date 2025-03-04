@@ -48,4 +48,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
      * @return 존재하면 true, 없으면 false를 반환
      */
     boolean existsByEmail(String email);
+
+    boolean existsByNickname(String nickname);
+
+    Optional<Member> findByNickname(String nickname);
+
+
 }

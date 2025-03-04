@@ -57,15 +57,59 @@ public class AuthServiceImpl implements AuthService {
         Member member;
         if ("google".equalsIgnoreCase(request.getProvider())) {
             GoogleUserInfo googleUser = googleAuthService.getGoogleUserInfo(request.getAccessToken());
-            member = findOrCreateMember(googleUser.getEmail(), googleUser.getSub(), googleUser.getName(), googleUser.getPicture(), "google");
+            // 통일: "google_" 접두사를 붙여 loginId 생성
+            String unifiedLoginId = "google_" + googleUser.getSub();
+            member = findOrCreateMember(
+                    googleUser.getEmail(),
+                    unifiedLoginId,
+                    googleUser.getName(),
+                    googleUser.getPicture(),
+                    "google"
+            );
         } else if ("kakao".equalsIgnoreCase(request.getProvider())) {
             KakaoUserInfo kakaoUser = kakaoAuthService.getKakaoUserInfo(request.getAccessToken());
-            member = findOrCreateMember(kakaoUser.getKakao_account().getEmail(), String.valueOf(kakaoUser.getId()),
-                    kakaoUser.getKakao_account().getProfile().getNickname(), kakaoUser.getKakao_account().getProfile().getProfileImageUrl(), "kakao");
+            // 통일: "kakao_" 접두사를 붙여 loginId 생성
+            String unifiedLoginId = "kakao_" + kakaoUser.getId();
+            member = findOrCreateMember(
+                    kakaoUser.getKakao_account().getEmail(),
+                    unifiedLoginId,
+                    kakaoUser.getKakao_account().getProfile().getNickname(),
+                    kakaoUser.getKakao_account().getProfile().getProfileImageUrl(),
+                    "kakao"
+            );
         } else {
-            throw new IllegalArgumentException("Unsupported social provider");
+            throw new IllegalArgumentException("지원하지 않는 소셜 제공자");
         }
 
+        CustomMemberDetails userDetails = CustomMemberDetails.fromMember(member);
+        String token = jwtTokenProvider.generateToken(String.valueOf(member.getId()));
+        return buildLoginResponse(userDetails, token);
+    }
+
+    @Override
+    public LoginResponse socialLoginKakao(KakaoUserInfo kakaoUserInfo) {
+        Member member = findOrCreateMember(
+                kakaoUserInfo.getKakao_account().getEmail(),
+                "kakao_" + kakaoUserInfo.getId(),
+                kakaoUserInfo.getKakao_account().getProfile().getNickname(),
+                kakaoUserInfo.getKakao_account().getProfile().getProfileImageUrl(),
+                "kakao"
+        );
+        CustomMemberDetails userDetails = CustomMemberDetails.fromMember(member);
+        String token = jwtTokenProvider.generateToken(String.valueOf(member.getId()));
+        return buildLoginResponse(userDetails, token);
+    }
+
+    @Override
+    public LoginResponse socialLoginGoogle(GoogleUserInfo googleUserInfo) {
+        String unifiedLoginId = "google_" + googleUserInfo.getSub();
+        Member member = findOrCreateMember(
+                googleUserInfo.getEmail(),
+                unifiedLoginId,
+                googleUserInfo.getName(),
+                googleUserInfo.getPicture(),
+                "google"
+        );
         CustomMemberDetails userDetails = CustomMemberDetails.fromMember(member);
         String token = jwtTokenProvider.generateToken(String.valueOf(member.getId()));
         return buildLoginResponse(userDetails, token);

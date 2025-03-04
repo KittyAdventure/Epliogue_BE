@@ -1,152 +1,166 @@
 package com.team1.epilogue.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.config.TestSecurityConfig;
 import com.team1.epilogue.auth.dto.GeneralLoginRequest;
+import com.team1.epilogue.auth.dto.KakaoUserInfo;
 import com.team1.epilogue.auth.dto.LoginResponse;
-import com.team1.epilogue.auth.dto.SocialLoginRequest;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.auth.service.AuthService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
+import com.team1.epilogue.auth.service.GoogleWithdrawalService;
+import com.team1.epilogue.auth.service.KakaoAuthService;
+import com.team1.epilogue.auth.service.KakaoWithdrawalService;
+import com.team1.epilogue.auth.service.MemberWithdrawalService;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.BadCredentialsException;
+
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-/**
- * [클래스 레벨]
- * AuthController의 단위 테스트 클래스.
- */
 @WebMvcTest(AuthController.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
-@DisplayName("AuthController 테스트")
+@Import(TestSecurityConfig.class)
 public class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private AuthService authService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+    @MockitoBean
+    private KakaoAuthService kakaoAuthService;
 
-    /**
-     * [테스트] 일반 로그인 성공 케이스
-     */
+    @MockitoBean
+    private KakaoWithdrawalService kakaoWithdrawalService;
+
+    @MockitoBean
+    private GoogleWithdrawalService googleWithdrawalService;
+
+    @MockitoBean
+    private MemberWithdrawalService memberWithdrawalService;
+
     @Test
-    @DisplayName("일반 로그인 성공 테스트")
-    public void testGeneralLoginSuccess() throws Exception {
-        // Given: 입력 데이터 설정
+    public void testLogin_Success() throws Exception {
         GeneralLoginRequest request = new GeneralLoginRequest();
         request.setLoginId("testUser");
-        request.setPassword("testPassword");
+        request.setPassword("password");
 
-        LoginResponse response = LoginResponse.builder()
-                .accessToken("dummyToken")
+        LoginResponse loginResponse = LoginResponse.builder()
+                .message("로그인 성공")
+                .accessToken("jwt-token")
                 .user(LoginResponse.UserInfo.builder()
-                        .userId("1")
+                        .id("1")
+                        .userId("testUser")
+                        .name("Test User")
+                        .profileImg("http://example.com/profile.jpg")
                         .build())
                 .build();
 
-        // When: Mock 객체의 동작 정의
-        when(authService.login(any(GeneralLoginRequest.class))).thenReturn(response);
+        Mockito.when(authService.login(Mockito.any(GeneralLoginRequest.class))).thenReturn(loginResponse);
 
-        // Then: API 호출 및 검증
         mockMvc.perform(post("/api/members/login")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value("dummyToken"))
-                .andExpect(jsonPath("$.user.userId").value("1"));
+                .andExpect(jsonPath("$.message").value("로그인 성공"))
+                .andExpect(jsonPath("$.accessToken").value("jwt-token"));
     }
 
-    /**
-     * [테스트] 일반 로그인 실패 - 잘못된 ID/비밀번호
-     */
     @Test
-    @DisplayName("일반 로그인 실패 테스트 - 잘못된 ID/비밀번호")
-    public void testGeneralLoginFailure() throws Exception {
-        // Given: 입력 데이터 설정
-        GeneralLoginRequest request = new GeneralLoginRequest();
-        request.setLoginId("wrongUser");
-        request.setPassword("wrongPassword");
+    public void testSocialLogin_KakaoCallback_Success() throws Exception {
+        String code = "sample-code";
 
-        // When: Mock 객체의 동작 정의 - 로그인 실패 예외 발생
-        when(authService.login(any(GeneralLoginRequest.class)))
-                .thenThrow(new BadCredentialsException("아이디 혹은 패스워드가 틀립니다."));
+        // 구성: KakaoUserInfo에 필요한 값 세팅
+        KakaoUserInfo kakaoUserInfo = new KakaoUserInfo();
+        kakaoUserInfo.setId(12345L);
+        KakaoUserInfo.KakaoAccount account = new KakaoUserInfo.KakaoAccount();
+        account.setEmail("kakao@example.com");
+        KakaoUserInfo.KakaoProfile profile = new KakaoUserInfo.KakaoProfile();
+        profile.setNickname("KakaoUser");
+        profile.setProfileImageUrl("http://example.com/kakao.jpg");
+        account.setProfile(profile);
+        kakaoUserInfo.setKakao_account(account);
 
-        // Then: API 호출 및 검증
-        mockMvc.perform(post("/api/members/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error").value("아이디 혹은 패스워드가 틀립니다."));
-    }
-
-    /**
-     * [테스트] 소셜 로그인 성공 케이스
-     */
-    @Test
-    @DisplayName("소셜 로그인 성공 테스트")
-    public void testSocialLoginSuccess() throws Exception {
-        // Given: 입력 데이터 설정
-        SocialLoginRequest request = new SocialLoginRequest();
-        request.setProvider("google");
-        request.setAccessToken("validAccessToken");
-
-        LoginResponse response = LoginResponse.builder()
-                .accessToken("socialDummyToken")
+        LoginResponse loginResponse = LoginResponse.builder()
+                .message("로그인 성공")
+                .accessToken("jwt-token")
                 .user(LoginResponse.UserInfo.builder()
-                        .userId("2")
+                        .id("1")
+                        .userId("kakao_12345")
+                        .name("KakaoUser")
+                        .profileImg("http://example.com/kakao.jpg")
                         .build())
                 .build();
 
-        // When :Mock 객체의 동작 정의
-        when(authService.socialLogin(any(SocialLoginRequest.class))).thenReturn(response);
+        Mockito.when(kakaoAuthService.getKakaoUserInfo(code)).thenReturn(kakaoUserInfo);
+        Mockito.when(authService.socialLoginKakao(Mockito.any(KakaoUserInfo.class))).thenReturn(loginResponse);
 
-        // Then: API 호출 및 검증
-        mockMvc.perform(post("/api/members/login/social")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        // GET 요청은 보통 CSRF 토큰이 필요 없으므로 추가하지 않아도 됨
+        mockMvc.perform(get("/api/members/auth/kakao/callback")
+                        .param("code", code))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value("socialDummyToken"))
-                .andExpect(jsonPath("$.user.userId").value("2"));
+                .andExpect(jsonPath("$.message").value("로그인 성공"))
+                .andExpect(jsonPath("$.accessToken").value("jwt-token"));
     }
 
-    /**
-     * [테스트] 소셜 로그인 실패 - 지원되지 않는 provider
-     */
     @Test
-    @DisplayName("소셜 로그인 실패 테스트 - 지원되지 않는 provider")
-    public void testSocialLoginFailure() throws Exception {
-        // Given: 입력 데이터 설정
-        SocialLoginRequest request = new SocialLoginRequest();
-        request.setProvider("unsupportedProvider");
-        request.setAccessToken("invalidAccessToken");
+    public void testWithdrawSocialMember_Kakao_Success() throws Exception {
+        // Mock 인증 principal 생성
+        CustomMemberDetails customMemberDetails = CustomMemberDetails.fromMember(
+                Member.builder()
+                        .id(1L)
+                        .loginId("kakao_12345")
+                        .password("")
+                        .name("KakaoUser")
+                        .profileUrl("http://example.com/kakao.jpg")
+                        .build()
+        );
 
-        // When: Mock 객체의 동작 정의 - 예외 발생
-        when(authService.socialLogin(any(SocialLoginRequest.class)))
-                .thenThrow(new IllegalArgumentException("지원되지 않는 소셜 로그인 제공자입니다."));
+        mockMvc.perform(delete("/api/members/social/withdraw")
+                        .with(csrf())
+                        .param("provider", "kakao")
+                        .param("accessToken", "sample-access-token")
+                        .with(user(customMemberDetails))) // 인증된 사용자로 설정
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.메시지").value("소셜 회원 탈퇴 성공"));
+    }
 
-        // Then: API 호출 및 검증
-        mockMvc.perform(post("/api/members/login/social")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("지원되지 않는 소셜 로그인 제공자입니다."));
+    @Test
+    public void testWithdrawSocialMember_Google_Success() throws Exception {
+        // Mock 인증 principal 생성
+        CustomMemberDetails customMemberDetails = CustomMemberDetails.fromMember(
+                Member.builder()
+                        .id(1L)
+                        .loginId("testUser")
+                        .password("")
+                        .name("Test User")
+                        .profileUrl("http://example.com/profile.jpg")
+                        .build()
+        );
+
+// TestingAuthenticationToken 대신 with(user(...)) 사용
+        mockMvc.perform(delete("/api/members/social/withdraw")
+                        .with(csrf())
+                        .param("provider", "google")
+                        .param("accessToken", "sample-google-access-token")
+                        .with(user(customMemberDetails)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.메시지").value("소셜 회원 탈퇴 성공"));
+
     }
 }
