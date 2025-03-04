@@ -9,6 +9,7 @@ build/
 # 환경 설정 파일 (업로드하지 않아도 되는 파일들)
 application.properties
 docker-compose.yml
+.DS_Store
 
 ### STS ###
 .apt_generated
