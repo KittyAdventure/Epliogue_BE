@@ -17,18 +17,20 @@ public class CommentService {
   private final CommentRepository commentRepository;
   private final ReviewRepository reviewRepository;
 
-  public void postComment(Member member, CommentPostRequest dto) {
+  public Comment postComment(Member member, CommentPostRequest dto) {
     // review 정보를 가져온다.
     Review review = reviewRepository.findById(dto.getReviewId()).orElseThrow(
         () -> new ReviewNotFoundException("존재하지 않는 리뷰입니다.")
     );
 
     // 댓글을 저장한다.
-    commentRepository.save(Comment.builder()
+    return commentRepository.save(Comment.builder()
         .content(dto.getContent())
         .member(member)
         .review(review)
-        .color(member.getCommentColor().toString()) // 사용자가 장착중인 댓글 색 아이템을 불러온다
+        .color(member.getCommentColor() == null ? null
+            : member.getCommentColor().toString()) // 사용자가 장착중인 댓글 색 아이템을 불러온다
         .build());
+
   }
 }
