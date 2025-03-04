@@ -5,6 +5,7 @@ import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -56,9 +57,9 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
      * <쓰기> 에 대한 접근이 제한된다.
      *
      * @param loginId 사용자 ID
-     * @param lock 메서드 오버로딩을 위한 변수
      * @return 사용자 정보를 Optional 에 담아 return
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<Member> findByLoginId(String loginId,boolean lock);
+    @Query("SELECT m FROM Member m WHERE m.loginId = :loginId")
+    Optional<Member> findByLoginIdWithLock(String loginId);
 }
