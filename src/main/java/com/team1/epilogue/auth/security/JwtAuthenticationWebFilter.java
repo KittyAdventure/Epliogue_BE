@@ -1,15 +1,19 @@
 package com.team1.epilogue.auth.security;
 
+import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.exception.MemberNotFoundException;
+import com.team1.epilogue.auth.repository.MemberRepository;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.http.HttpHeaders;
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilter;
-import org.springframework.web.server.WebFilterChain;
-import reactor.core.publisher.Mono;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.util.Collections;
 
@@ -21,7 +25,7 @@ import java.util.Collections;
  */
 @Component
 @Order(-100) // 낮은 값일수록 높은 우선순위
-public class JwtAuthenticationWebFilter implements WebFilter {
+public class JwtAuthenticationWebFilter extends OncePerRequestFilter {
 
     /**
      * [필드 레벨]
@@ -29,6 +33,7 @@ public class JwtAuthenticationWebFilter implements WebFilter {
      * 생성자 주입을 통해 초기화됨
      */
     private final JwtTokenProvider tokenProvider;
+    private final MemberRepository memberRepository;
 
     /**
      * [생성자 레벨]
@@ -36,40 +41,41 @@ public class JwtAuthenticationWebFilter implements WebFilter {
      *
      * @param tokenProvider JWT 토큰 처리 컴포넌트
      */
-    public JwtAuthenticationWebFilter(JwtTokenProvider tokenProvider) {
+    public JwtAuthenticationWebFilter(JwtTokenProvider tokenProvider, MemberRepository memberRepository) {
         this.tokenProvider = tokenProvider;
+        this.memberRepository = memberRepository;
     }
 
     /**
      * [메서드 레벨]
      * filter 메서드는 HTTP 요청에서 JWT 토큰을 추출하고, 토큰이 유효하면 인증 객체를 SecurityContext에 설정한 후
      * 다음 필터 체인으로 요청을 전달
-     *
-     * @param exchange 현재 HTTP 요청/응답 정보를 담은 ServerWebExchange 객체
-     * @param chain 다음 WebFilterChain
-     * @return 다음 필터 체인으로 요청을 전달하는 Mono<Void> 객체를 반환
      */
     @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        String token = getJwtFromRequest(exchange);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+        throws ServletException, IOException {
+        String token = getJwtFromRequest(request);
         if (token != null && tokenProvider.validateToken(token)) {
             String memberId = tokenProvider.getMemberIdFromJWT(token);
-            Authentication auth = new UsernamePasswordAuthenticationToken(memberId, null, Collections.emptyList());
-            return chain.filter(exchange)
-                    .contextWrite(ReactiveSecurityContextHolder.withAuthentication(auth));
+            logger.info(memberId + "님이 로그인을 시도합니다.");
+            // memberId를 사용하여 Member 객체를 조회합니다.
+            Member member = memberRepository.findById(Long.parseLong(memberId)).orElseThrow(
+                () -> new MemberNotFoundException()
+            );
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(member, null, Collections.emptyList());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
-        return chain.filter(exchange);
+        filterChain.doFilter(request, response);
     }
 
     /**
      * [메서드 레벨]
      * getJwtFromRequest 메서드는 HTTP 요청의 Authorization 헤더에서 "Bearer " 접두사를 제거한 JWT 토큰을 추출
      *
-     * @param exchange 현재 HTTP 요청 정보를 담은 ServerWebExchange 객체
      * @return JWT 토큰 문자열이 있으면 반환하고, 없으면 null을 반환
      */
-    private String getJwtFromRequest(ServerWebExchange exchange) {
-        String bearerToken = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+    private String getJwtFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
