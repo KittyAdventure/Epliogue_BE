@@ -91,7 +91,8 @@ public class SecurityConfig {
                             "/api/books/**",
                             "/api/kp/success",
                             "/api/kp/fail",
-                            "/api/kp/cancel"
+                            "/api/kp/cancel",
+                            "/api/keywords"
                     ).permitAll()
                     .anyRequest().authenticated()
             )
