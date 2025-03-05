@@ -66,7 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Member member = memberRepository.findById(Long.parseLong(memberIdStr))
                     .orElseThrow(() -> new MemberNotFoundException("회원이 존재하지 않습니다."));
             UsernamePasswordAuthenticationToken authentication =
-                    // 사용자 권한 정보 관리하는 부분이 없으므로 엠티리스트 반환
+                    // 사용자 권한 정보 관리하는 부분이 없으므로 empty List 반환
                     new UsernamePasswordAuthenticationToken(member, null, Collections.emptyList());
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
