@@ -1,5 +1,6 @@
 package com.team1.epilogue.comment.service;
 
+import com.team1.epilogue.alarm.controller.AlarmController;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
 import com.team1.epilogue.comment.entity.Comment;
@@ -16,6 +17,7 @@ public class CommentService {
 
   private final CommentRepository commentRepository;
   private final ReviewRepository reviewRepository;
+  private final AlarmController alarmController;
 
   public Comment postComment(Member member, CommentPostRequest dto) {
     // review 정보를 가져온다.
@@ -24,13 +26,20 @@ public class CommentService {
     );
 
     // 댓글을 저장한다.
-    return commentRepository.save(Comment.builder()
+    Comment comment = commentRepository.save(Comment.builder()
         .content(dto.getContent())
         .member(member)
         .review(review)
         .color(member.getCommentColor() == null ? null
             : member.getCommentColor().toString()) // 사용자가 장착중인 댓글 색 아이템을 불러온다
         .build());
+
+    // 새 댓글이 달리면 SSE 알림을 보낸다
+    String message = "새 댓글 : " + dto.getContent();
+    Member reviewAuthor = review.getMember();
+    alarmController.sendNotification(reviewAuthor.getId(), review.getId(), message);
+
+    return comment;
 
   }
 }
