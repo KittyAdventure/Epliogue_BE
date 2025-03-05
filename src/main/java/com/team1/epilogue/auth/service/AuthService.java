@@ -27,13 +27,7 @@ public interface AuthService {
      */
     LoginResponse socialLogin(SocialLoginRequest request);
 
-
     // 카카오 구글 콜백용 소셜 로그인 메서드
     LoginResponse socialLoginKakao(KakaoUserInfo kakaoUserInfo);
     LoginResponse socialLoginGoogle(GoogleUserInfo googleUserInfo);
-
-
-
-
-
 }

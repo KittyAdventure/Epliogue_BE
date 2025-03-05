@@ -1,5 +1,8 @@
 package com.team1.epilogue.auth.security;
 
+import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.exception.MemberNotFoundException;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +28,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * JWT 토큰을 생성하고 검증하는 JwtTokenProvider
      */
     private final JwtTokenProvider tokenProvider;
+    private final MemberRepository memberRepository;
 
     /**
      * [생성자 레벨]
@@ -32,8 +36,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      *
      * @param tokenProvider JWT 토큰 처리 객체
      */
-    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider) {
+    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, MemberRepository memberRepository) {
         this.tokenProvider = tokenProvider;
+        this.memberRepository = memberRepository;
     }
 
     /**
@@ -57,12 +62,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = getJwtFromRequest(request);
         // 토큰이 존재하고 유효한 경우 사용자 인증 정보 설정
         if (token != null && tokenProvider.validateToken(token)) {
-            String memberId = tokenProvider.getMemberIdFromJWT(token);
-            // 인증 객체 생성 (권한 없음 - emptyList)
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(memberId, null, Collections.emptyList());
-            // SecurityContextHolder에 인증 정보 설정
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            String memberIdStr = tokenProvider.getMemberIdFromJWT(token);
+            Member member = memberRepository.findById(Long.parseLong(memberIdStr))
+                    .orElseThrow(() -> new MemberNotFoundException("회원이 존재하지 않습니다."));
+            UsernamePasswordAuthenticationToken authentication =
+                    // 사용자 권한 정보 관리하는 부분이 없으므로 엠티리스트 반환
+                    new UsernamePasswordAuthenticationToken(member, null, Collections.emptyList());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
         }
         // 다음 필터로 요청 전달
         filterChain.doFilter(request, response);

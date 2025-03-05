@@ -1,6 +1,7 @@
 package com.team1.epilogue.auth.controller;
 
 import com.team1.epilogue.auth.dto.*;
+import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.auth.service.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -187,8 +188,8 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
             }
             // DB 회원 삭제: 인증 정보를 통해 현재 회원 ID를 가져와서 탈퇴 처리
-            Long memberId = ((CustomMemberDetails) authentication.getPrincipal()).getId();
-            memberWithdrawalService.withdrawMember(memberId);
+            Member member = (Member) authentication.getPrincipal();
+            memberWithdrawalService.withdrawMember(member.getId());
             Map<String, String> success = new HashMap<>();
             success.put("message", "소셜 회원 탈퇴 성공");
             return ResponseEntity.ok(success);

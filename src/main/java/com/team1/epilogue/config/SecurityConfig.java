@@ -4,6 +4,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 
 import java.util.List;
 
+import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomUserDetailsService;
 import com.team1.epilogue.auth.security.JwtAuthenticationFilter;
 import com.team1.epilogue.auth.security.JwtTokenProvider;
@@ -26,9 +27,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
   private final JwtTokenProvider jwtTokenProvider;
+  private final MemberRepository memberRepository;
 
-  public SecurityConfig(JwtTokenProvider jwtTokenProvider) {
+  public SecurityConfig(JwtTokenProvider jwtTokenProvider,  MemberRepository memberRepository) {
     this.jwtTokenProvider = jwtTokenProvider;
+    this.memberRepository = memberRepository;
+
   }
   /**
    * [메서드 레벨]
@@ -100,7 +104,7 @@ public class SecurityConfig {
             .oauth2Login(withDefaults())  // OAuth2 로그인 활성화 (기본 설정 적용)
             .httpBasic(httpBasic -> httpBasic.disable());
 
-    JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider);
+    JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider, memberRepository);
     http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
