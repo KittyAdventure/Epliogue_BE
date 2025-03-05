@@ -1,6 +1,5 @@
 package com.team1.epilogue.chat.service;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -50,8 +49,6 @@ class ParticipationServiceTest {
   private ParticipationRepository participationRepository;
 
 
-  @InjectMocks
-  private ChatRoomService chatRoomService;
 
   @InjectMocks
   private ParticipationService participationService;

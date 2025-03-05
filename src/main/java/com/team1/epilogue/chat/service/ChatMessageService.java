@@ -1,7 +1,5 @@
 package com.team1.epilogue.chat.service;
 
-import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
-
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.chat.dto.ChatMessageDto;
