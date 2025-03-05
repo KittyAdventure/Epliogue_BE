@@ -23,6 +23,11 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * [클래스 레벨]
+ * AuthServiceImpl의 단위 테스트 클래스
+ * - 로그인, 소셜 로그인(구글, 카카오) 기능을 테스트
+ */
 public class AuthServiceImplTest {
 
     @InjectMocks
@@ -43,11 +48,20 @@ public class AuthServiceImplTest {
     @Mock
     private KakaoAuthService kakaoAuthService;
 
+    /**
+     * [메서드 레벨]
+     * 테스트 실행 전 Mock 객체 초기화
+     */
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
+    /**
+     * [메서드 레벨]
+     * 일반 로그인 성공 테스트
+     * - 올바른 로그인 ID와 비밀번호를 입력했을 때, JWT 토큰과 사용자 정보를 정상 반환하는지 확인
+     */
     @Test
     @DisplayName("일반 로그인: 올바른 자격 증명일 때 로그인 성공")
     public void shouldReturnLoginResponseForValidCredentials() {
@@ -85,6 +99,11 @@ public class AuthServiceImplTest {
         assertEquals("user1", response.getUser().getUserId());
     }
 
+    /**
+     * [메서드 레벨]
+     * 일반 로그인 실패 테스트 (비밀번호 불일치)
+     * - 잘못된 비밀번호를 입력했을 때 예외가 발생하는지 확인
+     */
     @Test
     @DisplayName("일반 로그인: 비밀번호가 일치하지 않을 때 예외 발생")
     public void shouldThrowBadCredentialsExceptionWhenPasswordIsInvalid() {
@@ -106,6 +125,11 @@ public class AuthServiceImplTest {
         assertThrows(BadCredentialsException.class, () -> authServiceImpl.login(request));
     }
 
+    /**
+     * [메서드 레벨]
+     * 구글 소셜 로그인 성공 테스트
+     * - 정상적인 Google OAuth2 토큰을 통해 회원 정보를 생성하고 로그인 응답을 반환하는지 확인
+     */
     @Test
     @DisplayName("구글 소셜 로그인: 로그인 성공 시 응답 반환")
     public void shouldReturnGoogleLoginResponseForSocialLogin() {
@@ -141,6 +165,11 @@ public class AuthServiceImplTest {
         assertEquals("google_123456789", response.getUser().getUserId());
     }
 
+    /**
+     * [메서드 레벨]
+     * 카카오 소셜 로그인 성공 테스트
+     * - 정상적인 Kakao OAuth2 토큰을 통해 회원 정보를 생성하고 로그인 응답을 반환하는지 확인
+     */
     @Test
     @DisplayName("카카오 소셜 로그인: 로그인 성공 시 응답 반환")
     public void shouldReturnKakaoLoginResponseForSocialLogin() {

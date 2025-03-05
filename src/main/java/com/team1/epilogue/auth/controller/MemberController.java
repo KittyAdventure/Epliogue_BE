@@ -50,6 +50,7 @@ public class MemberController {
    */
   @DeleteMapping
   public ResponseEntity<?> withdrawMember(Authentication authentication) {
+
     if (authentication == null || !authentication.isAuthenticated()) {
       return createErrorResponse(401, "UNAUTHORIZED", "인증되지 않은 사용자");
     }

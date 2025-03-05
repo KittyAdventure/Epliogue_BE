@@ -28,6 +28,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+
+/**
+ * [클래스 레벨]
+ * AuthController의 단위 테스트 클래스
+ * - 로그인, 소셜 로그인, 소셜 회원 탈퇴 기능을 테스트
+ */
 @WebMvcTest(AuthController.class)
 @Import(TestSecurityConfig.class)
 public class AuthControllerTest {
@@ -53,6 +60,11 @@ public class AuthControllerTest {
     @MockitoBean
     private MemberWithdrawalService memberWithdrawalService;
 
+    /**
+     * [메서드 레벨]
+     * 일반 로그인 성공 테스트
+     * - 올바른 로그인 ID와 비밀번호 입력 시, 정상적으로 JWT 토큰과 사용자 정보를 반환하는지 확인
+     */
     @Test
     public void testLogin_Success() throws Exception {
         GeneralLoginRequest request = new GeneralLoginRequest();
@@ -81,6 +93,11 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.accessToken").value("jwt-token"));
     }
 
+    /**
+     * [메서드 레벨]
+     * 카카오 소셜 로그인 성공 테스트
+     * - 카카오 API에서 인증 코드를 받아, 정상적으로 로그인 응답을 반환하는지 확인
+     */
     @Test
     public void testSocialLogin_KakaoCallback_Success() throws Exception {
         String code = "sample-code";
@@ -118,6 +135,11 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.accessToken").value("jwt-token"));
     }
 
+    /**
+     * [메서드 레벨]
+     * 카카오 소셜 회원 탈퇴 성공 테스트
+     * - 인증된 사용자가 카카오 연동을 해제하고, DB에서 정상적으로 삭제되는지 확인
+     */
     @Test
     public void testWithdrawSocialMember_Kakao_Success() throws Exception {
         // Mock 인증 principal 생성
@@ -140,6 +162,11 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.메시지").value("소셜 회원 탈퇴 성공"));
     }
 
+    /**
+     * [메서드 레벨]
+     * 구글 소셜 회원 탈퇴 성공 테스트
+     * - 인증된 사용자가 구글 연동을 해제하고, DB에서 정상적으로 삭제되는지 확인
+     */
     @Test
     public void testWithdrawSocialMember_Google_Success() throws Exception {
         // Mock 인증 principal 생성
@@ -153,7 +180,6 @@ public class AuthControllerTest {
                         .build()
         );
 
-// TestingAuthenticationToken 대신 with(user(...)) 사용
         mockMvc.perform(delete("/api/members/social/withdraw")
                         .with(csrf())
                         .param("provider", "google")
