@@ -67,7 +67,20 @@ public class JwtTokenProvider {
                 .getBody();
         return claims.getSubject();
     }
-
+    /**
+     * JWT 토큰의 만료일자를 추출하는 메서드
+     *
+     * @param token JWT 토큰
+     * @return 토큰의 만료 날짜
+     */
+    public Date extractExpiration(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.getExpiration();
+    }
     /**
      * [메서드 레벨]
      * JWT 토큰의 유효성을 검증하는 메서드
