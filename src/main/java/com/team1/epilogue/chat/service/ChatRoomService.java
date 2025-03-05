@@ -1,6 +1,5 @@
 package com.team1.epilogue.chat.service;
 
-import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.chat.dto.ChatRoomDto;
@@ -10,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ChatRoomService {
 
   private final ChatRoomRepository chatRoomRepository;
@@ -38,11 +39,14 @@ public class ChatRoomService {
 
     //채팅방 저장
     ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
+    log.info("채팅방 저장 : " + savedRoom);
 
     // 채팅방 생성 후, 참여자에 생성자 추가
     chatRoom.participantsLimit(memberId); // 참여자 추가
-    chatRoomRepository.save(chatRoom); // 참여자 추가 후 저장
+//    chatRoomRepository.save(chatRoom); // 참여자 추가 후 저장
 
+    log.info("참여자 추가: " + chatRoom.participantsLimit(memberId));
+    log.info("참여자 추가 후 저장 : " + chatRoomRepository.save(chatRoom));
     return ChatRoomDto.fromEntity(savedRoom);
   }
 
