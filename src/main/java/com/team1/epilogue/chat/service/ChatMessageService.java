@@ -1,5 +1,7 @@
 package com.team1.epilogue.chat.service;
 
+import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
+
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.chat.dto.ChatMessageDto;
@@ -29,6 +31,8 @@ public class ChatMessageService {
    */
 
   public ChatMessageDto saveMessage(ChatMessageDto chatMessageDto) {
+
+    log.info("ChatMessageService.saveMessage() 호출됨: {}", chatMessageDto);
     //사용자 인증
     memberRepository.findById(chatMessageDto.getMemberId())
         .orElseThrow(() -> new MemberNotFoundException());
@@ -39,13 +43,16 @@ public class ChatMessageService {
 
     //메세지 저장
     ChatMessage chatMessage = chatMessageDto.fromEntity();
+    log.info("chatMessage 저장할 메시지 객체: {}", chatMessage);
     ChatMessage saveMessage = chatMessageRepository.save(chatMessage);
 
+    log.info("saveMessage 저장된 메시지 객체: {}", saveMessage);
+
     return ChatMessageDto.builder()
+        .id(saveMessage.getId())
         .roomId(saveMessage.getRoomId())
         .memberId(saveMessage.getMemberId())
         .content(saveMessage.getContent())
-        .createdAt(saveMessage.getCreatedAt())
         .build();
   }
 
@@ -57,10 +64,10 @@ public class ChatMessageService {
   public List<ChatMessageDto> getMessagesByRoom(String roomId) {
     return chatMessageRepository.findByRoomIdOrderByCreatedAtDesc(roomId).stream()
         .map(chatMessage -> ChatMessageDto.builder()
+            .id(chatMessage.getId())
             .roomId(chatMessage.getRoomId())
             .memberId(chatMessage.getMemberId())
             .content(chatMessage.getContent())
-            .createdAt(chatMessage.getCreatedAt())
             .build())
         .collect(Collectors.toList());
   }
