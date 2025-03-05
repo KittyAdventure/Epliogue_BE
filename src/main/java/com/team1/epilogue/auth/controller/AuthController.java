@@ -73,7 +73,14 @@ public class AuthController {
 //        }
 //    }
 
-    // 카카오 콜백 엔드포인트
+    /**
+     * [메서드 레벨]
+     * 카카오 로그인 콜백 엔드포인트
+     * 카카오 인증 코드(code)를 받아 사용자 정보를 조회하고, 로그인 처리 후 JWT 토큰을 반환
+     *
+     * @param code 카카오에서 제공한 인증 코드
+     * @return 로그인 응답 (JWT 토큰 및 사용자 정보)
+     */
     @GetMapping("/auth/kakao/callback")
     public ResponseEntity<?> kakaoCallback(@RequestParam("code") String code) {
         try {
@@ -86,8 +93,14 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
-
-    // 구글 콜백 엔드포인트
+    /**
+     * [메서드 레벨]
+     * 구글 로그인 콜백 엔드포인트
+     * 구글 인증 코드(code)를 받아 사용자 정보를 조회하고, 로그인 처리 후 JWT 토큰을 반환
+     *
+     * @param code 구글에서 제공한 인증 코드
+     * @return 로그인 응답 (JWT 토큰 및 사용자 정보)
+     */
     @GetMapping("/auth/google/callback")
     public ResponseEntity<?> googleCallback(@RequestParam("code") String code) {
         try {
@@ -100,8 +113,14 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
-
-    // 일반 로그아웃 엔드포인트 (JWT 토큰 무효화)
+    /**
+     * [메서드 레벨]
+     * 일반 로그아웃 엔드포인트
+     * Authorization 헤더에서 JWT 토큰을 추출하여 무효화 처리
+     *
+     * @param request HTTP 요청 객체
+     * @return 로그아웃 성공 메시지
+     */
     @PostMapping(value = "/logout", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> logout(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
@@ -114,7 +133,14 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "로그아웃 성공"));
     }
 
-    // 소셜 로그아웃 엔드포인트
+    /**
+     * [메서드 레벨]
+     * 소셜 로그아웃 엔드포인트
+     * Authorization 헤더에서 JWT 토큰을 추출하여 무효화 처리
+     *
+     * @param request HTTP 요청 객체
+     * @return 소셜 로그아웃 성공 메시지
+     */
     @PostMapping(value = "/logout/social", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> socialLogout(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
@@ -127,7 +153,16 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "소셜 로그아웃 성공"));
     }
 
-    // 소셜 회원 탈퇴 엔드포인트
+    /**
+     * [메서드 레벨]
+     * 소셜 회원 탈퇴 엔드포인트
+     * 카카오/구글 연동 해제 후, 해당 사용자의 계정을 삭제
+     *
+     * @param provider    소셜 로그인 제공자 (kakao, google)
+     * @param accessToken 사용자의 소셜 액세스 토큰
+     * @param authentication 현재 로그인된 사용자 정보
+     * @return 소셜 회원 탈퇴 결과 메시지
+     */
     @DeleteMapping(value = "/social/withdraw", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> withdrawSocialMember(@RequestParam("provider") String provider,
                                                   @RequestParam("accessToken") String accessToken,

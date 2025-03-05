@@ -86,6 +86,15 @@ public class AuthServiceImpl implements AuthService {
         return buildLoginResponse(userDetails, token);
     }
 
+    /**
+     * [메서드 레벨]
+     * 카카오 소셜 로그인 처리
+     * - 카카오에서 가져온 사용자 정보를 이용하여 회원을 조회하거나 생성
+     * - JWT 토큰을 생성하여 반환
+     *
+     * @param kakaoUserInfo 카카오 사용자 정보 객체
+     * @return 로그인 응답 (JWT 토큰 및 사용자 정보 포함)
+     */
     @Override
     public LoginResponse socialLoginKakao(KakaoUserInfo kakaoUserInfo) {
         Member member = findOrCreateMember(
@@ -100,6 +109,15 @@ public class AuthServiceImpl implements AuthService {
         return buildLoginResponse(userDetails, token);
     }
 
+    /**
+     * [메서드 레벨]
+     * 구글 소셜 로그인 처리
+     * - 구글에서 가져온 사용자 정보를 이용하여 회원을 조회하거나 생성
+     * - JWT 토큰을 생성하여 반환
+     *
+     * @param googleUserInfo 구글 사용자 정보 객체
+     * @return 로그인 응답 (JWT 토큰 및 사용자 정보 포함)
+     */
     @Override
     public LoginResponse socialLoginGoogle(GoogleUserInfo googleUserInfo) {
         String unifiedLoginId = "google_" + googleUserInfo.getSub();
