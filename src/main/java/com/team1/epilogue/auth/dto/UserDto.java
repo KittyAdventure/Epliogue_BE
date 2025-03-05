@@ -12,7 +12,6 @@ import lombok.Builder;
 @Builder
 public class UserDto {
     private Long id;
-
     private String userId;
     private String name;
     private String profileImg;

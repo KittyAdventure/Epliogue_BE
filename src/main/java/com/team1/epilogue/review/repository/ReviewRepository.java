@@ -1,5 +1,6 @@
 package com.team1.epilogue.review.repository;
 
+import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,4 +15,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      * @return 해당 책의 리뷰 목록 (페이징 적용)
      */
     Page<Review> findByBookId(String bookId, Pageable pageable);
+
+    // 회원 리스트에 포함된 리뷰들을 페이징 조회하는 메서드
+    Page<Review> findByMemberIn(Iterable<Member> members, Pageable pageable);
 }
+
