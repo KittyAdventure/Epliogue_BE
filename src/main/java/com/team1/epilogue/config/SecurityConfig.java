@@ -5,6 +5,8 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import java.util.List;
 
 import com.team1.epilogue.auth.security.CustomUserDetailsService;
+import com.team1.epilogue.auth.security.JwtAuthenticationFilter;
+import com.team1.epilogue.auth.security.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,11 +19,17 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+  private final JwtTokenProvider jwtTokenProvider;
+
+  public SecurityConfig(JwtTokenProvider jwtTokenProvider) {
+    this.jwtTokenProvider = jwtTokenProvider;
+  }
   /**
    * [메서드 레벨]
    * BCryptPasswordEncoder를 사용하여 PasswordEncoder 빈 등록
@@ -89,6 +97,9 @@ public class SecurityConfig {
             )
             .oauth2Login(withDefaults())  // OAuth2 로그인 활성화 (기본 설정 적용)
             .httpBasic(httpBasic -> httpBasic.disable());
+
+    JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtTokenProvider);
+    http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
   }

@@ -3,6 +3,7 @@ package com.team1.epilogue.auth.controller;
 import com.team1.epilogue.auth.dto.*;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.auth.service.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,7 +30,8 @@ public class AuthController {
     private final MemberWithdrawalService memberWithdrawalService;
     private final GoogleWithdrawalService googleWithdrawalService;
     private final KakaoWithdrawalService kakaoWithdrawalService;
-
+    private final LogoutService logoutService;
+    //private final LogoutService logoutService;
 
     /**
      * [메서드 레벨]
@@ -98,6 +100,34 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
+
+    // 일반 로그아웃 엔드포인트 (JWT 토큰 무효화)
+    @PostMapping(value = "/logout", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Authorization header missing or invalid"));
+        }
+        String token = authHeader.substring(7);
+        logoutService.invalidate(token);
+        return ResponseEntity.ok(Map.of("message", "로그아웃 성공"));
+    }
+
+    // 소셜 로그아웃 엔드포인트
+    @PostMapping(value = "/logout/social", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> socialLogout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Authorization header missing or invalid"));
+        }
+        String token = authHeader.substring(7);
+        logoutService.invalidate(token);
+        return ResponseEntity.ok(Map.of("message", "소셜 로그아웃 성공"));
+    }
+
+    // 소셜 회원 탈퇴 엔드포인트
     @DeleteMapping(value = "/social/withdraw", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> withdrawSocialMember(@RequestParam("provider") String provider,
                                                   @RequestParam("accessToken") String accessToken,
