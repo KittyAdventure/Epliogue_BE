@@ -78,7 +78,7 @@ public class AuthServiceImpl implements AuthService {
                     "kakao"
             );
         } else {
-            throw new IllegalArgumentException("지원하지 않는 소셜 제공자");
+            throw new IllegalArgumentException("지원하지 되지않는 소셜 제공자");
         }
 
         CustomMemberDetails userDetails = CustomMemberDetails.fromMember(member);

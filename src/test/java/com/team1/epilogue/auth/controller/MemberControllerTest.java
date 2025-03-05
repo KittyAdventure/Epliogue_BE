@@ -187,6 +187,7 @@ public class MemberControllerTest {
     @Test
     @DisplayName("회원 탈퇴 실패 - 인증되지 않은 사용자")
     void testWithdrawMember_Unauthorized() throws Exception {
+        // 인증되지 않은 경우
         mockMvc.perform(delete("/api/members")
                         .with(csrf()))
                 .andExpect(status().isUnauthorized())
@@ -206,7 +207,7 @@ public class MemberControllerTest {
         request.setEmail("fail@example.com");
         request.setPhone("010-0000-0000");
         request.setProfilePhoto("http://example.com/fail.jpg");
-
+        // 인증되지 않은 경우
         mockMvc.perform(put("/api/members")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
