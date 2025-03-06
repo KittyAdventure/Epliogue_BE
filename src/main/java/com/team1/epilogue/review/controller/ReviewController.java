@@ -41,19 +41,23 @@ public class ReviewController {
 
     /**
      * 특정 책의 모든 리뷰를 페이징하여 조회합니다
-     * - 기본 정렬: 최신순 (createdAt DESC)
-     * - 향후 좋아요순(likesCount DESC) 정렬 기능 추가 예정
+     * - 기본 정렬: 좋아요순 (likeCount DESC)
+     * - 정렬 방식 선택 가능: 최신순 (latest), 좋아요순 (likes)
      *
-     * @param bookId 조회할 책의 ID
-     * @param page   조회할 페이지 번호 (1부터 시작)
-     * @param size   한 페이지당 조회할 리뷰 개수
+     * @param bookId   조회할 책의 ID
+     * @param page     조회할 페이지 번호 (1부터 시작)
+     * @param size     한 페이지당 조회할 리뷰 개수
+     * @param sortType 정렬 기준 ("likes"=좋아요순, "latest"=최신순, 기본값: "likes")
      * @return 해당 책의 리뷰 목록을 담은 페이징된 DTO 리스트
      */
     @GetMapping("/books/{bookId}/reviews")
-    public ResponseEntity<Page<ReviewResponseDto>> getReviews(@PathVariable String bookId,
-                                                              @RequestParam("page") int page,
-                                                              @RequestParam("size") int size) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+    public ResponseEntity<Page<ReviewResponseDto>> getReviews(
+            @PathVariable String bookId,
+            @RequestParam("page") int page,
+            @RequestParam("size") int size,
+            @RequestParam(value = "sortType", defaultValue = "likes") String sortType
+    ) {
+        Pageable pageable = getPageable(page, size, sortType);
         Page<ReviewResponseDto> reviews = reviewService.getReviews(bookId, pageable);
 
         return ResponseEntity.ok().body(reviews);
@@ -111,7 +115,7 @@ public class ReviewController {
      *
      * @param reviewId       좋아요를 추가할 리뷰의 ID
      * @param authentication 현재 인증된 사용자
-     * @return 업데이트된 리뷰 정보 (좋아요 반영됨)
+     * @return 좋아요가 반영된 리뷰의 상세 정보
      */
     @PostMapping("/reviews/{reviewId}/likes")
     public ResponseEntity<ReviewResponseDto> likeReview(@PathVariable Long reviewId,
@@ -127,7 +131,7 @@ public class ReviewController {
      *
      * @param reviewId       좋아요를 취소할 리뷰의 ID
      * @param authentication 현재 인증된 사용자
-     * @return 업데이트된 리뷰 정보 (좋아요 취소됨)
+     * @return 좋아요 취소가 반영된 리뷰의 상세 정보
      */
     @DeleteMapping("/reviews/{reviewId}/likes")
     public ResponseEntity<ReviewResponseDto> unlikeReview(@PathVariable Long reviewId,
@@ -135,5 +139,13 @@ public class ReviewController {
         Member member = (Member) authentication.getPrincipal();
         ReviewResponseDto reviewResponseDto = reviewService.unlikeReview(reviewId, member);
         return ResponseEntity.ok(reviewResponseDto);
+    }
+
+    private Pageable getPageable(int page, int size, String sortType) {
+        Sort sort = sortType.equals("likes")
+                ? Sort.by(Sort.Direction.DESC, "likeCount").and(Sort.by(Sort.Direction.DESC, "createdAt"))
+                : Sort.by(Sort.Direction.DESC, "createdAt");
+
+        return PageRequest.of(page - 1, size, sort);
     }
 }
