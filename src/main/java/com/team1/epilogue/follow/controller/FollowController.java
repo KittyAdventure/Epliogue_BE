@@ -68,9 +68,13 @@ public class FollowController {
         if (principal instanceof CustomMemberDetails) {
             return ((CustomMemberDetails) principal).getUsername();
         }
+        if (principal instanceof org.springframework.security.core.userdetails.User) {
+            return ((org.springframework.security.core.userdetails.User) principal).getUsername();
+        }
         if (principal instanceof String) {
             return (String) principal;
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증 정보를 확인할 수 없습니다.");
     }
+
 }
