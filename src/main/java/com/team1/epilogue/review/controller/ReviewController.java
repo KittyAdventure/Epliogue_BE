@@ -105,4 +105,35 @@ public class ReviewController {
 
         return ResponseEntity.ok().body("리뷰가 성공적으로 삭제되었습니다.");
     }
+
+    /**
+     * 특정 리뷰에 좋아요를 추가합니다
+     *
+     * @param reviewId       좋아요를 추가할 리뷰의 ID
+     * @param authentication 현재 인증된 사용자
+     * @return 업데이트된 리뷰 정보 (좋아요 반영됨)
+     */
+    @PostMapping("/reviews/{reviewId}/likes")
+    public ResponseEntity<ReviewResponseDto> likeReview(@PathVariable Long reviewId,
+                                                        Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        ReviewResponseDto reviewResponseDto = reviewService.likeReview(reviewId, member);
+
+        return ResponseEntity.ok(reviewResponseDto);
+    }
+
+    /**
+     * 특정 리뷰의 좋아요를 취소합니다
+     *
+     * @param reviewId       좋아요를 취소할 리뷰의 ID
+     * @param authentication 현재 인증된 사용자
+     * @return 업데이트된 리뷰 정보 (좋아요 취소됨)
+     */
+    @DeleteMapping("/reviews/{reviewId}/likes")
+    public ResponseEntity<ReviewResponseDto> unlikeReview(@PathVariable Long reviewId,
+                                                          Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        ReviewResponseDto reviewResponseDto = reviewService.unlikeReview(reviewId, member);
+        return ResponseEntity.ok(reviewResponseDto);
+    }
 }
