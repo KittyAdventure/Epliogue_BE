@@ -12,6 +12,7 @@ import com.team1.epilogue.follow.repository.FollowRepository;
 import com.team1.epilogue.review.entity.Review;
 import com.team1.epilogue.review.repository.ReviewRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -26,6 +27,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+
+@DisplayName("FollowServiceImpl 테스트")
 class FollowServiceImplTest {
 
     @Mock
@@ -63,6 +66,7 @@ class FollowServiceImplTest {
     }
 
     @Test
+    @DisplayName("팔로우 생성 성공 테스트")
     void testFollowUser_success() {
         when(memberRepository.findByLoginId("user1")).thenReturn(Optional.of(follower));
         when(memberRepository.findByLoginId("user2")).thenReturn(Optional.of(followed));
@@ -82,6 +86,7 @@ class FollowServiceImplTest {
     }
 
     @Test
+    @DisplayName("이미 팔로우 중인 경우 예외 발생 테스트")
     void testFollowUser_alreadyFollowing() {
         when(memberRepository.findByLoginId("user1")).thenReturn(Optional.of(follower));
         when(memberRepository.findByLoginId("user2")).thenReturn(Optional.of(followed));
@@ -95,6 +100,7 @@ class FollowServiceImplTest {
     }
 
     @Test
+    @DisplayName("팔로우 삭제 성공 테스트")
     void testUnfollowUser_success() {
         when(memberRepository.findByLoginId("user1")).thenReturn(Optional.of(follower));
         when(memberRepository.findByLoginId("user2")).thenReturn(Optional.of(followed));
@@ -107,6 +113,7 @@ class FollowServiceImplTest {
     }
 
     @Test
+    @DisplayName("팔로잉 목록 조회 성공 테스트")
     void testGetFollowingList_success() {
         when(memberRepository.findByLoginId("user1")).thenReturn(Optional.of(follower));
         Follow follow1 = Follow.builder().id(1L).follower(follower).followed(followed).build();
@@ -120,6 +127,7 @@ class FollowServiceImplTest {
     }
 
     @Test
+    @DisplayName("팔로우 목록 조회 성공 테스트")
     void testGetFollowersList_success() {
         when(memberRepository.findByLoginId("user2")).thenReturn(Optional.of(followed));
         Follow follow1 = Follow.builder().id(1L).follower(follower).followed(followed).build();
@@ -133,6 +141,7 @@ class FollowServiceImplTest {
     }
 
     @Test
+    @DisplayName("팔로우한 회원이 없을 경우 리뷰 조회 테스트")
     void testGetFollowedReviews_noFollowedMembers() {
         when(memberRepository.findByLoginId("user1")).thenReturn(Optional.of(follower));
         when(followRepository.findByFollower(follower)).thenReturn(Collections.emptyList());
@@ -145,6 +154,7 @@ class FollowServiceImplTest {
     }
 
     @Test
+    @DisplayName("팔로우한 회원의 리뷰 조회 성공 테스트")
     void testGetFollowedReviews_success() {
         when(memberRepository.findByLoginId("user1")).thenReturn(Optional.of(follower));
         Follow follow1 = Follow.builder().id(1L).follower(follower).followed(followed).build();
