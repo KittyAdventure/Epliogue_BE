@@ -13,4 +13,7 @@ public interface BookRepository extends JpaRepository<Book,String>{
 
   List<Book> findAllByAuthor(String author);
 
+  // 최신순 10개만 가져오기
+  List<Book> findTop10ByOrderByCreatedAtDesc();
+
 }
