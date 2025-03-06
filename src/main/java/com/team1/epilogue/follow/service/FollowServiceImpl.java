@@ -100,7 +100,7 @@ public class FollowServiceImpl implements FollowService {
             PaginationDto pagination = new PaginationDto(page, limit, 0);
             return new ReviewListResponse(List.of(), pagination);
         }
-        Sort sortObj = sort.equalsIgnoreCase("asc") ? Sort.by("createdAt").ascending() : Sort.by("createdDate").descending();
+        Sort sortObj = sort.equalsIgnoreCase("asc") ? Sort.by("createdAt").ascending() : Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(page - 1, limit, sortObj);
         Page<Review> reviewPage = reviewRepository.findByMemberIn(followedMembers, pageable);
         List<ReviewDto> reviewDtos = reviewPage.stream()

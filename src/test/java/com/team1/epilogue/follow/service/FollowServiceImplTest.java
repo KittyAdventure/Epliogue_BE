@@ -2,6 +2,7 @@ package com.team1.epilogue.follow.service;
 
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.repository.MemberRepository;
+import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.follow.dto.FollowActionResponse;
 import com.team1.epilogue.follow.dto.MemberDto;
 import com.team1.epilogue.follow.dto.PaginationDto;
@@ -160,10 +161,18 @@ class FollowServiceImplTest {
         Follow follow1 = Follow.builder().id(1L).follower(follower).followed(followed).build();
         when(followRepository.findByFollower(follower)).thenReturn(List.of(follow1));
 
+        Book testDummyBook = Book.builder().id("챡1")
+                .title("책1")
+                .author("작가")
+                .description("설명")
+                .avgRating(4.5)
+                .coverUrl("http://example.com/cover.png")
+                .build();
+
         Review review = Review.builder()
                 .id(100L)
                 .member(followed)
-                .book(null)
+                .book(testDummyBook)
                 .content("리뷰 내용")
                 .imageUrl("http://example.com/image.png")
                 .build();
