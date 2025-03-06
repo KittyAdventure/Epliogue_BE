@@ -5,6 +5,7 @@ import com.team1.epilogue.chat.dto.ChatMessageDto;
 import com.team1.epilogue.chat.service.ChatMessageService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/api/meeting/chat")
+@Slf4j
 public class ChatController {
 
   private final ChatMessageService chatMessageService;
@@ -39,7 +41,17 @@ public class ChatController {
         .content(content)
         .build();
 
+    log.info("메시지 저장 요청: roomId={}, memberId={}, content={}", roomId, memberId, content);
+
     ChatMessageDto savedMessage = chatMessageService.saveMessage(chatMessageDto);
+
+    log.info(" 저장된 메시지: {}", savedMessage);
+
+    // savedMessage가 null인 경우 처리하기
+    if (savedMessage == null) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    }
+
     return ResponseEntity.status(HttpStatus.CREATED).body(savedMessage);
   }
 

@@ -51,6 +51,7 @@ public class GoogleAuthService {
     @Value("${google.redirectUri}")
     private String googleRedirectUri;
 
+
     /**
      * [메서드 레벨]
      * 인가 코드를 사용하여 액세스 토큰을 발급받는 메서드.

@@ -3,12 +3,11 @@ package com.team1.epilogue.config;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import com.team1.epilogue.auth.repository.MemberRepository;
-import com.team1.epilogue.auth.security.JwtAuthenticationWebFilter;
 import com.team1.epilogue.auth.security.JwtTokenProvider;
 import java.util.List;
-
 import com.team1.epilogue.auth.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
+import com.team1.epilogue.auth.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -87,6 +86,8 @@ public class SecurityConfig {
                             "/api/members/register",
                             "/api/members/login",
                             "/api/members/login/social",
+                            "/api/members/auth/kakao/callback",
+                            "/api/members/auth/google/callback",
                             "/login/oauth2/**",    // OAuth2 로그인 콜백 URL 허용
                             "/api/books/**",
                             "/api/kp/success",
@@ -95,7 +96,7 @@ public class SecurityConfig {
                     ).permitAll()
                     .anyRequest().authenticated()
             )
-            .addFilterBefore(new JwtAuthenticationWebFilter(jwtTokenProvider,memberRepository), UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider,memberRepository), UsernamePasswordAuthenticationFilter.class)
             .oauth2Login(withDefaults())  // OAuth2 로그인 활성화 (기본 설정 적용)
             .httpBasic(httpBasic -> httpBasic.disable());
 

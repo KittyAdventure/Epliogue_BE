@@ -6,16 +6,18 @@ import jakarta.persistence.Id;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.ToString;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "chat_rooms")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@SuperBuilder
+@ToString
+@Builder
 public class ChatRoom extends BaseTimeDocument {
   @Id
   private String id; // MongoDB ObjectId
@@ -23,12 +25,15 @@ public class ChatRoom extends BaseTimeDocument {
   private Set<Long> participants = new HashSet<>();
 
   // 채팅방에 참여자 추가 (최대 30명 제한)
-  public boolean participantsLimit(Long memberId){
+  public boolean participantsLimit(Long memberId) {
     if(participants.size() >= 30){
-      return false;
+      return false;  // 30명 초과 시 참여자 추가 불가
     }
-
-    return participants.add(memberId);
+    // 추가 전 중복 여부를 확인
+    if (!participants.contains(memberId)) {
+      return participants.add(memberId);  // 중복되지 않으면 추가
+    }
+    return false;  // 이미 존재하면 추가하지 않음
   }
 
 }

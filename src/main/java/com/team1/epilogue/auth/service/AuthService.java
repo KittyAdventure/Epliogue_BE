@@ -1,8 +1,6 @@
 package com.team1.epilogue.auth.service;
 
-import com.team1.epilogue.auth.dto.GeneralLoginRequest;
-import com.team1.epilogue.auth.dto.LoginResponse;
-import com.team1.epilogue.auth.dto.SocialLoginRequest;
+import com.team1.epilogue.auth.dto.*;
 import org.springframework.stereotype.Service;
 
 /**
@@ -28,4 +26,8 @@ public interface AuthService {
      * @return LoginResponse - 로그인 결과 응답
      */
     LoginResponse socialLogin(SocialLoginRequest request);
+
+    // 카카오 구글 콜백용 소셜 로그인 메서드
+    LoginResponse socialLoginKakao(KakaoUserInfo kakaoUserInfo);
+    LoginResponse socialLoginGoogle(GoogleUserInfo googleUserInfo);
 }
