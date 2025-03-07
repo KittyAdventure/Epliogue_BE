@@ -16,7 +16,7 @@ public class KeyWordController {
    * 인기 검색어를 받아오는 기능입니다. 10개까지 return 합니다
    */
   @GetMapping("/api/keywords")
-  public ResponseEntity<?> getHotKeywords() {
+  public ResponseEntity<List<String>> getHotKeywords() {
     List<String> hoyKeyWords = keyWordService.getPopularKeywords();
     return ResponseEntity.ok(hoyKeyWords);
   }
