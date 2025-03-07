@@ -12,6 +12,7 @@ import com.team1.epilogue.review.exception.ReviewNotFoundException;
 import com.team1.epilogue.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -61,5 +62,24 @@ public class CommentService {
 
     comment.setContent(dto.getContent());
     return commentRepository.save(comment);
+  }
+
+  /**
+   * 댓글 삭제하는 기능
+   * @param member 사용자 정보를 담은 Member 객체
+   * @param commentId 삭제하려는 댓글의 PK
+   */
+  @Transactional
+  public void deleteComment(Member member, Long commentId) {
+    // 댓글 정보가 존재하지 않을 시 예외 처리
+    Comment comment = commentRepository.findById(commentId).orElseThrow(
+        () -> new CommentNotFoundException("존재하지 않는 댓글 정보입니다.")
+    );
+
+    // 본인의 댓글이 아닌 댓글을 삭제하려할 시 예외 처리
+    if (member.getLoginId() != comment.getMember().getLoginId()) {
+      throw new UnauthorizedMemberException("삭제 권한이 없는 댓글입니다.");
+    }
+    commentRepository.delete(comment);
   }
 }
