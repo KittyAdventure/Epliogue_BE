@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.PageRequest;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TrendingBookService {
 
   private final BookRepository bookRepository;
@@ -60,6 +62,7 @@ public class TrendingBookService {
 
     // trendingBookList 를 교체해준다.
     trendingBookList = newBookList;
+    log.info("인기 책 리스트가 업데이트 되었습니다.");
   }
 
   /**
@@ -72,6 +75,7 @@ public class TrendingBookService {
 
     // 금일 00:00 시보다 더 빠른 데이터들을 삭제한다.(어제자 데이터들)
     trendingBookRepository.deleteByCreatedAtBefore(startOfDay);
+    log.info("책 조회 테이블이 초기화 되었습니다.");
   }
 
   /**
