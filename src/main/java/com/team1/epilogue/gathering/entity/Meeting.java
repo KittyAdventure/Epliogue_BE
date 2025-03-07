@@ -2,6 +2,7 @@ package com.team1.epilogue.gathering.entity;
 
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,6 +32,10 @@ public class Meeting extends BaseEntity {
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "member_pk", nullable = false)
   private Member member;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "book_pk", nullable = false)
+  private Book book;
 
   @Column(nullable = false)
   private String location; // 모임 위치

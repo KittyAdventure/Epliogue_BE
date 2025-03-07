@@ -74,7 +74,7 @@ class ParticipationServiceTest {
         .memberId(memberId)
         .build();
     String savePartition = objectMapper.writeValueAsString(participation);
-    log.info("Before Save: {}" + savePartition);
+    log.info("이전 Save: {}" + savePartition);
 
     when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
     when(chatRoomRepository.findById(roomId)).thenReturn(Optional.of(chatRoom));

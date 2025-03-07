@@ -17,6 +17,7 @@ public class MeetingDto {
 
   private Long id;
   private Long memberId;
+  private String bookId;
   private String title;
   private String content;
   private String location;
@@ -27,6 +28,7 @@ public class MeetingDto {
     return MeetingDto.builder()
         .id(meeting.getId())
         .memberId(meeting.getMember().getId())
+        .bookId(meeting.getBook().getId())
         .title(meeting.getTitle())
         .content(meeting.getContent())
         .location(meeting.getLocation())
