@@ -110,38 +110,28 @@ public class ReviewService {
 
     // 좋아요
     @Transactional
-    public ReviewResponseDto likeReview(Long reviewId, Member member) {
+    public void likeReview(Long reviewId, Member member) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
-        // 이미 좋아요를 눌렀다면 예외 처리
         if (reviewLikeRepository.existsByReviewIdAndMemberId(reviewId, member.getId())) {
             throw new AlreadyLikedException("이미 좋아요를 눌렀습니다.");
         }
 
-        // 좋아요 추가
         ReviewLike reviewLike = new ReviewLike(review, member);
         reviewLikeRepository.save(reviewLike);
 
         reviewRepository.increaseLikeCount(reviewId);
-
-        return ReviewResponseDto.from(review);
     }
 
     // 좋아요 삭제
     @Transactional
-    public ReviewResponseDto unlikeReview(Long reviewId, Member member) {
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
-
+    public void unlikeReview(Long reviewId, Member member) {
         ReviewLike reviewLike = reviewLikeRepository.findByReviewIdAndMemberId(reviewId, member.getId())
                 .orElseThrow(() -> new LikeNotFoundException("취소할 좋아요가 없습니다."));
 
-        // 좋아요 삭제
         reviewLikeRepository.delete(reviewLike);
 
         reviewRepository.decreaseLikeCount(reviewId);
-
-        return ReviewResponseDto.from(review);
     }
 }
