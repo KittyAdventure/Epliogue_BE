@@ -36,7 +36,7 @@ public class ReviewController {
         ReviewResponseDto reviewResponseDto =
                 reviewService.createReview(bookId, reviewRequestDto, member);
 
-        return ResponseEntity.ok().body(reviewResponseDto);
+        return ResponseEntity.ok(reviewResponseDto);
     }
 
     /**
@@ -60,7 +60,7 @@ public class ReviewController {
         Pageable pageable = getPageable(page, size, sortType);
         Page<ReviewResponseDto> reviews = reviewService.getReviews(bookId, pageable);
 
-        return ResponseEntity.ok().body(reviews);
+        return ResponseEntity.ok(reviews);
     }
 
     /**
@@ -73,7 +73,7 @@ public class ReviewController {
     public ResponseEntity<ReviewResponseDto> getReview(@PathVariable Long reviewId) {
         ReviewResponseDto reviewResponseDto = reviewService.getReview(reviewId);
 
-        return ResponseEntity.ok().body(reviewResponseDto);
+        return ResponseEntity.ok(reviewResponseDto);
     }
 
     /**
@@ -91,7 +91,7 @@ public class ReviewController {
         Member member = (Member) authentication.getPrincipal();
         ReviewResponseDto updatedReview = reviewService.updateReview(reviewId, reviewRequestDto, member);
 
-        return ResponseEntity.ok().body(updatedReview);
+        return ResponseEntity.ok(updatedReview);
     }
 
     /**
@@ -107,7 +107,7 @@ public class ReviewController {
         Member member = (Member) authentication.getPrincipal();
         reviewService.deleteReview(reviewId, member);
 
-        return ResponseEntity.ok().body("리뷰가 성공적으로 삭제되었습니다.");
+        return ResponseEntity.ok("리뷰가 성공적으로 삭제되었습니다.");
     }
 
     @PostMapping("/reviews/{reviewId}/likes")
@@ -116,7 +116,7 @@ public class ReviewController {
         Member member = (Member) authentication.getPrincipal();
         reviewService.likeReview(reviewId, member);
 
-        return ResponseEntity.ok().body("좋아요 성공");
+        return ResponseEntity.ok("좋아요 성공");
     }
 
     @DeleteMapping("/reviews/{reviewId}/likes")
@@ -124,7 +124,7 @@ public class ReviewController {
                                                           Authentication authentication) {
         Member member = (Member) authentication.getPrincipal();
         reviewService.unlikeReview(reviewId, member);
-        return ResponseEntity.ok().body("좋아요 취소 성공");
+        return ResponseEntity.ok("좋아요 취소 성공");
     }
 
     private Pageable getPageable(int page, int size, String sortType) {
