@@ -179,7 +179,7 @@ public class AuthServiceImplTest {
         KakaoUserInfo.KakaoAccount account = new KakaoUserInfo.KakaoAccount();
         account.setEmail("kakao@example.com");
         KakaoUserInfo.KakaoProfile profile = new KakaoUserInfo.KakaoProfile();
-        profile.setNickname("KakaoUser");
+        profile .setNickname("KakaoUser");
         profile.setProfileImageUrl("http://example.com/kakao.jpg");
         account.setProfile(profile);
         kakaoUserInfo.setKakao_account(account);

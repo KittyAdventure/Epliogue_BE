@@ -1,50 +1,44 @@
 package com.team1.epilogue.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.team1.epilogue.auth.dto.RegisterRequest;
+import com.team1.epilogue.auth.dto.ApiResponse;
 import com.team1.epilogue.auth.dto.MemberResponse;
+import com.team1.epilogue.auth.dto.RegisterRequest;
+import com.team1.epilogue.auth.dto.SuccessResponse;
 import com.team1.epilogue.auth.dto.UpdateMemberRequest;
+import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
-import com.team1.epilogue.auth.security.CustomUserDetailsService;
 import com.team1.epilogue.auth.service.MemberService;
 import com.team1.epilogue.auth.service.MemberWithdrawalService;
 import com.team1.epilogue.config.TestSecurityConfig;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
-/**
- * [클래스 레벨]
- * MemberController의 단위 테스트 클래스
- * - 회원 가입, 회원 탈퇴, 회원 정보 수정 기능으 테스트
- */
-@Import(TestSecurityConfig.class)  // SecurityConfig를 테스트 컨텍스트에 포함
 @WebMvcTest(MemberController.class)
-@DisplayName("MemberController 테스트")
+@Import(TestSecurityConfig.class)
+@DisplayName("MemberController 전체 테스트")
 public class MemberControllerTest {
 
     @Autowired
@@ -59,161 +53,166 @@ public class MemberControllerTest {
     @MockitoBean
     private MemberWithdrawalService memberWithdrawalService;
 
-    // SecurityConfig에서 요구하는 CustomUserDetailsService 빈 모킹
-    @MockitoBean
-    private CustomUserDetailsService customUserDetailsService;
-
-    // 인증된 사용자를 위한 CustomMemberDetails
-    private CustomMemberDetails memberDetails;
+    // 인증된 사용자 생성 헬퍼 메서드
+    private CustomMemberDetails getAuthenticatedUser() {
+        Member dummyMember = Member.builder()
+                .id(1L)
+                .loginId("user1")
+                .password("password")
+                .nickname("user1")
+                .name("User One")
+                .email("user1@example.com")
+                .phone("010-1111-1111")
+                .profileUrl("http://example.com/profile.png")
+                // 만약 birthDate 필드가 있다면 예: .birthDate("2000-01-01")
+                .build();
+        return CustomMemberDetails.fromMember(dummyMember);
+    }
 
     @BeforeEach
-    void setUp() {
-        memberDetails = new CustomMemberDetails(
-                1L,
-                "testUser",
-                "password",
-                List.of(new SimpleGrantedAuthority("ROLE_USER")),
-                "Test User",
-                "http://example.com/profile.jpg"
-        );
+    public void setUpSecurityContext() {
+        // 필요한 테스트에서 인증이 필요한 경우 setUpSecurityContext() 호출
+        CustomMemberDetails customMemberDetails = getAuthenticatedUser();
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(customMemberDetails, null, customMemberDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
-    /**
-     * [메서드 레벨]
-     * 회원 가입 성공 테스트
-     * - 회원 가입 API를 호추하여 정상적으로 가입이 이루어지는지 확인
-     */
-    @Test
-    @DisplayName("회원 가입 성공 테스트")
-    void testRegisterMember() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setLoginId("testUser");
-        request.setPassword("password123");
-        request.setNickname("testNick");
-        request.setName("Test User");
-        request.setBirthDate("1990-01-01");
-        request.setEmail("test@example.com");
-        request.setPhone("010-1111-2222");
-        request.setProfileUrl("http://example.com/profile.jpg");
-
-        MemberResponse response = MemberResponse.builder()
-                .id("1")
-                .loginId("testUser")
-                .nickname("testNick")
-                .name("Test User")
-                .birthDate("1990-01-01")
-                .email("test@example.com")
-                .phone("010-1111-2222")
-                .profileUrl("http://example.com/profile.jpg")
-                .build();
-
-        when(memberService.registerMember(any(RegisterRequest.class))).thenReturn(response);
-
-        mockMvc.perform(post("/api/members/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("1"))
-                .andExpect(jsonPath("$.loginId").value("testUser"))
-                .andExpect(jsonPath("$.email").value("test@example.com"));
+    @AfterEach
+    public void clearContext() {
+        SecurityContextHolder.clearContext();
     }
 
-    /**
-     * [메서드 레벨]
-     * 회원 탈퇴 성공 테스트
-     * - 인증된 사용자가 정상적으로 회원 탈퇴할 수 있는지 확인
-     */
-    @Test
-    @DisplayName("회원 탈퇴 성공 테스트")
-    void testWithdrawMember() throws Exception {
-        doNothing().when(memberWithdrawalService).withdrawMember(1L);
+    @Nested
+    @DisplayName("회원가입 API")
+    class RegisterMemberTests {
+        @Test
+        @DisplayName("회원가입 성공")
+        public void testRegisterMemberSuccess() throws Exception {
+            RegisterRequest request = new RegisterRequest();
+            request.setLoginId("user1");
+            request.setPassword("password");
+            request.setName("User One");
+            request.setEmail("user1@example.com");
+            request.setNickname("user1");
+            request.setBirthDate("2000-01-01");
+            request.setPhone("010-1111-1111");
+            request.setProfileUrl("http://example.com/profile.png");
 
-        mockMvc.perform(delete("/api/members")
-                        .with(csrf())
-                        .with(user(memberDetails)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.메시지").value("유저의 계정이 정상적으로 삭제되었습니다."));
+            MemberResponse memberResponse = MemberResponse.builder()
+                    .id("1")
+                    .loginId("user1")
+                    .nickname("user1")
+                    .name("User One")
+                    .birthDate("2000-01-01")
+                    .email("user1@example.com")
+                    .phone("010-1111-1111")
+                    .profileUrl("http://example.com/profile.png")
+                    .build();
 
-        verify(memberWithdrawalService, times(1)).withdrawMember(1L);
+            when(memberService.registerMember(any(RegisterRequest.class))).thenReturn(memberResponse);
+
+            mockMvc.perform(post("/api/members/register")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success", is(true)))
+                    .andExpect(jsonPath("$.data.loginId", is("user1")))
+                    .andExpect(jsonPath("$.data.name", is("User One")))
+                    .andExpect(jsonPath("$.data.email", is("user1@example.com")));
+        }
     }
 
-    /**
-     * [메서드 레벨]
-     * 회원 정보 수정 성공 테스트
-     * - 사용자가 자신의 정보를 정상적으로 수정할 수 있는지 확인
-     */
-    @Test
-    @DisplayName("회원 정보 수정 성공 테스트")
-    void testUpdateMember() throws Exception {
-        UpdateMemberRequest request = new UpdateMemberRequest();
-        request.setNickname("newNick");
-        request.setEmail("new@example.com");
-        request.setPhone("010-5678-1234");
-        request.setProfilePhoto("http://example.com/newProfile.jpg");
+    @Nested
+    @DisplayName("회원 탈퇴 API")
+    class WithdrawMemberTests {
+        @Test
+        @DisplayName("회원 탈퇴 성공 (인증된 사용자)")
+        public void testWithdrawMemberSuccess() throws Exception {
+            CustomMemberDetails customMemberDetails = getAuthenticatedUser();
+            // 이미 setUpSecurityContext()에서 인증 정보가 설정됨
+            doNothing().when(memberWithdrawalService).withdrawMember(customMemberDetails.getId());
 
-        MemberResponse response = MemberResponse.builder()
-                .id("1")
-                .loginId("testUser")
-                .nickname("newNick")
-                .name("Test User")
-                .birthDate("1990-01-01")
-                .email("new@example.com")
-                .phone("010-5678-1234")
-                .profileUrl("http://example.com/newProfile.jpg")
-                .build();
+            mockMvc.perform(delete("/api/members")
+                            .with(csrf()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success", is(true)))
+                    .andExpect(jsonPath("$.data.message", is("User account deleted successfully ")));
+        }
 
-        when(memberService.updateMember(anyLong(), any(UpdateMemberRequest.class))).thenReturn(response);
-
-        mockMvc.perform(put("/api/members")
-                        .with(csrf())
-                        .with(user(memberDetails))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.메시지").value("유저 정보 수정 완료"))
-                .andExpect(jsonPath("$.유저.id").value("1"))
-                .andExpect(jsonPath("$.유저.nickname").value("newNick"))
-                .andExpect(jsonPath("$.유저.email").value("new@example.com"))
-                .andExpect(jsonPath("$.유저.phone").value("010-5678-1234"))
-                .andExpect(jsonPath("$.유저.profileUrl").value("http://example.com/newProfile.jpg"));
+        @Test
+        @DisplayName("회원 탈퇴 실패 (인증 미비)")
+        public void testWithdrawMemberUnauthorized() throws Exception {
+            // 인증 정보를 지우고 호출
+            SecurityContextHolder.clearContext();
+            mockMvc.perform(delete("/api/members")
+                            .with(csrf()))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", is("Unauthorized user")));
+        }
     }
 
-    /**
-     * [메서드 레벨]
-     * 회원 탈퇴 실패 테스트 - 인증되지 않은 사용자
-     * - 인증되지 않은 사용자가 탈퇴 요청을 보낼 경우 실패하는지 확인
-     */
-    @Test
-    @DisplayName("회원 탈퇴 실패 - 인증되지 않은 사용자")
-    void testWithdrawMember_Unauthorized() throws Exception {
-        // 인증되지 않은 경우
-        mockMvc.perform(delete("/api/members")
-                        .with(csrf()))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.메시지").value("인증되지 않은 사용자"));
-    }
+    @Nested
+    @DisplayName("회원 정보 수정 API")
+    class UpdateMemberTests {
+        @Test
+        @DisplayName("회원 정보 수정 성공 (인증된 사용자)")
+        public void testUpdateMemberSuccess() throws Exception {
+            UpdateMemberRequest updateRequest = new UpdateMemberRequest();
+            updateRequest.setNickname("updatedNick");
+            updateRequest.setEmail("updated@example.com");
+            updateRequest.setPhone("010-2222-3333");
+            updateRequest.setProfilePhoto("http://example.com/updated.png");
 
-    /**
-     * [메서드 레벨]
-     * 회원 정보 수정 실패 테스트 - 인증되지 않은 사용자
-     * - 인증되지 않은 사용자가 정보 수정 요청을 보낼 경우 실패하는지 확인
-     */
-    @Test
-    @DisplayName("회원 정보 수정 실패 - 인증되지 않은 사용자")
-    void testUpdateMember_Unauthorized() throws Exception {
-        UpdateMemberRequest request = new UpdateMemberRequest();
-        request.setNickname("failUser");
-        request.setEmail("fail@example.com");
-        request.setPhone("010-0000-0000");
-        request.setProfilePhoto("http://example.com/fail.jpg");
-        // 인증되지 않은 경우
-        mockMvc.perform(put("/api/members")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.메시지").value("인증되지 않은 사용자"));
+            MemberResponse updatedResponse = MemberResponse.builder()
+                    .id("1")
+                    .loginId("user1")
+                    .nickname("updatedNick")
+                    .name("User One")
+                    .birthDate("2000-01-01")
+                    .email("updated@example.com")
+                    .phone("010-2222-3333")
+                    .profileUrl("http://example.com/updated.png")
+                    .build();
 
+            when(memberService.updateMember(any(Long.class), any(UpdateMemberRequest.class)))
+                    .thenReturn(updatedResponse);
+
+            mockMvc.perform(put("/api/members")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateRequest)))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.success", is(true)))
+                    .andExpect(jsonPath("$.data.nickname", is("updatedNick")))
+                    .andExpect(jsonPath("$.data.email", is("updated@example.com")))
+                    .andExpect(jsonPath("$.data.phone", is("010-2222-3333")))
+                    .andExpect(jsonPath("$.data.profileUrl", is("http://example.com/updated.png")));
+        }
+
+        @Test
+        @DisplayName("회원 정보 수정 실패 (인증 미비)")
+        public void testUpdateMemberUnauthorized() throws Exception {
+            UpdateMemberRequest updateRequest = new UpdateMemberRequest();
+            updateRequest.setNickname("updatedNick");
+            updateRequest.setEmail("updated@example.com");
+            updateRequest.setPhone("010-2222-3333");
+            updateRequest.setProfilePhoto("http://example.com/updated.png");
+            Authentication fakeAuth = mock(Authentication.class);
+            when(fakeAuth.isAuthenticated()).thenReturn(false);
+            when(fakeAuth.getPrincipal()).thenReturn("anonymous");
+
+            // 가짜 인증 정보를 SecurityContextHolder에 설정
+            SecurityContextHolder.getContext().setAuthentication(fakeAuth);
+            mockMvc.perform(put("/api/members")
+                            .with(csrf())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(updateRequest)))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(jsonPath("$.success", is(false)))
+                    .andExpect(jsonPath("$.error", is("Unauthorized")));
+        }
     }
 }
