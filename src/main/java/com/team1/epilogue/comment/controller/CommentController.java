@@ -3,8 +3,8 @@ package com.team1.epilogue.comment.controller;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
 import com.team1.epilogue.comment.dto.CommentUpdateRequest;
+import com.team1.epilogue.comment.dto.MessageResponse;
 import com.team1.epilogue.comment.service.CommentService;
-import java.util.HashMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -29,15 +29,15 @@ public class CommentController {
    * @return 성공시 String 값 응답
    */
   @PostMapping("/api/comments")
-  public ResponseEntity<HashMap<String, String>> postComment(Authentication authentication,
+  public ResponseEntity<MessageResponse> postComment(Authentication authentication,
       @RequestBody CommentPostRequest dto) {
     Member member = (Member) authentication.getPrincipal();
     commentService.postComment(member, dto);
 
-    HashMap<String, String> map = new HashMap<>();
-    map.put("message", "댓글이 성공적으로 작성 되었습니다");
+    MessageResponse response = MessageResponse.builder()
+        .message("댓글이 성공적으로 작성되었습니다.").build();
 
-    return ResponseEntity.ok(map);
+    return ResponseEntity.ok(response);
   }
 
   /**
@@ -47,15 +47,15 @@ public class CommentController {
    * @param dto            수정하려는 댓글 정보가 담긴 DTO
    */
   @PutMapping("/api/comments")
-  public ResponseEntity<HashMap<String, String>> updateComment(Authentication authentication,
+  public ResponseEntity<MessageResponse> updateComment(Authentication authentication,
       @RequestBody CommentUpdateRequest dto) {
     Member member = (Member) authentication.getPrincipal();
     commentService.updateComment(member, dto);
 
-    HashMap<String, String> map = new HashMap<>();
-    map.put("message", "댓글이 성공적으로 작성 되었습니다");
+    MessageResponse response = MessageResponse.builder()
+        .message("댓글이 성공적으로 수정되었습니다.").build();
 
-    return ResponseEntity.ok(map);
+    return ResponseEntity.ok(response);
   }
 
   /**
@@ -65,14 +65,14 @@ public class CommentController {
    * @param commentId      삭제하려는 댓글 정보가 담긴 DTO
    */
   @DeleteMapping("/api/comments")
-  public ResponseEntity<?> deleteComment(Authentication authentication,
+  public ResponseEntity<MessageResponse> deleteComment(Authentication authentication,
       @RequestParam Long commentId) {
     Member member = (Member) authentication.getPrincipal();
     commentService.deleteComment(member, commentId);
 
-    HashMap<String, String> map = new HashMap<>();
-    map.put("message", "댓글이 성공적으로 삭제 되었습니다");
+    MessageResponse response = MessageResponse.builder()
+        .message("댓글이 성공적으로 삭제되었습니다.").build();
 
-    return ResponseEntity.ok(map);
+    return ResponseEntity.ok(response);
   }
 }
