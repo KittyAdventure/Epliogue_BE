@@ -43,4 +43,15 @@ public class ReviewExceptionHandler {
     public ResponseEntity<String> handleRatingNotFoundException(RatingNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
+
+    @ExceptionHandler(LikeNotFoundException.class)
+    public ResponseEntity<String> handleRatingNotFoundException(LikeNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
+
+
+    @ExceptionHandler(AlreadyLikedException.class)
+    public ResponseEntity<String> handleRatingNotFoundException(AlreadyLikedException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+    }
 }

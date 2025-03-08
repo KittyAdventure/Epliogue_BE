@@ -6,9 +6,9 @@ import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.review.dto.ReviewRequestDto;
 import com.team1.epilogue.review.dto.ReviewResponseDto;
 import com.team1.epilogue.review.entity.Review;
-import com.team1.epilogue.review.exception.BookNotFoundException;
-import com.team1.epilogue.review.exception.ReviewNotFoundException;
-import com.team1.epilogue.review.exception.UnauthorizedReviewAccessException;
+import com.team1.epilogue.review.entity.ReviewLike;
+import com.team1.epilogue.review.exception.*;
+import com.team1.epilogue.review.repository.ReviewLikeRepository;
 import com.team1.epilogue.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +22,7 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final BookRepository bookRepository;
+    private final ReviewLikeRepository reviewLikeRepository;
 
     /**
      * 책에 대한 리뷰를 생성합니다
@@ -105,5 +106,32 @@ public class ReviewService {
         }
 
         reviewRepository.delete(review);
+    }
+
+    // 좋아요
+    @Transactional
+    public void likeReview(Long reviewId, Member member) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
+
+        if (reviewLikeRepository.existsByReviewIdAndMemberId(reviewId, member.getId())) {
+            throw new AlreadyLikedException("이미 좋아요를 눌렀습니다.");
+        }
+
+        ReviewLike reviewLike = new ReviewLike(review, member);
+        reviewLikeRepository.save(reviewLike);
+
+        reviewRepository.increaseLikeCount(reviewId);
+    }
+
+    // 좋아요 삭제
+    @Transactional
+    public void unlikeReview(Long reviewId, Member member) {
+        ReviewLike reviewLike = reviewLikeRepository.findByReviewIdAndMemberId(reviewId, member.getId())
+                .orElseThrow(() -> new LikeNotFoundException("취소할 좋아요가 없습니다."));
+
+        reviewLikeRepository.delete(reviewLike);
+
+        reviewRepository.decreaseLikeCount(reviewId);
     }
 }

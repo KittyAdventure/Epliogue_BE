@@ -41,19 +41,23 @@ public class ReviewController {
 
     /**
      * 특정 책의 모든 리뷰를 페이징하여 조회합니다
-     * - 기본 정렬: 최신순 (createdAt DESC)
-     * - 향후 좋아요순(likesCount DESC) 정렬 기능 추가 예정
+     * - 기본 정렬: 좋아요순 (likeCount DESC)
+     * - 정렬 방식 선택 가능: 최신순 (latest), 좋아요순 (likes)
      *
-     * @param bookId 조회할 책의 ID
-     * @param page   조회할 페이지 번호 (1부터 시작)
-     * @param size   한 페이지당 조회할 리뷰 개수
+     * @param bookId   조회할 책의 ID
+     * @param page     조회할 페이지 번호 (1부터 시작)
+     * @param size     한 페이지당 조회할 리뷰 개수
+     * @param sortType 정렬 기준 ("likes"=좋아요순, "latest"=최신순, 기본값: "likes")
      * @return 해당 책의 리뷰 목록을 담은 페이징된 DTO 리스트
      */
     @GetMapping("/books/{bookId}/reviews")
-    public ResponseEntity<Page<ReviewResponseDto>> getReviews(@PathVariable String bookId,
-                                                              @RequestParam("page") int page,
-                                                              @RequestParam("size") int size) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+    public ResponseEntity<Page<ReviewResponseDto>> getReviews(
+            @PathVariable String bookId,
+            @RequestParam("page") int page,
+            @RequestParam("size") int size,
+            @RequestParam(value = "sortType", defaultValue = "likes") String sortType
+    ) {
+        Pageable pageable = getPageable(page, size, sortType);
         Page<ReviewResponseDto> reviews = reviewService.getReviews(bookId, pageable);
 
         return ResponseEntity.ok().body(reviews);
@@ -104,5 +108,30 @@ public class ReviewController {
         reviewService.deleteReview(reviewId, member);
 
         return ResponseEntity.ok().body("리뷰가 성공적으로 삭제되었습니다.");
+    }
+
+    @PostMapping("/reviews/{reviewId}/likes")
+    public ResponseEntity<String> likeReview(@PathVariable Long reviewId,
+                                                        Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        reviewService.likeReview(reviewId, member);
+
+        return ResponseEntity.ok().body("좋아요 성공");
+    }
+
+    @DeleteMapping("/reviews/{reviewId}/likes")
+    public ResponseEntity<String> unlikeReview(@PathVariable Long reviewId,
+                                                          Authentication authentication) {
+        Member member = (Member) authentication.getPrincipal();
+        reviewService.unlikeReview(reviewId, member);
+        return ResponseEntity.ok().body("좋아요 취소 성공");
+    }
+
+    private Pageable getPageable(int page, int size, String sortType) {
+        Sort sort = sortType.equals("likes")
+                ? Sort.by(Sort.Direction.DESC, "likeCount").and(Sort.by(Sort.Direction.DESC, "createdAt"))
+                : Sort.by(Sort.Direction.DESC, "createdAt");
+
+        return PageRequest.of(page - 1, size, sort);
     }
 }
