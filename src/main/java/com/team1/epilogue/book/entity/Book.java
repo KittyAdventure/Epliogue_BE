@@ -1,13 +1,8 @@
 package com.team1.epilogue.book.entity;
 
 import com.team1.epilogue.common.entity.BaseEntity;
-import com.team1.epilogue.rating.entity.Rating;
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
