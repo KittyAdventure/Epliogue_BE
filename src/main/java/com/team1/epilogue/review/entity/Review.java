@@ -52,15 +52,5 @@ public class Review extends BaseEntity {
     public void updateReview(String content) {
         this.content = content;
     }
-
-    public void increaseLikeCount() {
-        this.likeCount++;
-    }
-
-    public void decreaseLikeCount() {
-        if (this.likeCount > 0) {
-            this.likeCount--;
-        }
-    }
 }
 

@@ -123,8 +123,7 @@ public class ReviewService {
         ReviewLike reviewLike = new ReviewLike(review, member);
         reviewLikeRepository.save(reviewLike);
 
-        review.increaseLikeCount();
-        reviewRepository.save(review);
+        reviewRepository.increaseLikeCount(reviewId);
 
         return ReviewResponseDto.from(review);
     }
@@ -141,8 +140,7 @@ public class ReviewService {
         // 좋아요 삭제
         reviewLikeRepository.delete(reviewLike);
 
-        review.decreaseLikeCount();
-        reviewRepository.save(review);
+        reviewRepository.decreaseLikeCount(reviewId);
 
         return ReviewResponseDto.from(review);
     }
