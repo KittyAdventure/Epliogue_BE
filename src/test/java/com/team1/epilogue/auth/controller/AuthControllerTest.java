@@ -217,7 +217,6 @@ public class AuthControllerTest {
     @DisplayName("소셜 로그아웃 성공")
     public void testSocialLogoutSuccess() throws Exception {
         String token = "dummyToken";
-        // 가짜 사용자 생성 및 SecurityContext 설정
         Member dummyMember = Member.builder()
                 .id(1L)
                 .loginId("user1")
@@ -232,7 +231,6 @@ public class AuthControllerTest {
         Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
-        // 로그아웃 서비스에 대한 모킹 처리
         Mockito.doNothing().when(logoutService).invalidate(token);
 
         mockMvc.perform(post("/api/members/logout/social")

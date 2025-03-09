@@ -43,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * MemberController의 단위 테스트 클래스
  * - 회원 가입, 회원 탈퇴, 회원 정보 수정 기능을 테스트
  */
-@Import(TestSecurityConfig.class)  // 테스트용 SecurityConfig 포함
+@Import(TestSecurityConfig.class)
 @WebMvcTest(MemberController.class)
 @DisplayName("MemberController 테스트")
 public class MemberControllerTest {
@@ -60,11 +60,7 @@ public class MemberControllerTest {
     @MockitoBean
     private MemberWithdrawalService memberWithdrawalService;
 
-    // SecurityConfig에서 요구하는 CustomUserDetailsService 빈 모킹
     @MockitoBean
-    private CustomUserDetailsService customUserDetailsService;
-
-    // 인증된 사용자를 위한 CustomMemberDetails
     private CustomMemberDetails memberDetails;
 
     @BeforeEach
@@ -80,7 +76,7 @@ public class MemberControllerTest {
                 .profileUrl("http://example.com/profile.jpg")
                 .build();
         memberDetails = new CustomMemberDetails(
-                dummyMember,                         // Member 객체 전달
+                dummyMember,
                 dummyMember.getId(),
                 dummyMember.getLoginId(),
                 dummyMember.getPassword(),
@@ -197,7 +193,6 @@ public class MemberControllerTest {
     @Test
     @DisplayName("회원 탈퇴 실패 - 인증되지 않은 사용자")
     void testWithdrawMember_Unauthorized() throws Exception {
-        // 인증되지 않은 경우
         mockMvc.perform(delete("/api/members")
                         .with(csrf()))
                 .andExpect(status().isUnauthorized())
@@ -217,7 +212,6 @@ public class MemberControllerTest {
         request.setEmail("fail@example.com");
         request.setPhone("010-0000-0000");
         request.setProfilePhoto("http://example.com/fail.jpg");
-        // 인증되지 않은 경우
         mockMvc.perform(put("/api/members")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -225,5 +219,4 @@ public class MemberControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.메시지").value("인증되지 않은 사용자"));
     }
-
 }
