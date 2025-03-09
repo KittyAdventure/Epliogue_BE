@@ -12,7 +12,9 @@ import com.team1.epilogue.review.repository.ReviewLikeRepository;
 import com.team1.epilogue.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,18 +45,19 @@ public class ReviewService {
         return ReviewResponseDto.from(review);
     }
 
-    /**
-     * 특정 책의 모든 리뷰를 페이징하여 조회합니다 (최신순 정렬)
-     *
-     * @param bookId   조회할 책의 ID
-     * @param pageable 페이징 및 정렬 정보
-     * @return 해당 책의 리뷰 목록을 담은 페이징된 DTO 리스트
-     */
-    public Page<ReviewResponseDto> getReviews(String bookId, Pageable pageable) {
-        // 좋아요순, 최신순 추가 예정
+    public Page<ReviewResponseDto> getReviews(String bookId, int page, int size, String sortType) {
+        Pageable pageable = createPageable(page, size, sortType);
         Page<Review> reviews = reviewRepository.findByBookId(bookId, pageable);
 
         return reviews.map(ReviewResponseDto::from);
+    }
+
+    private Pageable createPageable(int page, int size, String sortType) {
+        Sort sort = sortType.equals("likes")
+                ? Sort.by(Sort.Direction.DESC, "likeCount").and(Sort.by(Sort.Direction.DESC, "createdAt"))
+                : Sort.by(Sort.Direction.DESC, "createdAt");
+
+        return PageRequest.of(page - 1, size, sort);
     }
 
     /**

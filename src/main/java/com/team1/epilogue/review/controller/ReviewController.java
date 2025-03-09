@@ -6,9 +6,6 @@ import com.team1.epilogue.review.dto.ReviewResponseDto;
 import com.team1.epilogue.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -57,8 +54,7 @@ public class ReviewController {
             @RequestParam("size") int size,
             @RequestParam(value = "sortType", defaultValue = "likes") String sortType
     ) {
-        Pageable pageable = getPageable(page, size, sortType);
-        Page<ReviewResponseDto> reviews = reviewService.getReviews(bookId, pageable);
+        Page<ReviewResponseDto> reviews = reviewService.getReviews(bookId, page, size, sortType);
 
         return ResponseEntity.ok(reviews);
     }
@@ -112,7 +108,7 @@ public class ReviewController {
 
     @PostMapping("/reviews/{reviewId}/likes")
     public ResponseEntity<String> likeReview(@PathVariable Long reviewId,
-                                                        Authentication authentication) {
+                                             Authentication authentication) {
         Member member = (Member) authentication.getPrincipal();
         reviewService.likeReview(reviewId, member);
 
@@ -121,17 +117,9 @@ public class ReviewController {
 
     @DeleteMapping("/reviews/{reviewId}/likes")
     public ResponseEntity<String> unlikeReview(@PathVariable Long reviewId,
-                                                          Authentication authentication) {
+                                               Authentication authentication) {
         Member member = (Member) authentication.getPrincipal();
         reviewService.unlikeReview(reviewId, member);
         return ResponseEntity.ok("좋아요 취소 성공");
-    }
-
-    private Pageable getPageable(int page, int size, String sortType) {
-        Sort sort = sortType.equals("likes")
-                ? Sort.by(Sort.Direction.DESC, "likeCount").and(Sort.by(Sort.Direction.DESC, "createdAt"))
-                : Sort.by(Sort.Direction.DESC, "createdAt");
-
-        return PageRequest.of(page - 1, size, sort);
     }
 }
