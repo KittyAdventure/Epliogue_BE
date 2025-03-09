@@ -38,15 +38,14 @@ public class AuthController {
     private final KakaoWithdrawalService kakaoWithdrawalService;
     private final LogoutService logoutService;
 
-
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody GeneralLoginRequest request) {
         try {
             LoginResponse response = authService.login(request);
-            ApiResponse<LoginResponse> apiResponse = new ApiResponse<>(true, response, null);
+            ApiResponse<LoginResponse> apiResponse = new ApiResponse<>(true, response, null, "Login success");
             return ResponseEntity.ok(apiResponse);
         } catch (BadCredentialsException ex) {
-            ApiResponse<LoginResponse> errorResponse = new ApiResponse<>(false, null, ex.getMessage());
+            ApiResponse<LoginResponse> errorResponse = new ApiResponse<>(false, null, ex.getMessage(), "Login failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
     }
@@ -54,13 +53,12 @@ public class AuthController {
     @GetMapping("/auth/kakao/callback")
     public ResponseEntity<ApiResponse<LoginResponse>> kakaoCallback(@RequestParam("code") String code) {
         try {
-            // Note: If needed, change GoogleUserInfo to KakaoUserInfo accordingly.
             KakaoUserInfo kakaoUserInfo = kakaoAuthService.getKakaoUserInfo(code);
             LoginResponse response = authService.socialLoginKakao(kakaoUserInfo);
-            ApiResponse<LoginResponse> apiResponse = new ApiResponse<>(true, response, null);
+            ApiResponse<LoginResponse> apiResponse = new ApiResponse<>(true, response, null, "Login success");
             return ResponseEntity.ok(apiResponse);
         } catch (Exception ex) {
-            ApiResponse<LoginResponse> errorResponse = new ApiResponse<>(false, null, ex.getMessage());
+            ApiResponse<LoginResponse> errorResponse = new ApiResponse<>(false, null, ex.getMessage(), "Kakao login failed");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
@@ -70,10 +68,10 @@ public class AuthController {
         try {
             GoogleUserInfo googleUserInfo = googleAuthService.getGoogleUserInfo(code);
             LoginResponse response = authService.socialLoginGoogle(googleUserInfo);
-            ApiResponse<LoginResponse> apiResponse = new ApiResponse<>(true, response, null);
+            ApiResponse<LoginResponse> apiResponse = new ApiResponse<>(true, response, null, "Login success");
             return ResponseEntity.ok(apiResponse);
         } catch (Exception ex) {
-            ApiResponse<LoginResponse> errorResponse = new ApiResponse<>(false, null, ex.getMessage());
+            ApiResponse<LoginResponse> errorResponse = new ApiResponse<>(false, null, ex.getMessage(), "Google login failed");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
@@ -82,13 +80,13 @@ public class AuthController {
     public ResponseEntity<ApiResponse<SuccessResponse>> logout(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, "Authorization header missing or invalid");
+            ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, "Authorization header missing or invalid", "Logout failed");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
         String token = authHeader.substring(7);
         logoutService.invalidate(token);
         SuccessResponse success = new SuccessResponse("Logout Success");
-        ApiResponse<SuccessResponse> apiResponse = new ApiResponse<>(true, success, null);
+        ApiResponse<SuccessResponse> apiResponse = new ApiResponse<>(true, success, null, "Logout successful");
         return ResponseEntity.ok(apiResponse);
     }
 
@@ -96,13 +94,13 @@ public class AuthController {
     public ResponseEntity<ApiResponse<SuccessResponse>> socialLogout(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, "Authorization header missing or invalid");
+            ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, "Authorization header missing or invalid", "Social logout failed");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
         String token = authHeader.substring(7);
         logoutService.invalidate(token);
         SuccessResponse success = new SuccessResponse("Social Logout Success");
-        ApiResponse<SuccessResponse> apiResponse = new ApiResponse<>(true, success, null);
+        ApiResponse<SuccessResponse> apiResponse = new ApiResponse<>(true, success, null, "Social logout successful");
         return ResponseEntity.ok(apiResponse);
     }
 
@@ -114,7 +112,7 @@ public class AuthController {
 
         if (authentication == null || !authentication.isAuthenticated() ||
                 !(authentication.getPrincipal() instanceof CustomMemberDetails)) {
-            ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, "Unauthorized user");
+            ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, "Unauthorized user", "Withdrawal failed");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
         try {
@@ -123,17 +121,17 @@ public class AuthController {
             } else if ("google".equalsIgnoreCase(provider)) {
                 googleWithdrawalService.revokeGoogleAccount(accessToken);
             } else {
-                ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, "Unsupported social provider");
+                ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, "Unsupported social provider", "Withdrawal failed");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
             CustomMemberDetails userDetails = (CustomMemberDetails) authentication.getPrincipal();
             Member member = userDetails.getMember();
             memberWithdrawalService.withdrawMember(member.getId());
             SuccessResponse success = new SuccessResponse("Social member withdrawal success");
-            ApiResponse<SuccessResponse> apiResponse = new ApiResponse<>(true, success, null);
+            ApiResponse<SuccessResponse> apiResponse = new ApiResponse<>(true, success, null, "Withdrawal successful");
             return ResponseEntity.ok(apiResponse);
         } catch (Exception ex) {
-            ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, ex.getMessage());
+            ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, ex.getMessage(), "Withdrawal failed");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }

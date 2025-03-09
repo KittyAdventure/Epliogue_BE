@@ -28,20 +28,20 @@ public class MemberController {
   public ResponseEntity<ApiResponse<MemberResponse>> registerMember(
           @RequestBody @Validated RegisterRequest request) {
     MemberResponse memberResponse = memberService.registerMember(request);
-    ApiResponse<MemberResponse> response = new ApiResponse<>(true, memberResponse, null);
+    ApiResponse<MemberResponse> response = new ApiResponse<>(true, memberResponse, null, "Registration success");
     return ResponseEntity.ok(response);
   }
 
   @DeleteMapping
   public ResponseEntity<ApiResponse<SuccessResponse>> withdrawMember(Authentication authentication) {
     if (authentication == null || !authentication.isAuthenticated()) {
-      ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, "Unauthorized user");
+      ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, "Unauthorized user", null);
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
     Long memberId = ((CustomMemberDetails) authentication.getPrincipal()).getId();
     memberWithdrawalService.withdrawMember(memberId);
-    SuccessResponse success = new SuccessResponse("User account deleted successfully ");
-    ApiResponse<SuccessResponse> response = new ApiResponse<>(true, success, null);
+    SuccessResponse success = new SuccessResponse("User account deleted successfully");
+    ApiResponse<SuccessResponse> response = new ApiResponse<>(true, success, null, "Deletion success");
     return ResponseEntity.ok(response);
   }
 
@@ -50,20 +50,16 @@ public class MemberController {
           @RequestBody @Validated UpdateMemberRequest request,
           Authentication authentication) {
     if (authentication == null || !authentication.isAuthenticated()) {
-      ApiResponse<MemberResponse> errorResponse = new ApiResponse<>(false, null, "Unauthorized");
+      ApiResponse<MemberResponse> errorResponse = new ApiResponse<>(false, null, "Unauthorized", null);
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
-
     Long memberId = ((CustomMemberDetails) authentication.getPrincipal()).getId();
     MemberResponse updatedMember = memberService.updateMember(memberId, request);
-
     if (updatedMember == null) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body(new ApiResponse<>(false, null, "Update failed"));
+              .body(new ApiResponse<>(false, null, "Update failed", null));
     }
-
-    ApiResponse<MemberResponse> response = new ApiResponse<>(true, updatedMember, null);
+    ApiResponse<MemberResponse> response = new ApiResponse<>(true, updatedMember, null, "User information updated successfully");
     return ResponseEntity.ok(response);
   }
-
 }

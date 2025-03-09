@@ -150,10 +150,8 @@ public class AuthControllerTest {
     @DisplayName("카카오 콜백 성공")
     public void testKakaoCallbackSuccess() throws Exception {
         String code = "dummyKakaoCode";
-        // 카카오 사용자 정보 생성
         KakaoUserInfo kakaoUserInfo = new KakaoUserInfo();
         kakaoUserInfo.setId(100L);
-        // 내부 클래스 KakaoAccount와 KakaoProfile 객체 생성
         KakaoUserInfo.KakaoProfile profile = new KakaoUserInfo.KakaoProfile();
         profile.setNickname("user1");
         profile.setProfileImageUrl("http://example.com/kakao.png");
@@ -219,6 +217,22 @@ public class AuthControllerTest {
     @DisplayName("소셜 로그아웃 성공")
     public void testSocialLogoutSuccess() throws Exception {
         String token = "dummyToken";
+        // 가짜 사용자 생성 및 SecurityContext 설정
+        Member dummyMember = Member.builder()
+                .id(1L)
+                .loginId("user1")
+                .password("dummyPassword")
+                .nickname("user1")
+                .name("user1")
+                .email("user1@example.com")
+                .phone("010-1111-1111")
+                .profileUrl("http://example.com/profile.png")
+                .build();
+        CustomMemberDetails userDetails = CustomMemberDetails.fromMember(dummyMember);
+        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        // 로그아웃 서비스에 대한 모킹 처리
         Mockito.doNothing().when(logoutService).invalidate(token);
 
         mockMvc.perform(post("/api/members/logout/social")
