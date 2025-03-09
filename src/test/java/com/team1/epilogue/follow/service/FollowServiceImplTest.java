@@ -28,7 +28,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-
 @DisplayName("FollowServiceImpl 테스트")
 class FollowServiceImplTest {
 
@@ -76,7 +75,7 @@ class FollowServiceImplTest {
         FollowActionResponse response = followService.followUser("user1", "user2");
 
         assertNotNull(response);
-        assertEquals("팔로우 생성 성공", response.getMessage());
+        assertEquals("Follow creation successful", response.getMessage());
         assertEquals("user1", response.getFollowerLoginId());
         assertEquals("user2", response.getFollowedLoginId());
         ArgumentCaptor<Follow> followCaptor = ArgumentCaptor.forClass(Follow.class);
@@ -97,7 +96,7 @@ class FollowServiceImplTest {
         Exception exception = assertThrows(RuntimeException.class, () -> {
             followService.followUser("user1", "user2");
         });
-        assertTrue(exception.getMessage().contains("이미 팔로우 상태입니다."));
+        assertTrue(exception.getMessage().contains("Already following"));
     }
 
     @Test
@@ -128,7 +127,7 @@ class FollowServiceImplTest {
     }
 
     @Test
-    @DisplayName("팔로우 목록 조회 성공 테스트")
+    @DisplayName("팔로워 목록 조회 성공 테스트")
     void testGetFollowersList_success() {
         when(memberRepository.findByLoginId("user2")).thenReturn(Optional.of(followed));
         Follow follow1 = Follow.builder().id(1L).follower(follower).followed(followed).build();
@@ -161,10 +160,10 @@ class FollowServiceImplTest {
         Follow follow1 = Follow.builder().id(1L).follower(follower).followed(followed).build();
         when(followRepository.findByFollower(follower)).thenReturn(List.of(follow1));
 
-        Book testDummyBook = Book.builder().id("챡1")
-                .title("책1")
-                .author("작가")
-                .description("설명")
+        Book testDummyBook = Book.builder().id("B1")
+                .title("Book Title")
+                .author("Author Name")
+                .description("Description")
                 .avgRating(4.5)
                 .coverUrl("http://example.com/cover.png")
                 .build();
@@ -173,7 +172,7 @@ class FollowServiceImplTest {
                 .id(100L)
                 .member(followed)
                 .book(testDummyBook)
-                .content("리뷰 내용")
+                .content("Review content")
                 .imageUrl("http://example.com/image.png")
                 .build();
 
@@ -187,6 +186,6 @@ class FollowServiceImplTest {
         assertEquals(1, response.getPagination().getTotal());
         assertFalse(response.getReview().isEmpty());
         ReviewDto dto = response.getReview().get(0);
-        assertEquals("리뷰 내용", dto.getContent());
+        assertEquals("Review content", dto.getContent());
     }
 }

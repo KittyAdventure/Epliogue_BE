@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  */
 @ResponseStatus(HttpStatus.UNAUTHORIZED)
 public class UnauthorizedAccessException extends RuntimeException {
-
     public UnauthorizedAccessException() {
         super("잘못된 인증");
     }

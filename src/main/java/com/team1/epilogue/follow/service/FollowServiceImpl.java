@@ -51,12 +51,12 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public FollowActionResponse followUser(String followerLoginId, String targetLoginId) {
         Member follower = memberRepository.findByLoginId(followerLoginId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "잘못된 인증"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication"));
         Member followed = memberRepository.findByLoginId(targetLoginId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "대상 사용자가 존재하지 않음"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Target user not found"));
 
         followRepository.findByFollowerAndFollowed(follower, followed).ifPresent(f -> {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "이미 팔로우 상태입니다.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already following");
         });
 
         Follow follow = Follow.builder()
@@ -64,7 +64,7 @@ public class FollowServiceImpl implements FollowService {
                 .followed(followed)
                 .build();
         followRepository.save(follow);
-        return new FollowActionResponse("팔로우 생성 성공", follower.getLoginId(), followed.getLoginId());
+        return new FollowActionResponse("Follow creation successful", follower.getLoginId(), followed.getLoginId());
     }
 
     /**
@@ -77,12 +77,12 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public void unfollowUser(String followerLoginId, String targetLoginId) {
         Member follower = memberRepository.findByLoginId(followerLoginId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "잘못된 인증"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication"));
         Member followed = memberRepository.findByLoginId(targetLoginId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "대상 사용자가 존재하지 않음"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Target user not found"));
 
         Follow follow = followRepository.findByFollowerAndFollowed(follower, followed)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "팔로우 관계가 존재하지 않습니다."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Follow relationship does not exist"));
         followRepository.delete(follow);
     }
 
@@ -96,7 +96,7 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public List<MemberDto> getFollowingList(String loginId) {
         Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "잘못된 인증"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication"));
 
         List<Follow> followings = followRepository.findByFollower(member);
         return followings.stream()
@@ -114,7 +114,7 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public List<MemberDto> getFollowersList(String loginId) {
         Member member = memberRepository.findByLoginId(loginId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "잘못된 인증"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication"));
 
         List<Follow> followers = followRepository.findByFollowed(member);
         return followers.stream()
@@ -135,11 +135,11 @@ public class FollowServiceImpl implements FollowService {
     @Override
     public ReviewListResponse getFollowedReviews(String currentLoginId, int page, int limit, String sort) {
         if (page < 1 || limit < 1) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 쿼리 파라미터");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid query parameters");
         }
 
         Member currentMember = memberRepository.findByLoginId(currentLoginId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "잘못된 인증"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid authentication"));
 
         List<Follow> followings = followRepository.findByFollower(currentMember);
         List<Member> followedMembers = followings.stream()
@@ -150,7 +150,6 @@ public class FollowServiceImpl implements FollowService {
             PaginationDto pagination = new PaginationDto(page, limit, 0);
             return new ReviewListResponse(List.of(), pagination);
         }
-
         // 정렬 방식 결정 (기본적으로 최신순)
         Sort sortObj = sort.equalsIgnoreCase("asc") ? Sort.by("createdAt").ascending() : Sort.by("createdAt").descending();
         Pageable pageable = PageRequest.of(page - 1, limit, sortObj);

@@ -55,7 +55,7 @@ public class FollowController {
     public MessageResponse unfollowUser(@PathVariable("targetLoginId") String targetLoginId) {
         String currentLoginId = getCurrentLoginId();
         followService.unfollowUser(currentLoginId, targetLoginId);
-        return new MessageResponse("팔로우 삭제 성공");
+        return new MessageResponse("Unfollow action successful");
     }
 
     /**
@@ -75,7 +75,7 @@ public class FollowController {
         } else if ("followers".equalsIgnoreCase(type)) {
             return new MembersResponse(followService.getFollowersList(loginId));
         } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 쿼리 파라미터");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid query parameter");
         }
     }
 
@@ -106,7 +106,7 @@ public class FollowController {
     private String getCurrentLoginId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증되지 않은 사용자입니다.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated.");
         }
         Object principal = authentication.getPrincipal();
         if (principal instanceof CustomMemberDetails) {
@@ -118,6 +118,6 @@ public class FollowController {
         if (principal instanceof String) {
             return (String) principal;
         }
-        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "인증 정보를 확인할 수 없습니다.");
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unable to determine authentication details.");
     }
 }
