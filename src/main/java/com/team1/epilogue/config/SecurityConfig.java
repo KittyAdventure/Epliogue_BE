@@ -93,6 +93,7 @@ public class SecurityConfig {
                             "/api/kp/success",
                             "/api/kp/fail",
                             "/api/kp/cancel",
+                            "/api/trending-books",
                             "/api/keywords"
                     ).permitAll()
                     .anyRequest().authenticated()

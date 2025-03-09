@@ -11,6 +11,7 @@ import com.team1.epilogue.book.dto.xml.Item;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.keyword.service.KeyWordService;
+import com.team1.epilogue.trendingbook.service.TrendingBookService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,7 @@ public class BookService {
   private final NaverApiClient naverApiClient;
   private final BookRepository bookRepository;
   private final KeyWordService keyWordService;
+  private final TrendingBookService trendingBookService;
 
   @Value("${naver.base.url}")
   String naverUrl;
@@ -94,6 +96,9 @@ public class BookService {
           }
         }
     );
+
+    // 인기 책 목록 기능을 위해 DB 에 조회기록 저장
+    trendingBookService.insertTrendingBookHistory(book.getId());
 
     // DTO 로 반환 형식에 맞춰 return
     BookDetailResponse build = BookDetailResponse.builder()
