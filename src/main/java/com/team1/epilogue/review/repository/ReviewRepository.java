@@ -9,14 +9,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    /**
-     * 특정 책의 ID에 해당하는 리뷰들을 페이징하여 조회합니다
-     *
-     * @param bookId   조회할 책의 ID
-     * @param pageable 페이징 정보를 포함한 객체
-     * @return 해당 책의 리뷰 목록 (페이징 적용)
-     */
-    Page<Review> findByBookId(String bookId, Pageable pageable);
+
+    @Query("SELECT r FROM Review r JOIN FETCH r.member WHERE r.book.id = :bookId")
+    Page<Review> findByBookIdWithMember(@Param("bookId") String bookId, Pageable pageable);
 
     @Modifying
     @Query("UPDATE Review r SET r.likeCount = r.likeCount + 1 WHERE r.id = :reviewId")
