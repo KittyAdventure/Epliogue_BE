@@ -1,5 +1,6 @@
 package com.team1.epilogue.transaction.controller;
 
+import com.team1.epilogue.comment.dto.MessageResponse;
 import com.team1.epilogue.transaction.domain.TransactionDetail;
 import com.team1.epilogue.transaction.dto.KakaoPayApproveResponse;
 import com.team1.epilogue.transaction.dto.KakaoPayRedirectUrlDto;
@@ -55,7 +56,7 @@ public class TransactionController {
    * @return 결제 성공시 200 응답
    */
   @GetMapping("/api/kp/success")
-  public ResponseEntity<String> kakaoPaySuccess(
+  public ResponseEntity<MessageResponse> kakaoPaySuccess(
       @RequestParam int amount,
       @RequestParam String memberId,
       @RequestParam("pg_token") String pgToken) {
@@ -68,7 +69,10 @@ public class TransactionController {
         response.getTid());
     // DB 에 저장 , 회원 포인트 정보 변경
 
-    return ResponseEntity.ok("정상적으로 처리되었습니다.");
+    MessageResponse responseToFront = MessageResponse.builder()
+        .message("정상적으로 처리되었습니다.").build();
+
+    return ResponseEntity.ok(responseToFront);
   }
 
   /**
@@ -77,8 +81,10 @@ public class TransactionController {
    * @return 400 응답
    */
   @GetMapping("/api/kp/fail")
-  public ResponseEntity<String> kakaoPayFail() {
-    return ResponseEntity.badRequest().body("결제에 실패하였습니다.");
+  public ResponseEntity<MessageResponse> kakaoPayFail() {
+    MessageResponse response = MessageResponse.builder()
+        .message("결제가 실패하였습니다.").build();
+    return ResponseEntity.badRequest().body(response);
   }
 
   /**
@@ -87,8 +93,10 @@ public class TransactionController {
    * @return 400 응답
    */
   @GetMapping("/api/kp/cancel")
-  public ResponseEntity<String> kakaoPayCancel() {
-    return ResponseEntity.badRequest().body("결제가 취소되었습니다.");
+  public ResponseEntity<MessageResponse> kakaoPayCancel() {
+    MessageResponse response = MessageResponse.builder()
+        .message("결제가 취소되었습니다.").build();
+    return ResponseEntity.badRequest().body(response);
   }
 
   /**
@@ -112,10 +120,12 @@ public class TransactionController {
    * @return 성공시 200 응답
    */
   @PostMapping("/api/kp/{transactionId}/refund")
-  public ResponseEntity<String> kakaoPayRefund(Authentication authentication,
+  public ResponseEntity<MessageResponse> kakaoPayRefund(Authentication authentication,
       @PathVariable Long transactionId) {
     String memberId = authentication.getName();
     kakaoPayService.kakaoPayRefund(memberId, transactionId);
-    return ResponseEntity.ok().body("취소 요청이 정상적으로 처리되었습니다.");
+    MessageResponse response = MessageResponse.builder()
+        .message("취소 요청이 정상적으로 처리되었습니다.").build();
+    return ResponseEntity.ok().body(response);
   }
 }

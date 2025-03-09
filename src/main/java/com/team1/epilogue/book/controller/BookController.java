@@ -24,7 +24,7 @@ public class BookController {
    * @return 네이버에서 온 응답값을 return
    */
   @GetMapping("/api/books")
-  public ResponseEntity<?> searchBookInfo(@RequestBody BookInfoRequest dto) {
+  public ResponseEntity<NaverBookSearchResponse> searchBookInfo(@RequestBody BookInfoRequest dto) {
     NaverBookSearchResponse naverBookSearchResponse = bookService.searchBookInfo(dto);
     return ResponseEntity.ok(naverBookSearchResponse);
   }
@@ -36,7 +36,7 @@ public class BookController {
    * @return 네이버에서 온 응답값을 return
    */
   @GetMapping("/api/books/detail")
-  public ResponseEntity<?> getBookDetail(@RequestBody BookDetailRequest dto) {
+  public ResponseEntity<BookDetailResponse> getBookDetail(@RequestBody BookDetailRequest dto) {
     BookDetailResponse bookDetail = bookService.getBookDetail(dto);
     return ResponseEntity.ok(bookDetail);
   }
