@@ -19,7 +19,7 @@ import java.util.Map;
 
 /**
  * [클래스 레벨]
- * 회원 관리 컨트롤러 (회원 가입, 정보 수정, 탈퇴)
+ * 회원 관리 컨트롤러 (일반/소셜원가입, 정보수정, 탈퇴)
  */
 @RestController
 @RequestMapping("/api/members")
@@ -50,6 +50,7 @@ public class MemberController {
    */
   @DeleteMapping
   public ResponseEntity<?> withdrawMember(Authentication authentication) {
+
     if (authentication == null || !authentication.isAuthenticated()) {
       return createErrorResponse(401, "UNAUTHORIZED", "인증되지 않은 사용자");
     }

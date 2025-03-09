@@ -8,17 +8,16 @@ import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.auth.security.CustomUserDetailsService;
 import com.team1.epilogue.auth.service.MemberService;
 import com.team1.epilogue.auth.service.MemberWithdrawalService;
-import com.team1.epilogue.config.SecurityConfig;
+import com.team1.epilogue.config.TestSecurityConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -37,7 +36,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Import(SecurityConfig.class)  // SecurityConfig를 테스트 컨텍스트에 포함
+
+/**
+ * [클래스 레벨]
+ * MemberController의 단위 테스트 클래스
+ * - 회원 가입, 회원 탈퇴, 회원 정보 수정 기능으 테스트
+ */
+@Import(TestSecurityConfig.class)  // SecurityConfig를 테스트 컨텍스트에 포함
 @WebMvcTest(MemberController.class)
 @DisplayName("MemberController 테스트")
 public class MemberControllerTest {
@@ -48,14 +53,14 @@ public class MemberControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private MemberService memberService;
 
-    @MockBean
+    @MockitoBean
     private MemberWithdrawalService memberWithdrawalService;
 
     // SecurityConfig에서 요구하는 CustomUserDetailsService 빈 모킹
-    @MockBean
+    @MockitoBean
     private CustomUserDetailsService customUserDetailsService;
 
     // 인증된 사용자를 위한 CustomMemberDetails
@@ -73,6 +78,11 @@ public class MemberControllerTest {
         );
     }
 
+    /**
+     * [메서드 레벨]
+     * 회원 가입 성공 테스트
+     * - 회원 가입 API를 호추하여 정상적으로 가입이 이루어지는지 확인
+     */
     @Test
     @DisplayName("회원 가입 성공 테스트")
     void testRegisterMember() throws Exception {
@@ -109,6 +119,11 @@ public class MemberControllerTest {
                 .andExpect(jsonPath("$.email").value("test@example.com"));
     }
 
+    /**
+     * [메서드 레벨]
+     * 회원 탈퇴 성공 테스트
+     * - 인증된 사용자가 정상적으로 회원 탈퇴할 수 있는지 확인
+     */
     @Test
     @DisplayName("회원 탈퇴 성공 테스트")
     void testWithdrawMember() throws Exception {
@@ -123,6 +138,11 @@ public class MemberControllerTest {
         verify(memberWithdrawalService, times(1)).withdrawMember(1L);
     }
 
+    /**
+     * [메서드 레벨]
+     * 회원 정보 수정 성공 테스트
+     * - 사용자가 자신의 정보를 정상적으로 수정할 수 있는지 확인
+     */
     @Test
     @DisplayName("회원 정보 수정 성공 테스트")
     void testUpdateMember() throws Exception {
@@ -159,16 +179,26 @@ public class MemberControllerTest {
                 .andExpect(jsonPath("$.유저.profileUrl").value("http://example.com/newProfile.jpg"));
     }
 
+    /**
+     * [메서드 레벨]
+     * 회원 탈퇴 실패 테스트 - 인증되지 않은 사용자
+     * - 인증되지 않은 사용자가 탈퇴 요청을 보낼 경우 실패하는지 확인
+     */
     @Test
     @DisplayName("회원 탈퇴 실패 - 인증되지 않은 사용자")
     void testWithdrawMember_Unauthorized() throws Exception {
-        // 인증되지 않은 경우 (with(user(...)) 미사용)
+        // 인증되지 않은 경우
         mockMvc.perform(delete("/api/members")
                         .with(csrf()))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.메시지").value("인증되지 않은 사용자"));
     }
 
+    /**
+     * [메서드 레벨]
+     * 회원 정보 수정 실패 테스트 - 인증되지 않은 사용자
+     * - 인증되지 않은 사용자가 정보 수정 요청을 보낼 경우 실패하는지 확인
+     */
     @Test
     @DisplayName("회원 정보 수정 실패 - 인증되지 않은 사용자")
     void testUpdateMember_Unauthorized() throws Exception {
@@ -177,13 +207,13 @@ public class MemberControllerTest {
         request.setEmail("fail@example.com");
         request.setPhone("010-0000-0000");
         request.setProfilePhoto("http://example.com/fail.jpg");
-
-        // 인증되지 않은 경우 (with(user(...)) 미사용)
+        // 인증되지 않은 경우
         mockMvc.perform(put("/api/members")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.메시지").value("인증 실패"));
+                .andExpect(jsonPath("$.메시지").value("인증되지 않은 사용자"));
+
     }
 }

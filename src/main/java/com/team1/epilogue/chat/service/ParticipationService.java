@@ -7,10 +7,12 @@ import com.team1.epilogue.chat.entity.Participation;
 import com.team1.epilogue.chat.repository.ChatRoomRepository;
 import com.team1.epilogue.chat.repository.ParticipationRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ParticipationService {
 
   private final ParticipationRepository participationRepository;
@@ -42,9 +44,11 @@ public class ParticipationService {
           .build();
 
       participationRepository.save(participation);
+      log.info("채팅방 참가: " + participationRepository.save(participation));
     }
 
     chatRoomRepository.save(chatRoom);
+    log.info("채팅방 저장 : " +chatRoomRepository.save(chatRoom));
     return true;
   }
 

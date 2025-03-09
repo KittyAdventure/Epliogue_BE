@@ -10,6 +10,8 @@ import com.team1.epilogue.book.dto.NaverBookSearchResponse;
 import com.team1.epilogue.book.dto.xml.Item;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
+import com.team1.epilogue.keyword.service.KeyWordService;
+import com.team1.epilogue.trendingbook.service.TrendingBookService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,8 @@ public class BookService {
 
   private final NaverApiClient naverApiClient;
   private final BookRepository bookRepository;
+  private final KeyWordService keyWordService;
+  private final TrendingBookService trendingBookService;
 
   @Value("${naver.base.url}")
   String naverUrl;
@@ -38,6 +42,8 @@ public class BookService {
    * @return 네이버에서 온 응답값을 return
    */
   public NaverBookSearchResponse searchBookInfo(BookInfoRequest dto) {
+    // 인기 검색어 기능을 위한 검색어 저장
+    keyWordService.saveKeyWord(dto.getQuery());
     NaverBookSearchResponse response = naverApiClient.getBookInfoFromNaver(naverUrl, dto);
     return response;
   }
@@ -90,6 +96,9 @@ public class BookService {
           }
         }
     );
+
+    // 인기 책 목록 기능을 위해 DB 에 조회기록 저장
+    trendingBookService.insertTrendingBookHistory(book.getId());
 
     // DTO 로 반환 형식에 맞춰 return
     BookDetailResponse build = BookDetailResponse.builder()

@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.3'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'application'
 }
 
 group = 'com.team1'
@@ -46,8 +47,17 @@ dependencies {
 	testImplementation("com.squareup.okhttp3:mockwebserver:4.9.1")
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.3'
 	implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version: '2.18.1'
+
+	// Test code Lombok 추가
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+application {
+	applicationDefaultJvmArgs = ["--add-opens", "java.base/java.time=ALL-UNNAMED"]
+}
+

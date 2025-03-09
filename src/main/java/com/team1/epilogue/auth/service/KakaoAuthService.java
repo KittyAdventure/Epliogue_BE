@@ -35,6 +35,8 @@ public class KakaoAuthService {
      * 카카오 애플리케이션의 클라이언트 ID
      */
     @Value("${kakao.clientId}")
+
+
     private String kakaoClientId;
 
     /**
