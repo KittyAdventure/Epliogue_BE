@@ -45,7 +45,6 @@ public class ReviewService {
         return ReviewResponseDto.from(review);
     }
 
-    @Transactional
     public Page<ReviewResponseDto> getReviews(String bookId, int page, int size, String sortType) {
         Pageable pageable = createPageable(page, size, sortType);
         Page<Review> reviews = reviewRepository.findByBookIdWithMember(bookId, pageable);
@@ -67,8 +66,7 @@ public class ReviewService {
      * @param reviewId 조회할 리뷰의 ID
      * @return 해당 리뷰의 상세 정보를 담은 DTO
      */
-    @Transactional
-    public ReviewResponseDto getReview(Long reviewId) {
+    public ReviewResponseDto getReviewDetail(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 

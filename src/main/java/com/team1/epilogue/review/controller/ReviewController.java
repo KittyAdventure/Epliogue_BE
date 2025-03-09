@@ -66,8 +66,8 @@ public class ReviewController {
      * @return 해당 리뷰의 상세 정보를 담은 DTO
      */
     @GetMapping("/reviews/{reviewId}")
-    public ResponseEntity<ReviewResponseDto> getReview(@PathVariable Long reviewId) {
-        ReviewResponseDto reviewResponseDto = reviewService.getReview(reviewId);
+    public ResponseEntity<ReviewResponseDto> getReviewDetail(@PathVariable Long reviewId) {
+        ReviewResponseDto reviewResponseDto = reviewService.getReviewDetail(reviewId);
 
         return ResponseEntity.ok(reviewResponseDto);
     }
