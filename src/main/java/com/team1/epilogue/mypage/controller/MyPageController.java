@@ -1,8 +1,10 @@
 package com.team1.epilogue.mypage.controller;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.mypage.dto.MyPageCalendarResponse;
 import com.team1.epilogue.mypage.dto.MyPageCommentsResponse;
 import com.team1.epilogue.mypage.service.MyPageService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -18,8 +20,9 @@ public class MyPageController {
 
   /**
    * 마이 페이지 내부 "내 댓글 보기" 기능을 위한 메서드
+   *
    * @param authentication 인증된 사용자 정보를 담은 Authentication 객체
-   * @param page 조회할 페이지 번호
+   * @param page           조회할 페이지 번호
    */
   @GetMapping("/api/mypage/comments")
   public ResponseEntity<MyPageCommentsResponse> getMyComments(Authentication authentication,
@@ -29,4 +32,9 @@ public class MyPageController {
     return ResponseEntity.ok(myComments);
   }
 
+  @GetMapping("/api/mypage/calendar")
+  public ResponseEntity<List<MyPageCalendarResponse>> getCalendar(@RequestParam String memberId,@RequestParam String date) {
+    List<MyPageCalendarResponse> calendar = myPageService.getCalendar(memberId, date);
+    return ResponseEntity.ok(calendar);
+  }
 }
