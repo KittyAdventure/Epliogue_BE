@@ -21,7 +21,7 @@ public class MyPageController {
    * @param authentication 인증된 사용자 정보를 담은 Authentication 객체
    * @param page 조회할 페이지 번호
    */
-  @GetMapping()
+  @GetMapping("/api/mypage/comments")
   public ResponseEntity<MyPageCommentsResponse> getMyComments(Authentication authentication,
       @RequestParam int page) {
     Member member = (Member) authentication.getPrincipal();
