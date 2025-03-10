@@ -26,7 +26,6 @@ public class MemberService {
      * 저장된 정보를 MemberResponse DTO로 반환하는 메서드.
      */
     public MemberResponse registerMember(RegisterRequest request) {
-
         validateRegisterRequest(request);
 // RegisterRequest를 Member 엔티티로 변환
         Member member = Member.builder()
