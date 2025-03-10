@@ -68,8 +68,7 @@ public class CommentService {
     if (member.getLoginId() != comment.getMember().getLoginId()) {
       throw new UnauthorizedMemberException("수정 권한이 없는 댓글입니다.");
     }
-
-    comment.setContent(dto.getContent());
+    comment.toBuilder().content(dto.getContent());
     return commentRepository.save(comment);
   }
 

@@ -16,10 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -88,12 +85,14 @@ public class ReviewServiceTest {
     @Test
     void getReviews_Success() {
         // given
-        Pageable pageable = PageRequest.of(0, 10);
+        String sortType = "likes";
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "likeCount")
+                .and(Sort.by(Sort.Direction.DESC, "createdAt")));
         Page<Review> reviewPage = new PageImpl<>(List.of(testReview));
-        when(reviewRepository.findByBookId(testBook.getId(), pageable)).thenReturn(reviewPage);
+        when(reviewRepository.findByBookIdWithMember(testBook.getId(), pageable)).thenReturn(reviewPage);
 
         // when
-        Page<ReviewResponseDto> response = reviewService.getReviews(testBook.getId(), pageable);
+        Page<ReviewResponseDto> response = reviewService.getReviews(testBook.getId(), 1, 10, sortType);
 
         // then
         assertThat(response.getTotalElements()).isEqualTo(1);
@@ -109,7 +108,7 @@ public class ReviewServiceTest {
         when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview));
 
         // when
-        ReviewResponseDto response = reviewService.getReview(testReview.getId());
+        ReviewResponseDto response = reviewService.getReviewDetail(testReview.getId());
 
         // then
         assertThat(response.getId()).isEqualTo(testReview.getId());
@@ -125,7 +124,7 @@ public class ReviewServiceTest {
         when(reviewRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(ReviewNotFoundException.class, () -> reviewService.getReview(999L));
+        assertThrows(ReviewNotFoundException.class, () -> reviewService.getReviewDetail(999L));
     }
 
     /**
