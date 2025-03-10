@@ -122,7 +122,7 @@ class MyPageServiceTest {
         .build());
 
     when(reviewRepository.findByDateAndMember(any(LocalDateTime.class), any(LocalDateTime.class),
-        "test")).thenReturn(reviews);
+        eq("test"))).thenReturn(reviews);
 
     //when
     List<MyPageCalendarResponse> responses = myPageService.getCalendar("test", "2022-02-02");
