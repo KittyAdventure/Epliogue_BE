@@ -1,7 +1,7 @@
 package com.team1.epilogue.mypage.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import java.time.LocalDate;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,9 +10,8 @@ import lombok.Setter;
 @Setter
 @Builder
 public class MyPageCalendarResponse {
-
-  private String thumbnail;
-  private int count;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-  private LocalDate date;
+  private String date;
+  private int count;
+  List<MyPageCalendarDetail> data;
 }

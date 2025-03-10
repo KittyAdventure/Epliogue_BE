@@ -4,6 +4,7 @@ import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.mypage.dto.MyPageCalendarResponse;
 import com.team1.epilogue.mypage.dto.MyPageCommentsResponse;
 import com.team1.epilogue.mypage.service.MyPageService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -32,8 +33,8 @@ public class MyPageController {
   }
 
   @GetMapping("/api/mypage/calendar")
-  public ResponseEntity<MyPageCalendarResponse> getCalendar(@RequestParam String memberId,@RequestParam String date) {
-    myPageService.getCalendar(memberId,date);
-
+  public ResponseEntity<List<MyPageCalendarResponse>> getCalendar(@RequestParam String memberId,@RequestParam String date) {
+    List<MyPageCalendarResponse> calendar = myPageService.getCalendar(memberId, date);
+    return ResponseEntity.ok(calendar);
   }
 }
