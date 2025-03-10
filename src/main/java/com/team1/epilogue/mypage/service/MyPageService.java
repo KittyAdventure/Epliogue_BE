@@ -1,22 +1,28 @@
 package com.team1.epilogue.mypage.service;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.exception.MemberNotFoundException;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.comment.entity.Comment;
 import com.team1.epilogue.comment.repository.CommentRepository;
 import com.team1.epilogue.mypage.dto.MyPageCommentsDetailResponse;
 import com.team1.epilogue.mypage.dto.MyPageCommentsResponse;
+import com.team1.epilogue.mypage.dto.MyPageUserInfoResponse;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import com.team1.epilogue.follow.repository.FollowRepository;
 
 @Service
 @RequiredArgsConstructor
 public class MyPageService {
 
   private final CommentRepository commentRepository;
+  private final MemberRepository memberRepository;
+  private final FollowRepository followRepository;
 
   public MyPageCommentsResponse getMyComments(Member member, int page) {
     PageRequest pageRequest = PageRequest.of(page - 1, 20);
@@ -38,6 +44,20 @@ public class MyPageService {
         .totalPage(result.getTotalPages()) // 총 페이지 번호
         .page(page) // 현재 페이지 번호
         .comments(list) // JSON 내부 배열로 반환
+        .build();
+  }
+
+  public MyPageUserInfoResponse getUserInfo(String memberId) {
+    Member member = memberRepository.findByLoginId(memberId).orElseThrow(
+        () -> new MemberNotFoundException("존재하지 않는 회원입니다.")
+    );
+
+    return MyPageUserInfoResponse.builder()
+        .nickName(member.getNickname())
+        .loginId(member.getLoginId())
+        .email(member.getEmail())
+        .follower(followRepository.findByFollower().size())
+        .following(followRepository.findByFollowed().size())
         .build();
   }
 }
