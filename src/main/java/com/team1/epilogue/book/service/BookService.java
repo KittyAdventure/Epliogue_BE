@@ -3,6 +3,9 @@ package com.team1.epilogue.book.service;
 import com.team1.epilogue.book.client.NaverApiClient;
 import com.team1.epilogue.book.dto.BookDetailRequest;
 import com.team1.epilogue.book.dto.BookDetailResponse;
+import com.team1.epilogue.book.dto.BookMainPageDetail;
+import com.team1.epilogue.book.dto.BookMainPageDto;
+import com.team1.epilogue.book.dto.BookSearchFilter;
 import com.team1.epilogue.book.dto.SameAuthorBookTitleIsbn;
 import com.team1.epilogue.book.dto.xml.BookDetailXMLResponse;
 import com.team1.epilogue.book.dto.BookInfoRequest;
@@ -10,6 +13,7 @@ import com.team1.epilogue.book.dto.NaverBookSearchResponse;
 import com.team1.epilogue.book.dto.xml.Item;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
+import com.team1.epilogue.book.repository.CustomBookRepository;
 import com.team1.epilogue.keyword.service.KeyWordService;
 import com.team1.epilogue.trendingbook.service.TrendingBookService;
 import java.time.LocalDate;
@@ -20,6 +24,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,6 +36,7 @@ public class BookService {
   private final BookRepository bookRepository;
   private final KeyWordService keyWordService;
   private final TrendingBookService trendingBookService;
+  private final CustomBookRepository customBookRepository;
 
   @Value("${naver.base.url}")
   String naverUrl;
@@ -139,5 +145,30 @@ public class BookService {
         .build();
 
     return bookRepository.save(book);
+  }
+
+  /**
+   * QueryDSL 을 이용한 CustomRepository 에서 Book 데이터들을 가져옵니다.
+   */
+  public BookMainPageDto getBookMainPage(BookSearchFilter filter) {
+    Page<Book> books = customBookRepository.findBooksWithFilter(filter);
+
+    List<BookMainPageDetail> list = new ArrayList<>();
+
+    books.stream().forEach(
+        data -> {
+          list.add(BookMainPageDetail.builder()
+              .bookId(data.getId())
+              .bookTitle(data.getTitle())
+              .thumbnail(data.getCoverUrl())
+              .build());
+        }
+    );
+
+    return BookMainPageDto.builder()
+        .page(filter.getPage())
+        .totalPages(books.getTotalPages())
+        .books(list)
+        .build();
   }
 }
