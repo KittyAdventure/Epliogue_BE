@@ -27,11 +27,15 @@ public class CommentService {
    * @param dto 작성할 댓글의 정보를 담은 DTO
    * @return 저장된 Comment return
    */
+  @Transactional
   public Comment postComment(Member member, CommentPostRequest dto) {
     // review 정보를 가져온다.
     Review review = reviewRepository.findById(dto.getReviewId()).orElseThrow(
         () -> new ReviewNotFoundException("존재하지 않는 리뷰입니다.")
     );
+
+    // 댓글 갯수 +1
+    reviewRepository.increaseCommentsCount(review.getId());
 
     // 댓글을 저장한다.
     return commentRepository.save(Comment.builder()
@@ -79,6 +83,10 @@ public class CommentService {
     if (member.getLoginId() != comment.getMember().getLoginId()) {
       throw new UnauthorizedMemberException("삭제 권한이 없는 댓글입니다.");
     }
+
+    // 댓글 갯수 감소
+    reviewRepository.decreaseCommentsCount(comment.getReview().getId());
+
     commentRepository.delete(comment);
   }
 }
