@@ -1,5 +1,6 @@
 package com.team1.epilogue.review.repository;
 
+import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.review.entity.Review;
 import io.lettuce.core.dynamic.annotation.Param;
 import java.time.LocalDate;
@@ -26,4 +27,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
   @Query("SELECT r FROM Review r JOIN FETCH r.book JOIN FETCH r.member "
       + "WHERE r.createdAt BETWEEN :startDate AND :endDate AND r.member.loginId = :memberId")
   List<Review> findByDateAndMember(LocalDate startDate, LocalDate endDate, String memberId);
+
+  Page<Review> findByBookId(String bookId, Pageable pageable);
+
+  Page<Review> findByMemberIn(Iterable<Member> members, Pageable pageable);
+  Page<Review> findByMemberInWithFetchJoin(@Param("members") Iterable<Member> members, Pageable pageable);
+
 }

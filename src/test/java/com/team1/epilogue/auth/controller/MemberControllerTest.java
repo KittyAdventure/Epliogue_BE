@@ -1,9 +1,11 @@
 package com.team1.epilogue.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.team1.epilogue.auth.dto.RegisterRequest;
 import com.team1.epilogue.auth.dto.MemberResponse;
+import com.team1.epilogue.auth.dto.RegisterRequest;
+import com.team1.epilogue.auth.dto.SuccessResponse;
 import com.team1.epilogue.auth.dto.UpdateMemberRequest;
+import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.auth.security.CustomUserDetailsService;
 import com.team1.epilogue.auth.service.MemberService;
@@ -17,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,13 +39,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
 /**
- * [클래스 레벨]
  * MemberController의 단위 테스트 클래스
- * - 회원 가입, 회원 탈퇴, 회원 정보 수정 기능으 테스트
+ * - 회원 가입, 회원 탈퇴, 회원 정보 수정 기능을 테스트
  */
-@Import(TestSecurityConfig.class)  // SecurityConfig를 테스트 컨텍스트에 포함
+@Import(TestSecurityConfig.class)
 @WebMvcTest(MemberController.class)
 @DisplayName("MemberController 테스트")
 public class MemberControllerTest {
@@ -59,29 +60,35 @@ public class MemberControllerTest {
     @MockitoBean
     private MemberWithdrawalService memberWithdrawalService;
 
-    // SecurityConfig에서 요구하는 CustomUserDetailsService 빈 모킹
     @MockitoBean
-    private CustomUserDetailsService customUserDetailsService;
-
-    // 인증된 사용자를 위한 CustomMemberDetails
     private CustomMemberDetails memberDetails;
 
     @BeforeEach
     void setUp() {
+        Member dummyMember = Member.builder()
+                .id(1L)
+                .loginId("testUser")
+                .password("password")
+                .nickname("user1")
+                .name("Test User")
+                .email("test@example.com")
+                .phone("010-1111-1111")
+                .profileUrl("http://example.com/profile.jpg")
+                .build();
         memberDetails = new CustomMemberDetails(
-                1L,
-                "testUser",
-                "password",
+                dummyMember,
+                dummyMember.getId(),
+                dummyMember.getLoginId(),
+                dummyMember.getPassword(),
                 List.of(new SimpleGrantedAuthority("ROLE_USER")),
-                "Test User",
-                "http://example.com/profile.jpg"
+                dummyMember.getName(),
+                dummyMember.getProfileUrl()
         );
     }
 
     /**
-     * [메서드 레벨]
      * 회원 가입 성공 테스트
-     * - 회원 가입 API를 호추하여 정상적으로 가입이 이루어지는지 확인
+     * - 회원 가입 API를 호출하여 정상적으로 가입이 이루어지는지 확인
      */
     @Test
     @DisplayName("회원 가입 성공 테스트")
@@ -114,14 +121,14 @@ public class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value("1"))
-                .andExpect(jsonPath("$.loginId").value("testUser"))
-                .andExpect(jsonPath("$.email").value("test@example.com"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.id").value("1"))
+                .andExpect(jsonPath("$.data.loginId").value("testUser"))
+                .andExpect(jsonPath("$.data.email").value("test@example.com"));
     }
 
     /**
-     * [메서드 레벨]
-     * 회원 탈퇴 성공 테스트
+     * 회원 탈퇴 성공 테스트 (인증된 사용자)
      * - 인증된 사용자가 정상적으로 회원 탈퇴할 수 있는지 확인
      */
     @Test
@@ -133,14 +140,14 @@ public class MemberControllerTest {
                         .with(csrf())
                         .with(user(memberDetails)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.메시지").value("유저의 계정이 정상적으로 삭제되었습니다."));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.message").value("User account deleted successfully"));
 
         verify(memberWithdrawalService, times(1)).withdrawMember(1L);
     }
 
     /**
-     * [메서드 레벨]
-     * 회원 정보 수정 성공 테스트
+     * 회원 정보 수정 성공 테스트 (인증된 사용자)
      * - 사용자가 자신의 정보를 정상적으로 수정할 수 있는지 확인
      */
     @Test
@@ -171,31 +178,29 @@ public class MemberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.메시지").value("유저 정보 수정 완료"))
-                .andExpect(jsonPath("$.유저.id").value("1"))
-                .andExpect(jsonPath("$.유저.nickname").value("newNick"))
-                .andExpect(jsonPath("$.유저.email").value("new@example.com"))
-                .andExpect(jsonPath("$.유저.phone").value("010-5678-1234"))
-                .andExpect(jsonPath("$.유저.profileUrl").value("http://example.com/newProfile.jpg"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.id").value("1"))
+                .andExpect(jsonPath("$.data.nickname").value("newNick"))
+                .andExpect(jsonPath("$.data.email").value("new@example.com"))
+                .andExpect(jsonPath("$.data.phone").value("010-5678-1234"))
+                .andExpect(jsonPath("$.data.profileUrl").value("http://example.com/newProfile.jpg"));
     }
 
     /**
-     * [메서드 레벨]
      * 회원 탈퇴 실패 테스트 - 인증되지 않은 사용자
      * - 인증되지 않은 사용자가 탈퇴 요청을 보낼 경우 실패하는지 확인
      */
     @Test
     @DisplayName("회원 탈퇴 실패 - 인증되지 않은 사용자")
     void testWithdrawMember_Unauthorized() throws Exception {
-        // 인증되지 않은 경우
         mockMvc.perform(delete("/api/members")
                         .with(csrf()))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.메시지").value("인증되지 않은 사용자"));
     }
 
+
     /**
-     * [메서드 레벨]
      * 회원 정보 수정 실패 테스트 - 인증되지 않은 사용자
      * - 인증되지 않은 사용자가 정보 수정 요청을 보낼 경우 실패하는지 확인
      */
@@ -207,13 +212,11 @@ public class MemberControllerTest {
         request.setEmail("fail@example.com");
         request.setPhone("010-0000-0000");
         request.setProfilePhoto("http://example.com/fail.jpg");
-        // 인증되지 않은 경우
         mockMvc.perform(put("/api/members")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.메시지").value("인증되지 않은 사용자"));
-
     }
 }

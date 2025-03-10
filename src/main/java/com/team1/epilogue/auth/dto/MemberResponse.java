@@ -1,13 +1,15 @@
 package com.team1.epilogue.auth.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-/**
- * [클래스 레벨]
- * MemberResponse 클래스는 회원 등록 후 반환되는 응답 데이터를 담는 DTO
- */
-@Data
+
+@Getter
 @Builder
 public class MemberResponse {
     private String id;
