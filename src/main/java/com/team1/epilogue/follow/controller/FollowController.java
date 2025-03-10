@@ -109,6 +109,7 @@ public class FollowController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authenticated.");
         }
         Object principal = authentication.getPrincipal();
+        System.out.println("Principal 클래스: " + principal.getClass().getName());
         if (principal instanceof CustomMemberDetails) {
             return ((CustomMemberDetails) principal).getUsername();
         }

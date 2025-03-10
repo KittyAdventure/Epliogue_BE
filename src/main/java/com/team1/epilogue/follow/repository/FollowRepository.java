@@ -2,7 +2,9 @@ package com.team1.epilogue.follow.repository;
 
 import com.team1.epilogue.follow.entity.Follow;
 import com.team1.epilogue.auth.entity.Member;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,4 +25,13 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     List<Follow> findByFollower(Member follower);
     List<Follow> findByFollowed(Member followed);
     void deleteByFollowerAndFollowed(Member follower, Member followed);
+
+
+    // Fetch Join: 팔로워를 함께 로딩 (언팔로워 목록)
+    @Query("select f from Follow f join fetch f.follower where f.followed = :member")
+    List<Follow> findByFollowedWithFollower(@Param("member") Member member);
+
+    // Fetch Join: 팔로우 대상을 함께 로딩 (팔로잉 목록)
+    @Query("select f from Follow f join fetch f.followed where f.follower = :member")
+    List<Follow> findByFollowerWithFollowed(@Param("member") Member member);
 }

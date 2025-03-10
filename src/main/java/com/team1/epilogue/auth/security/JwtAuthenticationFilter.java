@@ -58,20 +58,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        // 요청에서 JWT 토큰 추출
         String token = getJwtFromRequest(request);
-        // 토큰이 존재하고 유효한 경우 사용자 인증 정보 설정
         if (token != null && tokenProvider.validateToken(token)) {
             String memberIdStr = tokenProvider.getMemberIdFromJWT(token);
             Member member = memberRepository.findById(Long.parseLong(memberIdStr))
                     .orElseThrow(() -> new MemberNotFoundException("회원이 존재하지 않습니다."));
+            CustomMemberDetails userDetails = CustomMemberDetails.fromMember(member);
             UsernamePasswordAuthenticationToken authentication =
-                    // 사용자 권한 정보 관리하는 부분이 없으므로 엠티리스트 반환
-                    new UsernamePasswordAuthenticationToken(member, null, Collections.emptyList());
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
         }
-        // 다음 필터로 요청 전달
         filterChain.doFilter(request, response);
     }
 

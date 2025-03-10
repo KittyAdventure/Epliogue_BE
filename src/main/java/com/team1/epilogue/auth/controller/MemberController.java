@@ -9,6 +9,8 @@ import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.auth.service.MemberService;
 import com.team1.epilogue.auth.service.MemberWithdrawalService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,8 @@ public class MemberController {
 
   private final MemberService memberService;
   private final MemberWithdrawalService memberWithdrawalService;
+  private static final Logger logger = LoggerFactory.getLogger(MemberController.class);
+
 
   @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ApiResponse<MemberResponse>> registerMember(
@@ -38,6 +42,18 @@ public class MemberController {
       ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, "Unauthorized user", null);
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
+
+    Object principal = authentication.getPrincipal();
+    logger.info("Principal 클래스: {}", principal.getClass().getName());
+    if (principal instanceof CustomMemberDetails) {
+      CustomMemberDetails userDetails = (CustomMemberDetails) principal;
+      logger.info("Member 정보: {}", userDetails.getMember());
+      logger.info("Member loginId: {}", userDetails.getMember().getLoginId());
+    } else {
+      logger.info("Principal is not an instance of CustomMemberDetails");
+    }
+
+
     Long memberId = ((CustomMemberDetails) authentication.getPrincipal()).getId();
     memberWithdrawalService.withdrawMember(memberId);
     SuccessResponse success = new SuccessResponse("User account deleted successfully");
