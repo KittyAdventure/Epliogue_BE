@@ -5,6 +5,9 @@ import com.team1.epilogue.comment.entity.Comment;
 import com.team1.epilogue.comment.repository.CommentRepository;
 import com.team1.epilogue.mypage.dto.MyPageCommentsDetailResponse;
 import com.team1.epilogue.mypage.dto.MyPageCommentsResponse;
+import com.team1.epilogue.review.entity.Review;
+import com.team1.epilogue.review.repository.ReviewRepository;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 public class MyPageService {
 
   private final CommentRepository commentRepository;
+  private final ReviewRepository reviewRepository;
 
   public MyPageCommentsResponse getMyComments(Member member, int page) {
     PageRequest pageRequest = PageRequest.of(page - 1, 20);
@@ -39,5 +43,18 @@ public class MyPageService {
         .page(page) // 현재 페이지 번호
         .comments(list) // JSON 내부 배열로 반환
         .build();
+  }
+
+  public void getCalendar(String memberId, String date) {
+    LocalDate dateData = LocalDate.parse(date);
+
+    LocalDate startDate = dateData.withDayOfMonth(1);
+    LocalDate endDate = dateData.withDayOfMonth(dateData.lengthOfMonth());
+
+    // 리뷰 데이터 조회
+    List<Review> reviews = reviewRepository.findByCreatedAtBetweenAndMemberId(startDate, endDate, memberId);
+
+
+
   }
 }
