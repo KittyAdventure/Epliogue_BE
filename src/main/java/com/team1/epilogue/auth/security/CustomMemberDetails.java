@@ -1,29 +1,29 @@
 package com.team1.epilogue.auth.security;
 
 import com.team1.epilogue.auth.entity.Member;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
 
-/**
- * [클래스 레벨]
- * UserDetails 인터페이스를 구현한 커스텀 사용자 정보 클래스.
- * 인증 및 인가에 필요한 사용자 정보를 제공.
- */
+@Getter
 public class CustomMemberDetails implements UserDetails {
 
+    private final Member member;
     private final Long id;
     private final String username;
     private final String password;
-    private final Collection<? extends GrantedAuthority> authorities;
+    private final Collection<GrantedAuthority> authorities;
     private final String name;
     private final String profileImg;
 
-    public CustomMemberDetails(Long id, String username, String password,
-                               Collection<? extends GrantedAuthority> authorities,
+    public CustomMemberDetails(Member member, Long id, String username, String password,
+                               Collection<GrantedAuthority> authorities,
                                String name, String profileImg) {
+        this.member = member;
         this.id = id;
         this.username = username;
         this.password = password;
@@ -32,20 +32,8 @@ public class CustomMemberDetails implements UserDetails {
         this.profileImg = profileImg;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getProfileImg() {
-        return profileImg;
-    }
-
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public Collection<GrantedAuthority> getAuthorities() {
         return authorities;
     }
 
@@ -79,19 +67,13 @@ public class CustomMemberDetails implements UserDetails {
         return true;
     }
 
-    /**
-     * [메서드 레벨]
-     * Member 엔티티를 CustomMemberDetails 객체로 변환하는 정적 팩토리 메서드.
-     *
-     * @param member Member 엔티티
-     * @return CustomMemberDetails 객체
-     */
     public static CustomMemberDetails fromMember(Member member) {
         return new CustomMemberDetails(
+                member,
                 member.getId(),
                 member.getLoginId(),
                 member.getPassword(),
-                Collections.singleton(() -> "ROLE_USER"),
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
                 member.getName(),
                 member.getProfileUrl()
         );
