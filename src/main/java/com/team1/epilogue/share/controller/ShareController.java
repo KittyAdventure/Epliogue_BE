@@ -2,8 +2,6 @@ package com.team1.epilogue.share.controller;
 
 import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.review.repository.ReviewRepository;
-import com.team1.epilogue.share.dto.KakaoShareRequest;
-import com.team1.epilogue.share.dto.KakaoShareResponse;
 import com.team1.epilogue.share.dto.ShareResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,39 +23,12 @@ public class ShareController {
             @RequestParam("type") String type,
             @RequestParam("id") String id) {
         if (type == null || type.trim().isEmpty() || id == null || id.trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Required parameter missing or invalid");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "필수 파라미터가 누락되었거나 올바르지 않습니다.");
         }
 
         validateResourceExistence(type, id);
-
         String shareUrl = buildShareUrl(type, id);
         ShareResponse response = new ShareResponse(shareUrl);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping(value = "/kakao", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<KakaoShareResponse> shareViaKakao(
-            @RequestParam("type") String type,
-            @RequestParam("id") String id,
-            @RequestBody KakaoShareRequest request) {
-        if (type == null || type.trim().isEmpty() || id == null || id.trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Required parameter missing or invalid");
-        }
-        if (request.getTargetType() == null || request.getTargetType().trim().isEmpty() ||
-                request.getTargetId() == null || request.getTargetId().trim().isEmpty() ||
-                request.getRecipient() == null || request.getRecipient().trim().isEmpty() ||
-                request.getMessage() == null || request.getMessage().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Required request body parameter missing or invalid");
-        }
-
-        validateResourceExistence(type, id);
-
-        String shareUrl = buildShareUrl(type, id);
-        KakaoShareResponse response = new KakaoShareResponse(
-                "KakaoTalk message sent successfully",
-                shareUrl,
-                request.getMessage()
-        );
         return ResponseEntity.ok(response);
     }
 
@@ -65,7 +36,7 @@ public class ShareController {
         switch (type.toLowerCase()) {
             case "book":
                 if (!bookRepository.existsById(id)) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Book not found");
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "책을 찾을 수 없습니다.");
                 }
                 break;
             case "review":
@@ -73,14 +44,14 @@ public class ShareController {
                 try {
                     reviewId = Long.parseLong(id);
                 } catch (NumberFormatException e) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Review id must be a number");
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "리뷰 id는 숫자여야 합니다.");
                 }
                 if (!reviewRepository.existsById(reviewId)) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found");
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "리뷰를 찾을 수 없습니다.");
                 }
                 break;
             default:
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid type parameter");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 type 파라미터입니다.");
         }
     }
 
@@ -91,7 +62,7 @@ public class ShareController {
             case "review":
                 return "https://13.125.112.89/reviews/" + id;
             default:
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid type parameter");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 type 파라미터입니다.");
         }
     }
 }

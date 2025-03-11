@@ -65,7 +65,8 @@ public class TestSecurityConfig {
                                 "/api/members/login/social",
                                 "/api/members/auth/kakao/callback",
                                 "/api/members/auth/google/callback",
-                                "/login/oauth2/**"
+                                "/login/oauth2/**",
+                                "/api/share/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

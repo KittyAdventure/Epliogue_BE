@@ -3,6 +3,7 @@ package com.team1.epilogue.auth.security;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +23,7 @@ import java.util.Collections;
  * JWT 토큰을 검증하고 인증 정보를 SecurityContext에 저장하는 역할 수행
  */
 @Slf4j
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     /**
      * [필드 레벨]
@@ -29,17 +31,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private final JwtTokenProvider tokenProvider;
     private final MemberRepository memberRepository;
-
-    /**
-     * [생성자 레벨]
-     * JwtTokenProvider를 주입받아 초기화
-     *
-     * @param tokenProvider JWT 토큰 처리 객체
-     */
-    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, MemberRepository memberRepository) {
-        this.tokenProvider = tokenProvider;
-        this.memberRepository = memberRepository;
-    }
 
     /**
      * [메서드 레벨]
@@ -58,6 +49,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        String requestURI = request.getRequestURI();
+
+        // 공유 관련 URI는 인증 없이 처리
+        if (requestURI.startsWith("/api/share")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String token = getJwtFromRequest(request);
         if (token != null && tokenProvider.validateToken(token)) {
             String memberIdStr = tokenProvider.getMemberIdFromJWT(token);
