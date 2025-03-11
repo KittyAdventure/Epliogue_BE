@@ -1,6 +1,7 @@
 package com.team1.epilogue.comment.controller;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
 import com.team1.epilogue.comment.dto.CommentUpdateRequest;
 import com.team1.epilogue.comment.dto.MessageResponse;
@@ -8,12 +9,7 @@ import com.team1.epilogue.comment.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -72,6 +68,30 @@ public class CommentController {
 
     MessageResponse response = MessageResponse.builder()
         .message("댓글이 성공적으로 삭제되었습니다.").build();
+
+    return ResponseEntity.ok(response);
+  }
+
+  @PostMapping("/api/comments/{commentId}/likes")
+  public ResponseEntity<MessageResponse> likeComment(Authentication authentication,
+                                                     @PathVariable Long commentId) {
+    CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
+    commentService.likeComment(member, commentId);
+
+    MessageResponse response = MessageResponse.builder()
+            .message("댓글 좋아요를 성공했습니다").build();
+
+    return ResponseEntity.ok(response);
+  }
+
+  @DeleteMapping("/api/comments/{commentId}/likes")
+  public ResponseEntity<MessageResponse> unlikeComment(Authentication authentication,
+                                                       @PathVariable Long commentId) {
+    CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
+    commentService.unlikeComment(member, commentId);
+
+    MessageResponse response = MessageResponse.builder()
+            .message("댓글 좋아요 취소를 성공했습니다").build();
 
     return ResponseEntity.ok(response);
   }

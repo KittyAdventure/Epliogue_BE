@@ -3,11 +3,7 @@ package com.team1.epilogue.comment.entity;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.common.entity.BaseEntity;
 import com.team1.epilogue.review.entity.Review;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,4 +29,8 @@ public class Comment extends BaseEntity {
   private Review review;
 
   private String color; // 댓글 색
+
+  @Builder.Default
+  @Column(nullable = false)
+  private int likeCount = 0;
 }

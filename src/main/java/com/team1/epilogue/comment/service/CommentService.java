@@ -1,13 +1,18 @@
 package com.team1.epilogue.comment.service;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
 import com.team1.epilogue.comment.dto.CommentUpdateRequest;
 import com.team1.epilogue.comment.entity.Comment;
+import com.team1.epilogue.comment.entity.CommentLike;
 import com.team1.epilogue.comment.exception.CommentNotFoundException;
 import com.team1.epilogue.comment.exception.UnauthorizedMemberException;
+import com.team1.epilogue.comment.repository.CommentLikeRepository;
 import com.team1.epilogue.comment.repository.CommentRepository;
 import com.team1.epilogue.review.entity.Review;
+import com.team1.epilogue.review.exception.AlreadyLikedException;
+import com.team1.epilogue.review.exception.LikeNotFoundException;
 import com.team1.epilogue.review.exception.ReviewNotFoundException;
 import com.team1.epilogue.review.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +25,7 @@ public class CommentService {
 
   private final CommentRepository commentRepository;
   private final ReviewRepository reviewRepository;
+  private final CommentLikeRepository commentLikeRepository;
 
   /**
    * 댓글 작성하는 메서드
@@ -80,5 +86,32 @@ public class CommentService {
       throw new UnauthorizedMemberException("삭제 권한이 없는 댓글입니다.");
     }
     commentRepository.delete(comment);
+  }
+
+  @Transactional
+  public void likeComment(CustomMemberDetails details, Long commentId) {
+    Member member = details.getMember();
+    Comment comment = commentRepository.findById(commentId)
+            .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다"));
+
+    if (commentLikeRepository.existsByCommentIdAndMemberId(commentId, member.getId())) {
+      throw new AlreadyLikedException("이미 좋아요를 눌렀습니다.");
+    }
+
+    CommentLike commentLike = new CommentLike(comment, member);
+    commentLikeRepository.save(commentLike);
+
+    commentRepository.increaseLikeCount(commentId);
+  }
+
+  @Transactional
+  public void unlikeComment(CustomMemberDetails details, Long commentId) {
+    Member member = details.getMember();
+    CommentLike commentLike = commentLikeRepository.findByCommentIdAndMemberId(commentId, member.getId())
+            .orElseThrow(() -> new LikeNotFoundException("취소할 좋아요가 없습니다."));
+
+    commentLikeRepository.delete(commentLike);
+
+    commentRepository.decreaseLikeCount(commentId);
   }
 }
