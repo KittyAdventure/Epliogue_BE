@@ -1,6 +1,5 @@
 package com.team1.epilogue.book.repository;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team1.epilogue.book.dto.BookSearchFilter;
@@ -28,17 +27,8 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
     // PageRequest 생성
     Pageable pageable = PageRequest.of(filter.getPage() - 1, 9);
 
-    BooleanBuilder builder = new BooleanBuilder();
-    if (filter.getPage() < 1) {
-      builder.and(book.author.eq("ㅇㅇ"));
-    }
-    if (filter.getPage() > 10) {
-      builder.and(book.title.contains("아아아"));
-    }
-
     List<Book> books = jpaQueryFactory
         .selectFrom(book)
-        .where(builder)
         .orderBy(getSortOrder(filter, book)) // 정렬 기준 설정
         .offset(filter.getPage()) // 페이징 처리
         .limit(9) // 9개씩
