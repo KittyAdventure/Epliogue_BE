@@ -12,6 +12,6 @@ public class MongoConfig {
 
   @PostConstruct
   public void init() {
-    log.info("✅ Mongo Auditing 활성화됨");
+    log.info("Mongo Auditing 활성화됨");
   }
 }

@@ -12,22 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class ChatRoomDto {
-
   private String id;
-  private String roomId;
-  private Set<Long> participants;
-  private Long bookId;
   private String title;
-
-
-  public static ChatRoomDto fromEntity(ChatRoom chatRoom) {
-    return ChatRoomDto.builder()
-        .id(chatRoom.getId())
-        .title(chatRoom.getTitle())
-        .participants(chatRoom.getParticipants())
-        .build();
-  }
-
-
+  private int memberCnt;
+  private Long createId;
 
 }
