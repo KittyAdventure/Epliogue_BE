@@ -1,6 +1,6 @@
 package com.team1.epilogue.mypage.controller;
 
-import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.mypage.dto.MyPageCommentsResponse;
 import com.team1.epilogue.mypage.dto.MyPageUserInfoResponse;
 import com.team1.epilogue.mypage.service.MyPageService;
@@ -25,7 +25,7 @@ public class MyPageController {
   @GetMapping("/api/mypage/comments")
   public ResponseEntity<MyPageCommentsResponse> getMyComments(Authentication authentication,
       @RequestParam int page) {
-    Member member = (Member) authentication.getPrincipal();
+    CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
     MyPageCommentsResponse myComments = myPageService.getMyComments(member, page);
     return ResponseEntity.ok(myComments);
   }
