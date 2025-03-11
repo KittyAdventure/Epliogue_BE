@@ -8,6 +8,7 @@ import com.team1.epilogue.comment.repository.CommentRepository;
 import com.team1.epilogue.mypage.dto.MyPageCommentsDetailResponse;
 import com.team1.epilogue.mypage.dto.MyPageCommentsResponse;
 import com.team1.epilogue.mypage.dto.MyPageUserInfoResponse;
+import com.team1.epilogue.review.repository.ReviewRepository;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class MyPageService {
   private final CommentRepository commentRepository;
   private final MemberRepository memberRepository;
   private final FollowRepository followRepository;
+  private final ReviewRepository reviewRepository;
 
   public MyPageCommentsResponse getMyComments(Member member, int page) {
     PageRequest pageRequest = PageRequest.of(page - 1, 20);
@@ -56,8 +58,13 @@ public class MyPageService {
         .nickName(member.getNickname())
         .loginId(member.getLoginId())
         .email(member.getEmail())
-        .follower(followRepository.findByFollower().size())
-        .following(followRepository.findByFollowed().size())
+        .follower(followRepository.findByFollower(member).size())
+        .following(followRepository.findByFollowed(member).size())
+        .reviewCount(reviewRepository.findAllByMember(member).size())
+//        .meetingCount(meetingRepository.findAll)
+//        .collectionCount(collecccf)
+        .commentCount(commentRepository.findAllByMember(member).size())
+        .point(member.getPoint())
         .build();
   }
 }
