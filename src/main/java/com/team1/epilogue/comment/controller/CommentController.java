@@ -1,6 +1,6 @@
 package com.team1.epilogue.comment.controller;
 
-import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
 import com.team1.epilogue.comment.dto.CommentUpdateRequest;
 import com.team1.epilogue.comment.dto.MessageResponse;
@@ -31,7 +31,7 @@ public class CommentController {
   @PostMapping("/api/comments")
   public ResponseEntity<MessageResponse> postComment(Authentication authentication,
       @RequestBody CommentPostRequest dto) {
-    Member member = (Member) authentication.getPrincipal();
+    CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
     commentService.postComment(member, dto);
 
     MessageResponse response = MessageResponse.builder()
@@ -49,7 +49,7 @@ public class CommentController {
   @PutMapping("/api/comments")
   public ResponseEntity<MessageResponse> updateComment(Authentication authentication,
       @RequestBody CommentUpdateRequest dto) {
-    Member member = (Member) authentication.getPrincipal();
+    CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
     commentService.updateComment(member, dto);
 
     MessageResponse response = MessageResponse.builder()
@@ -67,7 +67,7 @@ public class CommentController {
   @DeleteMapping("/api/comments")
   public ResponseEntity<MessageResponse> deleteComment(Authentication authentication,
       @RequestParam Long commentId) {
-    Member member = (Member) authentication.getPrincipal();
+    CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
     commentService.deleteComment(member, commentId);
 
     MessageResponse response = MessageResponse.builder()

@@ -1,6 +1,8 @@
 package com.team1.epilogue.comment.service;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.repository.MemberRepository;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
 import com.team1.epilogue.comment.dto.CommentUpdateRequest;
 import com.team1.epilogue.comment.entity.Comment;
@@ -23,11 +25,10 @@ public class CommentService {
 
   /**
    * 댓글 작성하는 메서드
-   * @param member 사용자 정보를 담은 객체
-   * @param dto 작성할 댓글의 정보를 담은 DTO
-   * @return 저장된 Comment return
    */
-  public Comment postComment(Member member, CommentPostRequest dto) {
+  public Comment postComment(CustomMemberDetails details, CommentPostRequest dto) {
+    Member member = details.getMember();
+
     // review 정보를 가져온다.
     Review review = reviewRepository.findById(dto.getReviewId()).orElseThrow(
         () -> new ReviewNotFoundException("존재하지 않는 리뷰입니다.")
@@ -46,11 +47,10 @@ public class CommentService {
 
   /**
    * 댓글 수정하는 메서드
-   * @param member 사용자 정보를 담은 member 객체
-   * @param dto 수정할 댓글의 정보를 담은 dto 객체
-   * @return 수정된 Comment return
    */
-  public Comment updateComment(Member member, CommentUpdateRequest dto) {
+  public Comment updateComment(CustomMemberDetails
+      details, CommentUpdateRequest dto) {
+    Member member = details.getMember();
     // 댓글 정보가 존재하지 않을 시 예외 처리
     Comment comment = commentRepository.findById(dto.getCommentId()).orElseThrow(
         () -> new CommentNotFoundException("존재하지 않는 댓글 정보입니다.")
@@ -65,11 +65,10 @@ public class CommentService {
 
   /**
    * 댓글 삭제하는 기능
-   * @param member 사용자 정보를 담은 Member 객체
-   * @param commentId 삭제하려는 댓글의 PK
    */
   @Transactional
-  public void deleteComment(Member member, Long commentId) {
+  public void deleteComment(CustomMemberDetails details, Long commentId) {
+    Member member = details.getMember();
     // 댓글 정보가 존재하지 않을 시 예외 처리
     Comment comment = commentRepository.findById(commentId).orElseThrow(
         () -> new CommentNotFoundException("존재하지 않는 댓글 정보입니다.")
