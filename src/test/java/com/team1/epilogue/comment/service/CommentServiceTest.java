@@ -245,5 +245,6 @@ class CommentServiceTest {
 
     //then
     assertEquals("수빈1",result.getComments().get(1).getMemberNickname());
+
   }
 }
