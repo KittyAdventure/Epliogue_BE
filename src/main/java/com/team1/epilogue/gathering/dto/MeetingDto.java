@@ -2,7 +2,6 @@ package com.team1.epilogue.gathering.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.gathering.entity.Meeting;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
