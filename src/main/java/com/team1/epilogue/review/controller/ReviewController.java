@@ -1,6 +1,7 @@
 package com.team1.epilogue.review.controller;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.review.dto.ReviewRequestDto;
 import com.team1.epilogue.review.dto.ReviewResponseDto;
 import com.team1.epilogue.review.service.ReviewService;
@@ -29,7 +30,7 @@ public class ReviewController {
     public ResponseEntity<ReviewResponseDto> createReview(@PathVariable String bookId,
                                                           @RequestBody ReviewRequestDto reviewRequestDto,
                                                           Authentication authentication) {
-        Member member = (Member) authentication.getPrincipal(); // Authentication 에서 Member 객체 추출
+        CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
         ReviewResponseDto reviewResponseDto =
                 reviewService.createReview(bookId, reviewRequestDto, member);
 
@@ -84,7 +85,7 @@ public class ReviewController {
     public ResponseEntity<ReviewResponseDto> updateReview(@PathVariable Long reviewId,
                                                           @RequestBody ReviewRequestDto reviewRequestDto,
                                                           Authentication authentication) {
-        Member member = (Member) authentication.getPrincipal();
+        CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
         ReviewResponseDto updatedReview = reviewService.updateReview(reviewId, reviewRequestDto, member);
 
         return ResponseEntity.ok(updatedReview);
@@ -100,7 +101,7 @@ public class ReviewController {
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<String> deleteReview(@PathVariable Long reviewId,
                                                Authentication authentication) {
-        Member member = (Member) authentication.getPrincipal();
+        CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
         reviewService.deleteReview(reviewId, member);
 
         return ResponseEntity.ok("리뷰가 성공적으로 삭제되었습니다.");
@@ -109,7 +110,7 @@ public class ReviewController {
     @PostMapping("/reviews/{reviewId}/likes")
     public ResponseEntity<String> likeReview(@PathVariable Long reviewId,
                                              Authentication authentication) {
-        Member member = (Member) authentication.getPrincipal();
+        CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
         reviewService.likeReview(reviewId, member);
 
         return ResponseEntity.ok("좋아요 성공");
@@ -118,7 +119,7 @@ public class ReviewController {
     @DeleteMapping("/reviews/{reviewId}/likes")
     public ResponseEntity<String> unlikeReview(@PathVariable Long reviewId,
                                                Authentication authentication) {
-        Member member = (Member) authentication.getPrincipal();
+        CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
         reviewService.unlikeReview(reviewId, member);
         return ResponseEntity.ok("좋아요 취소 성공");
     }

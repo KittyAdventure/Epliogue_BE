@@ -1,6 +1,7 @@
 package com.team1.epilogue.review.service;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.review.dto.ReviewRequestDto;
@@ -26,16 +27,9 @@ public class ReviewService {
     private final BookRepository bookRepository;
     private final ReviewLikeRepository reviewLikeRepository;
 
-    /**
-     * 책에 대한 리뷰를 생성합니다
-     *
-     * @param bookId           리뷰가 작성될 책의 ID
-     * @param reviewRequestDto 클라이언트가 전달한 리뷰 데이터
-     * @param member           리뷰 작성자
-     * @return 생성된 리뷰의 상세 정보를 담은 DTO
-     */
     @Transactional
-    public ReviewResponseDto createReview(String bookId, ReviewRequestDto reviewRequestDto, Member member) {
+    public ReviewResponseDto createReview(String bookId, ReviewRequestDto reviewRequestDto, CustomMemberDetails memberDetails) {
+        Member member = memberDetails.getMember();
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("존재하지 않는 책입니다."));
 
@@ -60,12 +54,6 @@ public class ReviewService {
         return PageRequest.of(page - 1, size, sort);
     }
 
-    /**
-     * 특정 리뷰의 상세 정보를 조회합니다
-     *
-     * @param reviewId 조회할 리뷰의 ID
-     * @return 해당 리뷰의 상세 정보를 담은 DTO
-     */
     public ReviewResponseDto getReviewDetail(Long reviewId) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
@@ -73,16 +61,9 @@ public class ReviewService {
         return ReviewResponseDto.from(review);
     }
 
-    /**
-     * 리뷰를 수정합니다
-     *
-     * @param reviewId         수정할 리뷰의 ID
-     * @param reviewRequestDto 수정된 리뷰 데이터를 담은 DTO
-     * @param member           수정 요청을 보낸 사용자
-     * @return 수정된 리뷰의 상세 정보를 담은 DTO
-     */
     @Transactional
-    public ReviewResponseDto updateReview(Long reviewId, ReviewRequestDto reviewRequestDto, Member member) {
+    public ReviewResponseDto updateReview(Long reviewId, ReviewRequestDto reviewRequestDto, CustomMemberDetails memberDetails) {
+        Member member = memberDetails.getMember();
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
@@ -94,13 +75,8 @@ public class ReviewService {
         return ReviewResponseDto.from(review);
     }
 
-    /**
-     * 리뷰를 삭제합니다
-     *
-     * @param reviewId 삭제할 리뷰의 ID
-     * @param member   삭제 요청을 보낸 사용자
-     */
-    public void deleteReview(Long reviewId, Member member) {
+    public void deleteReview(Long reviewId, CustomMemberDetails memberDetails) {
+        Member member = memberDetails.getMember();
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
@@ -111,9 +87,9 @@ public class ReviewService {
         reviewRepository.delete(review);
     }
 
-    // 좋아요
     @Transactional
-    public void likeReview(Long reviewId, Member member) {
+    public void likeReview(Long reviewId, CustomMemberDetails memberDetails) {
+        Member member = memberDetails.getMember();
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
@@ -127,9 +103,9 @@ public class ReviewService {
         reviewRepository.increaseLikeCount(reviewId);
     }
 
-    // 좋아요 삭제
     @Transactional
-    public void unlikeReview(Long reviewId, Member member) {
+    public void unlikeReview(Long reviewId, CustomMemberDetails memberDetails) {
+        Member member = memberDetails.getMember();
         ReviewLike reviewLike = reviewLikeRepository.findByReviewIdAndMemberId(reviewId, member.getId())
                 .orElseThrow(() -> new LikeNotFoundException("취소할 좋아요가 없습니다."));
 
