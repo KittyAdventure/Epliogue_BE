@@ -2,6 +2,7 @@ package com.team1.epilogue.comment.controller;
 
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
+import com.team1.epilogue.comment.dto.CommentResponse;
 import com.team1.epilogue.comment.dto.CommentUpdateRequest;
 import com.team1.epilogue.comment.dto.MessageResponse;
 import com.team1.epilogue.comment.service.CommentService;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -74,5 +76,20 @@ public class CommentController {
         .message("댓글이 성공적으로 삭제되었습니다.").build();
 
     return ResponseEntity.ok(response);
+  }
+
+  /**
+   * 특정 리뷰에 대한 댓글들을 보는 메서드
+   * @param reviewId 조회하려는 review Id
+   * @param page 페이지 번호
+   * @param sort 기본값 = 최신순 / "like" = 좋아요 많은 순
+   */
+  @GetMapping("/api/comments/view")
+  public ResponseEntity<CommentResponse> getCommentList(
+      @RequestParam Long reviewId,
+      @RequestParam int page,
+      @RequestParam String sort) {
+    CommentResponse commentList = commentService.getCommentList(reviewId, page, sort);
+    return ResponseEntity.ok(commentList);
   }
 }

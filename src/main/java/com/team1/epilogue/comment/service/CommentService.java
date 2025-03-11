@@ -1,7 +1,9 @@
 package com.team1.epilogue.comment.service;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.comment.dto.CommentDetail;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
+import com.team1.epilogue.comment.dto.CommentResponse;
 import com.team1.epilogue.comment.dto.CommentUpdateRequest;
 import com.team1.epilogue.comment.entity.Comment;
 import com.team1.epilogue.comment.exception.CommentNotFoundException;
@@ -10,7 +12,11 @@ import com.team1.epilogue.comment.repository.CommentRepository;
 import com.team1.epilogue.review.entity.Review;
 import com.team1.epilogue.review.exception.ReviewNotFoundException;
 import com.team1.epilogue.review.repository.ReviewRepository;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,5 +86,55 @@ public class CommentService {
       throw new UnauthorizedMemberException("삭제 권한이 없는 댓글입니다.");
     }
     commentRepository.delete(comment);
+  }
+
+  /**
+   * 특정 리뷰에 대한 댓글들 불러오는 기능
+   * @param reviewId 조회하려는 Review 의 ID
+   * @param page 페이지 번호
+   * @param sort 기본적으로는 최신순 / "like" 로 들어온다면 좋아요 많은순
+   */
+  public CommentResponse getCommentList(Long reviewId,int page,String sort) {
+
+    Page<Comment> comments;
+    Review review = reviewRepository.findById(reviewId).orElseThrow(
+        () -> new ReviewNotFoundException("존재하지 않는 리뷰입니다.")
+    );
+    PageRequest pageRequest = PageRequest.of(page - 1, 10);
+
+    if (sort != null && sort.equals("like")) {
+      // TODO 좋아요 순 정렬 작업해야함.
+      // 아래 메서드는 컴파일을 위해 임시로 넣어놓은거
+      comments = commentRepository.findCommentsByReviewSortDate(pageRequest, review);
+    } else {
+      // 최신 순 정렬
+      comments = commentRepository.findCommentsByReviewSortDate(pageRequest, review);
+    }
+
+    List<CommentDetail> dtoList = new ArrayList<>();
+
+    comments.getContent().stream().forEach(
+        data -> {
+          dtoList.add(
+              CommentDetail.builder()
+                  .commentId(data.getId())
+                  .commentContent(data.getContent())
+                  .memberId(data.getMember().getId())
+                  .memberNickname(data.getMember().getNickname())
+                  .memberProfile(data.getMember().getProfileUrl())
+                  .commentPostDateTime(data.getCreatedAt())
+//                  .commentLike(data.getCommentLikes) 댓글 좋아요 추가되면 추가해야함
+                  .commentColor(data.getColor())
+                  .build()
+          );
+        }
+    );
+
+    return CommentResponse
+        .builder()
+        .page(page)
+        .comments(dtoList)
+        .totalPages(comments.getTotalPages())
+        .build();
   }
 }

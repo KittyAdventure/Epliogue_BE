@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
+import com.team1.epilogue.comment.dto.CommentResponse;
 import com.team1.epilogue.comment.dto.CommentUpdateRequest;
 import com.team1.epilogue.comment.entity.Comment;
 import com.team1.epilogue.comment.exception.CommentNotFoundException;
@@ -13,6 +14,8 @@ import com.team1.epilogue.comment.exception.UnauthorizedMemberException;
 import com.team1.epilogue.comment.repository.CommentRepository;
 import com.team1.epilogue.review.entity.Review;
 import com.team1.epilogue.review.repository.ReviewRepository;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +25,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -44,6 +51,7 @@ class CommentServiceTest {
     member = Member.builder()
         .id(1L)
         .loginId("test1")
+        .nickname("수빈1")
         .name("수빈")
         .build();
 
@@ -137,7 +145,7 @@ class CommentServiceTest {
 
     // 캡처된 객체 확인
     Comment capturedComment = commentCaptor.getValue();
-    assertEquals("테스트2", capturedComment.getContent());
+    assertEquals("테스트1", capturedComment.getContent());
   }
 
   @Test
@@ -194,5 +202,48 @@ class CommentServiceTest {
     // deleteComment() 메서드의 작성자가 아닌 다른 사용자의 정보를 넣음
     assertThrows(UnauthorizedMemberException.class,
         () -> commentService.deleteComment(member2, commentId));
+  }
+
+  @Test
+  @DisplayName("댓글 조회하는 기능 테스트")
+  //given
+  void getCommentList(){
+    when(reviewRepository.findById(1L)).thenReturn(
+        Optional.of(
+            Review.builder()
+            .id(1L)
+            .build())
+    );
+
+
+    List<Comment> commentList = new ArrayList<>();
+    commentList.add(
+        Comment.builder()
+            .id(1L)
+            .member(member)
+            .review(review)
+            .content("테스트 댓글1")
+            .build()
+    );
+    commentList.add(
+        Comment.builder()
+            .id(2L)
+            .member(member)
+            .review(review)
+            .content("테스트 댓글1")
+            .build()
+    );
+    PageRequest pageRequest = PageRequest.of(0, 10);
+    Page<Comment> page = new PageImpl<>(commentList,pageRequest,commentList.size());
+
+    when(commentRepository.findCommentsByReviewSortDate(any(Pageable.class),any(Review.class)))
+        .thenReturn(page);
+
+    //when
+    CommentResponse result = commentService
+        .getCommentList(1L, 1, null);
+
+    //then
+    assertEquals("수빈1",result.getComments().get(1).getMemberNickname());
   }
 }
