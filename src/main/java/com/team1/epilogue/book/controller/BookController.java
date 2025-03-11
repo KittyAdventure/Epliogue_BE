@@ -46,17 +46,20 @@ public class BookController {
 
   /**
    * 책 메인 페이지에 들어갈때 조회되는 정보를 return 하는 메서드입니다.
-   *
-   * @param ratingAsc 별점 순 정렬 / true 일때만 오름차순
-   * @param dateAsc 최신순 정렬 / true 일때만 오름차순
    */
   @GetMapping("/api/books/main-page")
   public ResponseEntity<BookMainPageDto> getBookMainPage(
-      @RequestParam boolean ratingAsc,
-      @RequestParam boolean dateAsc) {
+      @RequestParam String sort,
+      @RequestParam String chosung,
+      @RequestParam int rating,
+      @RequestParam String startDate,
+      @RequestParam String endDate) {
     BookSearchFilter filter = BookSearchFilter.builder()
-        .ratingAsc(ratingAsc)
-        .dateAsc(dateAsc)
+        .sort(sort)
+        .chosung(chosung)
+        .rating(rating)
+        .startDate(startDate)
+        .endDate(endDate)
         .build();
     BookMainPageDto bookMainPage = bookService.getBookMainPage(filter);
     return ResponseEntity.ok(bookMainPage);

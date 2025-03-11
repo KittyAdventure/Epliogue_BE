@@ -9,6 +9,9 @@ import lombok.Setter;
 @Builder
 public class BookSearchFilter {
   private int page;
-  private boolean dateAsc; // 날짜 필터. true 일땐 오름차순
-  private boolean ratingAsc; // 별점 필터. true 일땐 오름차순
+  private String sort;
+  private String chosung;
+  private Integer rating;
+  private String startDate;
+  private String endDate;
 }

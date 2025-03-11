@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -60,6 +61,7 @@ public class BookService {
    * @param dto 책 제목 / ISBN 번호를 담은 DTO
    * @return 네이버에서 온 응답값을 return
    */
+  @Transactional
   public BookDetailResponse getBookDetail(BookDetailRequest dto) {
     Optional<Book> bookOpt; // repository 에서 가져올 Optional 객체
     Book book; // Optional 내부의 책 데이터
@@ -106,6 +108,8 @@ public class BookService {
     // 인기 책 목록 기능을 위해 DB 에 조회기록 저장
     trendingBookService.insertTrendingBookHistory(book.getId());
 
+    bookRepository.increaseView(book.getId());// 조회수 ++
+
     // DTO 로 반환 형식에 맞춰 return
     BookDetailResponse build = BookDetailResponse.builder()
         .title(book.getTitle())
@@ -142,6 +146,7 @@ public class BookService {
         .pubDate(Optional.ofNullable(dto.getPubDate())
             .map(LocalDate::parse)
             .orElse(null)) // null이면 그대로 null 할당
+        .chosung(getChosung(dto.getTitle())) // 이 책이 어떤 초성으로 시작하는지 설정
         .build();
 
     return bookRepository.save(book);
@@ -170,5 +175,30 @@ public class BookService {
         .totalPages(books.getTotalPages())
         .books(list)
         .build();
+  }
+
+  // 책 제목 첫글자에서 초성 따는 메서드
+  private String getChosung(String title) {
+    if (title == null || title.isEmpty()) {
+      return "";
+    }
+
+    char firstChar = title.charAt(0);
+
+    if (firstChar >= '가' && firstChar <= '힣') {
+      // 한글 초성 추출
+      int unicode = firstChar - 0xAC00;
+      int chosungIndex = unicode / (21 * 28);
+      final char[] CHOSUNG_LIST = {
+          'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
+      };
+      return String.valueOf(CHOSUNG_LIST[chosungIndex]);
+    } else if ((firstChar >= 'A' && firstChar <= 'Z') || (firstChar >= 'a' && firstChar <= 'z')) {
+      // 영문자는 대문자로 변환
+      return String.valueOf(Character.toUpperCase(firstChar));
+    } else {
+      // 그 외 문자(숫자, 특수문자 등)는 그대로 반환
+      return String.valueOf(firstChar);
+    }
   }
 }
