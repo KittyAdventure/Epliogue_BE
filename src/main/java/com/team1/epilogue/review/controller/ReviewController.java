@@ -1,6 +1,5 @@
 package com.team1.epilogue.review.controller;
 
-import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.review.dto.ReviewRequestDto;
 import com.team1.epilogue.review.dto.ReviewResponseDto;
