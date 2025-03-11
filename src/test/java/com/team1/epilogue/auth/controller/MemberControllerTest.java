@@ -11,6 +11,7 @@ import com.team1.epilogue.auth.security.CustomUserDetailsService;
 import com.team1.epilogue.auth.service.MemberService;
 import com.team1.epilogue.auth.service.MemberWithdrawalService;
 import com.team1.epilogue.config.TestSecurityConfig;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,12 +47,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(TestSecurityConfig.class)
 @WebMvcTest(MemberController.class)
 @DisplayName("MemberController 테스트")
+@RequiredArgsConstructor
 public class MemberControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
     private ObjectMapper objectMapper;
 
     @MockitoBean

@@ -12,6 +12,7 @@ import com.team1.epilogue.follow.entity.Follow;
 import com.team1.epilogue.follow.repository.FollowRepository;
 import com.team1.epilogue.review.entity.Review;
 import com.team1.epilogue.review.repository.ReviewRepository;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,20 +30,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @Transactional
 @DisplayName("FollowService 통합 테스트")
+@RequiredArgsConstructor
 class FollowServiceTest {
 
-    @Autowired
     private MemberRepository memberRepository;
-    @Autowired
     private BookRepository bookRepository;
-
-    @Autowired
     private FollowRepository followRepository;
-
-    @Autowired
     private ReviewRepository reviewRepository;
-
-    @Autowired
     private FollowService followService;
 
     private Member follower;

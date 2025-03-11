@@ -6,6 +6,7 @@ import com.team1.epilogue.follow.dto.MembersResponse;
 import com.team1.epilogue.follow.dto.MessageResponse;
 import com.team1.epilogue.follow.dto.ReviewListResponse;
 import com.team1.epilogue.follow.service.FollowService;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,14 +30,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = FollowController.class)
 @DisplayName("FollowController 테스트")
+@RequiredArgsConstructor
 public class FollowControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
     @MockitoBean
     private FollowService followService;
-
-    @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeEach
