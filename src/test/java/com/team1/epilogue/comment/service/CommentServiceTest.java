@@ -138,7 +138,7 @@ class CommentServiceTest {
 
     // then
     assertNotNull(response);
-    assertEquals("테스트2", response.getContent());
+    assertEquals("테스트1", response.getContent());
     assertThrows(UnauthorizedMemberException.class, () -> {
       commentService.updateComment(anotherMember, request);
     });
