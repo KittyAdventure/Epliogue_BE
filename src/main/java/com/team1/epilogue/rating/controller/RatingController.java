@@ -1,6 +1,6 @@
 package com.team1.epilogue.rating.controller;
 
-import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.rating.dto.RatingRequestDto;
 import com.team1.epilogue.rating.dto.RatingResponseDto;
 import com.team1.epilogue.rating.service.RatingService;
@@ -29,7 +29,7 @@ public class RatingController {
     public ResponseEntity<RatingResponseDto> createRating(@PathVariable String bookId,
                                                           @RequestBody @Valid RatingRequestDto ratingRequestDto,
                                                           Authentication authentication) {
-        Member member = (Member) authentication.getPrincipal();
+        CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
         RatingResponseDto ratingResponseDto =
                 ratingService.createRating(bookId, ratingRequestDto, member);
 
@@ -48,7 +48,7 @@ public class RatingController {
     public ResponseEntity<RatingResponseDto> updateRating(@PathVariable String bookId,
                                                           @RequestBody RatingRequestDto ratingRequestDto,
                                                           Authentication authentication) {
-        Member member = (Member) authentication.getPrincipal();
+        CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
         RatingResponseDto ratingResponseDto =
                 ratingService.updateRating(bookId, ratingRequestDto, member);
 
@@ -65,7 +65,7 @@ public class RatingController {
     @DeleteMapping("/books/{bookId}/ratings")
     public ResponseEntity<String> deleteRating(@PathVariable String bookId,
                                                Authentication authentication) {
-        Member member = (Member) authentication.getPrincipal();
+        CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
         ratingService.deleteRating(bookId, member);
 
         return ResponseEntity.ok().body("별점이 성공적으로 삭제되었습니다.");
