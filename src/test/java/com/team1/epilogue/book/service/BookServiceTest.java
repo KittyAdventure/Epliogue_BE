@@ -71,7 +71,6 @@ class BookServiceTest {
     //given
     BookSearchFilter filter = BookSearchFilter.builder()
         .page(1)
-        .dateAsc(true)
         .build();
 
     List<Book> list = new ArrayList<>();
