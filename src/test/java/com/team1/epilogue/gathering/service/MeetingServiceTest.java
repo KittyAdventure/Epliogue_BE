@@ -5,18 +5,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.repository.MemberRepository;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.gathering.dto.MeetingDto;
 import com.team1.epilogue.gathering.entity.Meeting;
 import com.team1.epilogue.gathering.repository.MeetingRepository;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +36,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class MeetingServiceTest {
 
 
-  ObjectMapper objectMapper = new ObjectMapper();
+  ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule()); // JavaTimeModule 등록
   @Mock
   private MeetingRepository meetingRepository;
 
@@ -53,6 +58,16 @@ class MeetingServiceTest {
     member.setId(memberId);
 
     Book book = new Book();
+
+    // CustomMemberDetails 객체 생성
+    CustomMemberDetails memberDetails = new CustomMemberDetails(
+        member.getId(),
+        "username",
+        "password",
+        Collections.emptyList(),
+        "name",
+        "profileImg"
+    );
 
 
     MeetingDto meetingDto = MeetingDto.builder()
@@ -81,7 +96,7 @@ class MeetingServiceTest {
 
 
     // when
-    MeetingDto createdMeeting = meetingService.createMeeting(meetingDto);
+    MeetingDto createdMeeting = meetingService.createMeeting(memberDetails,meetingDto);
     try {
       log.info("Created Meeting: {}", objectMapper.writeValueAsString(createdMeeting));
     } catch (JsonProcessingException e) {
@@ -98,6 +113,7 @@ class MeetingServiceTest {
   }
 
   @Test
+  @DisplayName("오프라인 모임 수정")
   void update_meeting() {
     //given
     Member member = Member.builder()
@@ -119,6 +135,16 @@ class MeetingServiceTest {
         .nowPeople(5)
         .build();
 
+    // CustomMemberDetails 생성
+    CustomMemberDetails memberDetails = new CustomMemberDetails(
+        member.getId(),
+        "username",
+        "password",
+        Collections.emptyList(),
+        "name",
+        "profileImg"
+    );
+
 
     // 수정 된 제목
     MeetingDto meetingDto = MeetingDto.builder()
@@ -137,7 +163,7 @@ class MeetingServiceTest {
         invocation -> invocation.getArgument(0));
 
     //when
-    Meeting updatedMeeting = meetingService.updateMeeting(1L, meetingDto);
+    Meeting updatedMeeting = meetingService.updateMeeting(memberDetails,1L, meetingDto);
     try {
       log.info("Updated Meeting: {}", objectMapper.writeValueAsString(updatedMeeting));
     } catch (JsonProcessingException e) {
@@ -151,5 +177,33 @@ class MeetingServiceTest {
     assertThat(updatedMeeting.getLocation()).isEqualTo("새로운 주소");
     assertThat(updatedMeeting.getDateTime()).isEqualTo(meetingDto.getDateTime());
 
+  }
+
+
+  @Test
+  @DisplayName("오프라인 모임 삭제 - 성공")
+  void delete_Meeting() {
+    // given
+    Long meetingId = 1L;
+    Long memberId = 1L;
+
+    Member member = Member.builder().id(memberId).build();
+    CustomMemberDetails memberDetails = new CustomMemberDetails(
+        member.getId(),
+        "username",
+        "password",
+        Collections.emptyList(),
+        "name",
+        "profileImg"
+    );
+    Meeting meeting = Meeting.builder().id(meetingId).member(member).build();
+
+    when(meetingRepository.findById(meetingId)).thenReturn(Optional.of(meeting));
+
+    // when
+    meetingService.deleteMeeting(memberDetails, meetingId);
+
+    // then
+    verify(meetingRepository, times(1)).delete(meeting);
   }
 }
