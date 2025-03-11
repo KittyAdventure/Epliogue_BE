@@ -92,7 +92,7 @@ public class AuthServiceImplTest {
 
         // Then
         assertNotNull(response);
-        assertEquals("로그인 성공", response.getMessage());
+        assertEquals("Login success", response.getMessage());
         assertEquals("jwt-token", response.getAccessToken());
         assertNotNull(response.getUser());
         assertEquals("1", response.getUser().getId());
@@ -158,7 +158,7 @@ public class AuthServiceImplTest {
 
         // Then
         assertNotNull(response);
-        assertEquals("로그인 성공", response.getMessage());
+        assertEquals("Login success", response.getMessage());
         assertEquals("jwt-google-token", response.getAccessToken());
         assertNotNull(response.getUser());
         assertEquals("2", response.getUser().getId());
@@ -179,7 +179,7 @@ public class AuthServiceImplTest {
         KakaoUserInfo.KakaoAccount account = new KakaoUserInfo.KakaoAccount();
         account.setEmail("kakao@example.com");
         KakaoUserInfo.KakaoProfile profile = new KakaoUserInfo.KakaoProfile();
-        profile.setNickname("KakaoUser");
+        profile .setNickname("KakaoUser");
         profile.setProfileImageUrl("http://example.com/kakao.jpg");
         account.setProfile(profile);
         kakaoUserInfo.setKakao_account(account);
@@ -202,7 +202,7 @@ public class AuthServiceImplTest {
 
         // Then
         assertNotNull(response);
-        assertEquals("로그인 성공", response.getMessage());
+        assertEquals("Login success", response.getMessage());
         assertEquals("jwt-kakao-token", response.getAccessToken());
         assertNotNull(response.getUser());
         assertEquals("3", response.getUser().getId());
