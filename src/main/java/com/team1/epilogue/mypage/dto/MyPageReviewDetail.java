@@ -14,5 +14,6 @@ public class MyPageReviewDetail {
   private String reviewBookAuthor;
   private String reviewContent;
   private int reviewCommentsCount;
+  private String thumbnail;
 
 }

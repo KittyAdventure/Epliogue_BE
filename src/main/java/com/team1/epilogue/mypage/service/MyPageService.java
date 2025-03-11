@@ -67,6 +67,7 @@ public class MyPageService {
                   .reviewContent(data.getContent())
                   .reviewBookPubYear(data.getBook().getPubDate().getYear())
                   .reviewCommentsCount(data.getCommentsCount())
+                  .thumbnail(data.getBook().getCoverUrl())
                   .build()
           );
         }
