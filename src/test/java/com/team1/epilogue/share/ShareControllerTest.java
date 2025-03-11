@@ -2,18 +2,28 @@ package com.team1.epilogue.share.controller;
 
 import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.review.repository.ReviewRepository;
+import com.team1.epilogue.share.controller.ShareController;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(ShareController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@WithMockUser(username = "user1")
+@DisplayName("ShareController 테스트")
 public class ShareControllerTest {
 
     @Autowired
@@ -26,9 +36,9 @@ public class ShareControllerTest {
     private ReviewRepository reviewRepository;
 
     @Test
+    @DisplayName("URI 공유 - 책")
     public void testGetShareUrlForBook_Success() throws Exception {
         String bookId = "book123";
-        // BookRepository가 해당 ID를 가진 책이 존재한다고 가정
         when(bookRepository.existsById(bookId)).thenReturn(true);
 
         mockMvc.perform(get("/api/share")
@@ -40,9 +50,9 @@ public class ShareControllerTest {
     }
 
     @Test
+    @DisplayName("URI 공유 - 리뷰")
     public void testGetShareUrlForReview_Success() throws Exception {
         String reviewId = "1";
-        // reviewRepository의 ID는 Long 타입이므로 변환 후 존재하는 것으로 가정
         when(reviewRepository.existsById(1L)).thenReturn(true);
 
         mockMvc.perform(get("/api/share")
@@ -54,6 +64,7 @@ public class ShareControllerTest {
     }
 
     @Test
+    @DisplayName("URI 공유 - 잘못된 타입")
     public void testGetShareUrl_InvalidType() throws Exception {
         mockMvc.perform(get("/api/share")
                         .param("type", "invalid")
@@ -63,6 +74,7 @@ public class ShareControllerTest {
     }
 
     @Test
+    @DisplayName("카카오 공유")
     public void testShareViaKakao_Success() throws Exception {
         String type = "book";
         String id = "book123";
@@ -88,12 +100,12 @@ public class ShareControllerTest {
     }
 
     @Test
+    @DisplayName("카카오 공유 - 필수 필드 누락")
     public void testShareViaKakao_MissingRequestBodyFields() throws Exception {
         String type = "book";
         String id = "book123";
         when(bookRepository.existsById(id)).thenReturn(true);
 
-        // 필수 필드들이 누락된 요청 JSON
         String requestJson = "{}";
 
         mockMvc.perform(post("/api/share/kakao")

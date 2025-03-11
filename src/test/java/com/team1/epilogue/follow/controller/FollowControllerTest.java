@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("FollowController 테스트")
 @RequiredArgsConstructor
 public class FollowControllerTest {
-
+    @Autowired
     private MockMvc mockMvc;
     @MockitoBean
     private FollowService followService;
@@ -66,7 +66,7 @@ public class FollowControllerTest {
 
         mockMvc.perform(delete("/api/follows/user2").with(csrf()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message", is("팔로우 삭제 성공")));
+                .andExpect(jsonPath("$.message", is("Unfollow action successful")));
     }
 
     @Test

@@ -5,6 +5,7 @@ import com.team1.epilogue.review.repository.ReviewRepository;
 import com.team1.epilogue.share.dto.KakaoShareRequest;
 import com.team1.epilogue.share.dto.KakaoShareResponse;
 import com.team1.epilogue.share.dto.ShareResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,15 +14,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/share")
+@RequiredArgsConstructor
 public class ShareController {
 
     private final BookRepository bookRepository;
     private final ReviewRepository reviewRepository;
-
-    public ShareController(BookRepository bookRepository, ReviewRepository reviewRepository) {
-        this.bookRepository = bookRepository;
-        this.reviewRepository = reviewRepository;
-    }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ShareResponse> getShareUrl(
