@@ -3,6 +3,7 @@ package com.team1.epilogue.share.controller;
 import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.review.repository.ReviewRepository;
 import com.team1.epilogue.share.dto.ShareResponse;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,6 +18,8 @@ public class ShareController {
 
     private final BookRepository bookRepository;
     private final ReviewRepository reviewRepository;
+    @Value("${baseIp}")
+    private String baseIp;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ShareResponse> getShareUrl(
@@ -58,11 +61,13 @@ public class ShareController {
     private String buildShareUrl(String type, String id) {
         switch (type.toLowerCase()) {
             case "book":
-                return "https://13.125.112.89/books/" + id;
+                return baseIp + "/books/" + id;
             case "review":
-                return "https://13.125.112.89/reviews/" + id;
+                return baseIp + "/reviews/" + id;
             default:
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 type 파라미터입니다.");
         }
     }
 }
+
+

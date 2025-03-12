@@ -51,11 +51,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String requestURI = request.getRequestURI();
 
-        // 공유 관련 URI는 인증 없이 처리
-        if (requestURI.startsWith("/api/share")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
         String token = getJwtFromRequest(request);
         if (token != null && tokenProvider.validateToken(token)) {
             String memberIdStr = tokenProvider.getMemberIdFromJWT(token);
