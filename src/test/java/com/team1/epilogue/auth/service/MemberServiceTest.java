@@ -83,7 +83,6 @@ public class MemberServiceTest {
     public void testDuplicateMemberId() {
         when(memberRepository.existsByLoginId("serviceMember")).thenReturn(true);
 
-        // MultipartFile 인자는 null로 전달
         assertThrows(IdAlreadyExistException.class, () -> memberService.registerMember(registerRequest, null));
     }
 
@@ -93,7 +92,6 @@ public class MemberServiceTest {
         when(memberRepository.existsByLoginId("serviceMember")).thenReturn(false);
         when(memberRepository.existsByEmail("service@example.com")).thenReturn(true);
 
-        // MultipartFile 인자는 null로 전달
         assertThrows(EmailAlreadyExistException.class, () -> memberService.registerMember(registerRequest, null));
     }
 
@@ -123,7 +121,6 @@ public class MemberServiceTest {
         when(memberRepository.findById(1L)).thenReturn(Optional.of(existingMember));
         when(memberRepository.save(any(Member.class))).thenReturn(existingMember);
 
-        // MultipartFile 인자는 null로 전달
         MemberResponse response = memberService.updateMember(1L, updateRequest, null);
 
         assertNotNull(response);
@@ -140,7 +137,6 @@ public class MemberServiceTest {
 
         when(memberRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // MultipartFile 인자는 null로 전달
         assertThrows(MemberNotFoundException.class, () -> memberService.updateMember(1L, updateRequest, null));
     }
 }
