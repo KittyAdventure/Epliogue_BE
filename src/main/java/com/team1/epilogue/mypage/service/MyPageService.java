@@ -3,6 +3,7 @@ package com.team1.epilogue.mypage.service;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.comment.entity.Comment;
 import com.team1.epilogue.comment.repository.CommentRepository;
 import com.team1.epilogue.mypage.dto.MyPageCalendarDetail;
@@ -34,8 +35,9 @@ public class MyPageService {
   private final ReviewRepository reviewRepository;
   private final MemberRepository memberRepository;
 
-  public MyPageCommentsResponse getMyComments(Member member, int page) {
+  public MyPageCommentsResponse getMyComments(CustomMemberDetails details, int page) {
     PageRequest pageRequest = PageRequest.of(page - 1, 20);
+    Member member = details.getMember();
 
     Page<Comment> result = commentRepository.findAllByMemberId(pageRequest, member);
 

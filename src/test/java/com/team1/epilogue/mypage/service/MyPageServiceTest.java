@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.repository.MemberRepository;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.comment.entity.Comment;
 import com.team1.epilogue.comment.repository.CommentRepository;
@@ -97,7 +98,7 @@ class MyPageServiceTest {
     when(commentRepository.findAllByMemberId(pageRequest, testMember)).thenReturn(page);
 
     //when
-    MyPageCommentsResponse result = myPageService.getMyComments(testMember, 1);
+    MyPageCommentsResponse result = myPageService.getMyComments(CustomMemberDetails.fromMember(testMember), 1);
 
     //then
     assertEquals(10, result.getComments().size());

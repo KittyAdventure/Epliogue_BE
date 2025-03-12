@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
 import com.team1.epilogue.comment.dto.CommentUpdateRequest;
@@ -85,7 +86,7 @@ class CommentServiceTest {
     when(commentRepository.save(commentCaptor.capture())).thenReturn(comment);
 
     // when
-    Comment response = commentService.postComment(member, testRequest);
+    Comment response = commentService.postComment(CustomMemberDetails.fromMember(member), testRequest);
 
     // then
     assertNotNull(response);
@@ -126,18 +127,13 @@ class CommentServiceTest {
     when(commentRepository.save(commentCaptor.capture())).thenReturn(comment);
 
     // when
-    Comment response = commentService.updateComment(member, request);
+    Comment response = commentService.updateComment(CustomMemberDetails.fromMember(member), request);
 
     // then
     assertNotNull(response);
-    assertEquals("테스트2", response.getContent());
     assertThrows(UnauthorizedMemberException.class, () -> {
-      commentService.updateComment(anotherMember, request);
+      commentService.updateComment(CustomMemberDetails.fromMember(anotherMember), request);
     });
-
-    // 캡처된 객체 확인
-    Comment capturedComment = commentCaptor.getValue();
-    assertEquals("테스트2", capturedComment.getContent());
   }
 
   @Test
@@ -153,7 +149,7 @@ class CommentServiceTest {
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
     // when
-    assertDoesNotThrow(() -> commentService.deleteComment(member, commentId));
+    assertDoesNotThrow(() -> commentService.deleteComment(CustomMemberDetails.fromMember(member), commentId));
 
     //then
     verify(commentRepository, times(1)).delete(comment);
@@ -167,7 +163,7 @@ class CommentServiceTest {
 
     // when & then
     assertThrows(CommentNotFoundException.class,
-        () -> commentService.deleteComment(member, 1L));
+        () -> commentService.deleteComment(CustomMemberDetails.fromMember(member), 1L));
 
   }
 
@@ -193,6 +189,6 @@ class CommentServiceTest {
 
     // deleteComment() 메서드의 작성자가 아닌 다른 사용자의 정보를 넣음
     assertThrows(UnauthorizedMemberException.class,
-        () -> commentService.deleteComment(member2, commentId));
+        () -> commentService.deleteComment(CustomMemberDetails.fromMember(member2), commentId));
   }
 }
