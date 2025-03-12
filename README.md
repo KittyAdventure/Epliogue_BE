@@ -113,7 +113,7 @@ Notion : https://political-plant-c63.notion.site/Epilogue-09c96bb22068442a82cec1
     - 책 상세 페이지에서 같은 작가의 다른 책을 리스트로 보여주는 기능이다
 
 ## ERD 
-![Epilogue](https://github.com/user-attachments/assets/e22a4b06-992c-4937-aeed-5e8a804d6b6b)
+![Epilogue (1)](https://github.com/user-attachments/assets/81a60f17-f525-4af3-9428-4d9dd5815d80)
 URL : https://www.erdcloud.com/d/4sjqx5n55nPJKsNY5
 
 # Tech Stack

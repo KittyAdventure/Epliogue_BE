@@ -8,11 +8,14 @@ import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.comment.entity.Comment;
 import com.team1.epilogue.comment.repository.CommentRepository;
+import com.team1.epilogue.mypage.dto.MyPageCalendarResponse;
 import com.team1.epilogue.mypage.dto.MyPageCommentsResponse;
 import com.team1.epilogue.mypage.dto.MyPageReviewsResponse;
 import com.team1.epilogue.review.entity.Review;
 import com.team1.epilogue.review.repository.ReviewRepository;
 import java.time.LocalDate;
+import com.team1.epilogue.review.repository.ReviewRepository;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -100,6 +103,44 @@ class MyPageServiceTest {
     assertEquals(10, result.getComments().size());
     assertEquals(1, result.getTotalPage());
     assertEquals("10번째 테스트댓글", result.getComments().get(9).getContent());
+  }
+
+  @Test
+  @DisplayName("마이페이지 내부 달력 기능 테스트")
+  void getCalendar() {
+    //given
+    List<Review> reviews = new ArrayList<>();
+    reviews.add(Review.builder()
+        .book(testBook)
+        .createdAt(LocalDateTime.of(2025, 3, 1, 1, 1))
+        .member(testMember)
+        .build());
+    reviews.add(Review.builder()
+        .book(testBook)
+        .createdAt(LocalDateTime.of(2025, 3, 1, 1, 1))
+        .member(testMember)
+        .build());
+    reviews.add(Review.builder()
+        .book(testBook)
+        .createdAt(LocalDateTime.of(2025, 3, 5, 1, 1))
+        .member(testMember)
+        .build());
+    reviews.add(Review.builder()
+        .book(testBook)
+        .createdAt(LocalDateTime.of(2025, 3, 5, 1, 1))
+        .member(testMember)
+        .build());
+
+    when(reviewRepository.findByDateAndMember(any(LocalDateTime.class), any(LocalDateTime.class),
+        eq("test"))).thenReturn(reviews);
+
+    //when
+    List<MyPageCalendarResponse> responses = myPageService.getCalendar("test", "2022-02-02");
+
+    //then
+    assertEquals("2025-03-01", responses.get(0).getDate());
+    assertEquals(2, responses.get(0).getCount()); // 해당 날짜에 리뷰 2개 있어야 함
+    assertEquals(2, responses.size()); // 총 2개의 날짜가 있어야 함
   }
 
   @Test

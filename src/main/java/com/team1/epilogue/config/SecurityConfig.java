@@ -95,6 +95,7 @@ public class SecurityConfig {
                             "/api/kp/cancel",
                             "/api/trending-books",
                             "/api/keywords",
+                            "/api/mypage/calendar",
                             "/api/mypage/reviews"
                     ).permitAll()
                     .anyRequest().authenticated()
