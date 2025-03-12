@@ -51,11 +51,10 @@ public class Review extends BaseEntity {
      *
      * @param content 수정할 새로운 내용
      */
-
     public void updateReview(String content) {
         this.content = content;
     }
-    private LocalDateTime createdAt;
 
+    private int commentsCount; // 댓글 갯수
 }
 

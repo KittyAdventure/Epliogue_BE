@@ -22,6 +22,17 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("UPDATE Review r SET r.likeCount = r.likeCount - 1 WHERE r.id = :reviewId AND r.likeCount > 0")
     int decreaseLikeCount(@Param("reviewId") Long reviewId);
 
+    @Modifying
+    @Query("UPDATE Review r SET r.commentsCount = r.commentsCount + 1 WHERE r.id = :reviewId")
+    int increaseCommentsCount(@Param("reviewId") Long reviewId);
+
+    @Modifying
+    @Query("UPDATE Review r SET r.commentsCount = r.commentsCount - 1 WHERE r.id = :reviewId AND r.likeCount > 0")
+    int decreaseCommentsCount(@Param("reviewId") Long reviewId);
+
+    @Query("SELECT r FROM Review r JOIN FETCH r.book JOIN FETCH r.member WHERE r.member.id =:memberID")
+    Page<Review> findByMemberId(@Param("memberID")String id ,Pageable pageable);
+
     Page<Review> findByBookId(String bookId, Pageable pageable);
 
     Page<Review> findByMemberIn(Iterable<Member> members, Pageable pageable);

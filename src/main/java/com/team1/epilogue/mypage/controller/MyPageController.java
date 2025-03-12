@@ -2,6 +2,7 @@ package com.team1.epilogue.mypage.controller;
 
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.mypage.dto.MyPageCommentsResponse;
+import com.team1.epilogue.mypage.dto.MyPageReviewsResponse;
 import com.team1.epilogue.mypage.service.MyPageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,4 +30,15 @@ public class MyPageController {
     return ResponseEntity.ok(myComments);
   }
 
+  /**
+   * 마이 페이지 내부 "해당 유저의 리뷰 리스트 보기" 기능을 위한 메서드
+   *
+   * @param memberId 조회할 유저의 ID
+   * @param page 페이지 번호
+   */
+  @GetMapping("/api/mypage/reviews")
+  public ResponseEntity<MyPageReviewsResponse> getReviewsByMember(@RequestParam String memberId,@RequestParam int page) {
+    MyPageReviewsResponse reviews = myPageService.getReviewsByMember(memberId, page);
+    return ResponseEntity.ok(reviews);
+  }
 }
