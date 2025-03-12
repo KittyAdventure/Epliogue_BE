@@ -94,6 +94,7 @@ public class SecurityConfig {
                             "/api/kp/fail",
                             "/api/kp/cancel",
                             "/api/trending-books",
+                            "/api/books/main-page",
                             "/api/keywords",
                             "/api/mypage/calendar",
                             "/api/mypage/reviews"
