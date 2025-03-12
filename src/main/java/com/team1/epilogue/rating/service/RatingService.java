@@ -1,6 +1,7 @@
 package com.team1.epilogue.rating.service;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.rating.dto.RatingRequestDto;
@@ -20,15 +21,8 @@ public class RatingService {
     private final RatingRepository ratingRepository;
     private final BookRepository bookRepository;
 
-    /**
-     * 책에 대한 별점을 생성합니다
-     *
-     * @param bookId           별점을 남길 책의 ID
-     * @param ratingRequestDto 클라이언트가 전달한 별점 데이터
-     * @param member           현재 인증된 사용자
-     * @return 생성된 별점의 상세 정보를 담은 DTO
-     */
-    public RatingResponseDto createRating(String bookId, RatingRequestDto ratingRequestDto, Member member) {
+    public RatingResponseDto createRating(String bookId, RatingRequestDto ratingRequestDto, CustomMemberDetails memberDetails) {
+        Member member = memberDetails.getMember();
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("존재하지 않는 책입니다."));
 
@@ -38,33 +32,20 @@ public class RatingService {
         return RatingResponseDto.from(savedRating);
     }
 
-    /**
-     * 책에 대한 별점을 수정합니다
-     *
-     * @param bookId           별점을 수정할 책의 ID
-     * @param ratingRequestDto 수정된 별점 데이터
-     * @param member           현재 인증된 사용자
-     * @return 수정된 별점의 상세 정보를 담은 DTO
-     */
     @Transactional
-    public RatingResponseDto updateRating(String bookId, RatingRequestDto ratingRequestDto, Member member) {
+    public RatingResponseDto updateRating(String bookId, RatingRequestDto ratingRequestDto, CustomMemberDetails memberDetails) {
+        Member member = memberDetails.getMember();
         Rating rating = ratingRepository.findByMemberIdAndBookId(member.getId(), bookId)
                 .orElseThrow(() -> new RatingNotFoundException("해당 책에 대한 별점이 존재하지 않습니다."));
 
         rating.updateScore(ratingRequestDto.getScore());
-        Rating updatedRating = ratingRepository.save(rating);
 
-        return RatingResponseDto.from(updatedRating);
+        return RatingResponseDto.from(rating);
     }
 
-    /**
-     * 책에 대한 별점을 삭제합니다
-     *
-     * @param bookId 별점을 삭제할 책의 ID
-     * @param member 현재 인증된 사용자
-     */
     @Transactional
-    public void deleteRating(String bookId, Member member) {
+    public void deleteRating(String bookId, CustomMemberDetails memberDetails) {
+        Member member = memberDetails.getMember();
         Rating rating = ratingRepository.findByMemberIdAndBookId(member.getId(), bookId)
                 .orElseThrow(() -> new RatingNotFoundException("해당 책에 대한 별점이 존재하지 않습니다."));
 
