@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -149,7 +148,7 @@ class FollowServiceTest {
                 .book(testBook)
                 .content("Test review content")
                 .imageUrl("http://example.com/image.png")
-                .createdAt(LocalDateTime.now())
+//                .createdAt(LocalDateTime.now())
                 .build();
         reviewRepository.save(review);
 

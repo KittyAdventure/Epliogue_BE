@@ -53,6 +53,10 @@ class CommentServiceTest {
         .title("어린왕자")
         .author("생텍쥐페리")
         .build();
+
+    review = Review.builder()
+        .id(1L)
+        .build();
   }
 
   @Test
@@ -145,6 +149,7 @@ class CommentServiceTest {
         .id(1L)
         .member(member)
         .content("테스트 댓글입니다.")
+        .review(review)
         .build();
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 

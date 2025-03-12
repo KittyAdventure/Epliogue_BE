@@ -1,6 +1,7 @@
 package com.team1.epilogue.review;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.review.dto.ReviewRequestDto;
@@ -73,7 +74,8 @@ public class ReviewServiceTest {
                 .thenReturn(testReview);
 
         // when
-        ReviewResponseDto response = reviewService.createReview(testBook.getId(), requestDto, testMember);
+        ReviewResponseDto response = reviewService.createReview(testBook.getId(), requestDto,
+            CustomMemberDetails.fromMember(testMember));
 
         // then
         assertThat(response.getContent()).isEqualTo("정말 좋은 책입니다.");
@@ -137,7 +139,8 @@ public class ReviewServiceTest {
         when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview));
 
         // when
-        ReviewResponseDto response = reviewService.updateReview(testReview.getId(), updateDto, testMember);
+        ReviewResponseDto response = reviewService.updateReview(testReview.getId(), updateDto,
+            CustomMemberDetails.fromMember(testMember));
 
         // then
         assertThat(response.getContent()).isEqualTo("수정된 리뷰입니다.");
@@ -154,7 +157,9 @@ public class ReviewServiceTest {
         when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview));
 
         // when & then
-        assertThrows(UnauthorizedReviewAccessException.class, () -> reviewService.updateReview(testReview.getId(), updateDto, anotherMember));
+        assertThrows(UnauthorizedReviewAccessException.class,
+            () -> reviewService.updateReview(testReview.getId(), updateDto,
+                CustomMemberDetails.fromMember(anotherMember)));
     }
 
     /**
@@ -167,7 +172,7 @@ public class ReviewServiceTest {
         doNothing().when(reviewRepository).delete(testReview);
 
         // when
-        reviewService.deleteReview(testReview.getId(), testMember);
+        reviewService.deleteReview(testReview.getId(), CustomMemberDetails.fromMember(testMember));
 
         // then
         verify(reviewRepository, times(1)).delete(testReview);
@@ -183,6 +188,8 @@ public class ReviewServiceTest {
         when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview));
 
         // when & then
-        assertThrows(UnauthorizedReviewAccessException.class, () -> reviewService.deleteReview(testReview.getId(), anotherMember));
+        assertThrows(UnauthorizedReviewAccessException.class,
+            () -> reviewService.deleteReview(testReview.getId(),
+                CustomMemberDetails.fromMember(anotherMember)));
     }
 }
