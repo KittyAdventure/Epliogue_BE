@@ -97,7 +97,8 @@ public class SecurityConfig {
                             "/api/books/main-page",
                             "/api/keywords",
                             "/api/mypage/calendar",
-                            "/api/mypage/reviews"
+                            "/api/mypage/reviews",
+                            "/api/comments/view"
                     ).permitAll()
                     .anyRequest().authenticated()
             )
