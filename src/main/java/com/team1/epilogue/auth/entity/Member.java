@@ -35,19 +35,19 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "birth_date", nullable = false)
+    @Column(name = "birth_date", nullable = true)
     private LocalDate birthDate;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = true, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String phone;
 
     @Column(name = "profile_url")
     private String profileUrl;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private int point;
 
     @Column

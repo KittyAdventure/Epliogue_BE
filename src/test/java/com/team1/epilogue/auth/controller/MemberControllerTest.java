@@ -7,7 +7,6 @@ import com.team1.epilogue.auth.dto.SuccessResponse;
 import com.team1.epilogue.auth.dto.UpdateMemberRequest;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
-import com.team1.epilogue.auth.security.CustomUserDetailsService;
 import com.team1.epilogue.auth.service.MemberService;
 import com.team1.epilogue.auth.service.MemberWithdrawalService;
 import com.team1.epilogue.config.TestSecurityConfig;
@@ -16,13 +15,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -34,15 +35,11 @@ import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * MemberController의 단위 테스트 클래스
- * - 회원 가입, 회원 탈퇴, 회원 정보 수정 기능을 테스트
- */
 @Import(TestSecurityConfig.class)
 @WebMvcTest(MemberController.class)
 @DisplayName("MemberController 테스트")
@@ -87,8 +84,7 @@ public class MemberControllerTest {
     }
 
     /**
-     * 회원 가입 성공 테스트
-     * - 회원 가입 API를 호출하여 정상적으로 가입이 이루어지는지 확인
+     * 회원 가입 성공 테스트 (Multipart 요청)
      */
     @Test
     @DisplayName("회원 가입 성공 테스트")
@@ -114,12 +110,27 @@ public class MemberControllerTest {
                 .profileUrl("http://example.com/profile.jpg")
                 .build();
 
-        when(memberService.registerMember(any(RegisterRequest.class))).thenReturn(response);
+        when(memberService.registerMember(any(RegisterRequest.class), any())).thenReturn(response);
 
-        mockMvc.perform(post("/api/members/register")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        // JSON 데이터 파트를 생성
+        MockMultipartFile dataPart = new MockMultipartFile(
+                "data",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+        // 이미지 파일 파트 (선택적, 없으면 null 전송 가능)
+        MockMultipartFile imagePart = new MockMultipartFile(
+                "profileImage",
+                "profile.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "dummy image content".getBytes(StandardCharsets.UTF_8)
+        );
+
+        mockMvc.perform(multipart("/api/members/register")
+                        .file(dataPart)
+                        .file(imagePart)
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.id").value("1"))
@@ -129,7 +140,6 @@ public class MemberControllerTest {
 
     /**
      * 회원 탈퇴 성공 테스트 (인증된 사용자)
-     * - 인증된 사용자가 정상적으로 회원 탈퇴할 수 있는지 확인
      */
     @Test
     @DisplayName("회원 탈퇴 성공 테스트")
@@ -147,8 +157,7 @@ public class MemberControllerTest {
     }
 
     /**
-     * 회원 정보 수정 성공 테스트 (인증된 사용자)
-     * - 사용자가 자신의 정보를 정상적으로 수정할 수 있는지 확인
+     * 회원 정보 수정 성공 테스트 (인증된 사용자, Multipart 요청)
      */
     @Test
     @DisplayName("회원 정보 수정 성공 테스트")
@@ -170,13 +179,27 @@ public class MemberControllerTest {
                 .profileUrl("http://example.com/newProfile.jpg")
                 .build();
 
-        when(memberService.updateMember(anyLong(), any(UpdateMemberRequest.class))).thenReturn(response);
+        when(memberService.updateMember(anyLong(), any(UpdateMemberRequest.class), any())).thenReturn(response);
 
-        mockMvc.perform(put("/api/members")
+        MockMultipartFile dataPart = new MockMultipartFile(
+                "data",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+        MockMultipartFile imagePart = new MockMultipartFile(
+                "profileImage",
+                "newProfile.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "new dummy image content".getBytes(StandardCharsets.UTF_8)
+        );
+
+        mockMvc.perform(multipart("/api/members")
+                        .file(dataPart)
+                        .file(imagePart)
                         .with(csrf())
                         .with(user(memberDetails))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .with(req -> { req.setMethod("PUT"); return req; }))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.id").value("1"))
@@ -188,7 +211,6 @@ public class MemberControllerTest {
 
     /**
      * 회원 탈퇴 실패 테스트 - 인증되지 않은 사용자
-     * - 인증되지 않은 사용자가 탈퇴 요청을 보낼 경우 실패하는지 확인
      */
     @Test
     @DisplayName("회원 탈퇴 실패 - 인증되지 않은 사용자")
@@ -196,13 +218,11 @@ public class MemberControllerTest {
         mockMvc.perform(delete("/api/members")
                         .with(csrf()))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.메시지").value("인증되지 않은 사용자"));
+                .andExpect(jsonPath("$.message").value("Unauthorized user"));
     }
-
 
     /**
      * 회원 정보 수정 실패 테스트 - 인증되지 않은 사용자
-     * - 인증되지 않은 사용자가 정보 수정 요청을 보낼 경우 실패하는지 확인
      */
     @Test
     @DisplayName("회원 정보 수정 실패 - 인증되지 않은 사용자")
@@ -212,11 +232,19 @@ public class MemberControllerTest {
         request.setEmail("fail@example.com");
         request.setPhone("010-0000-0000");
         request.setProfilePhoto("http://example.com/fail.jpg");
-        mockMvc.perform(put("/api/members")
+
+        MockMultipartFile dataPart = new MockMultipartFile(
+                "data",
+                "",
+                MediaType.APPLICATION_JSON_VALUE,
+                objectMapper.writeValueAsBytes(request)
+        );
+
+        mockMvc.perform(multipart("/api/members")
+                        .file(dataPart)
                         .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .with(req -> { req.setMethod("PUT"); return req; }))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.메시지").value("인증되지 않은 사용자"));
+                .andExpect(jsonPath("$.message").value("Unauthorized user"));
     }
 }
