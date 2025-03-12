@@ -39,9 +39,8 @@ public class RatingService {
                 .orElseThrow(() -> new RatingNotFoundException("해당 책에 대한 별점이 존재하지 않습니다."));
 
         rating.updateScore(ratingRequestDto.getScore());
-        Rating updatedRating = ratingRepository.save(rating);
 
-        return RatingResponseDto.from(updatedRating);
+        return RatingResponseDto.from(rating);
     }
 
     @Transactional

@@ -1,6 +1,7 @@
 package com.team1.epilogue.rating;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.rating.dto.RatingRequestDto;
@@ -15,6 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.util.Collections;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -32,8 +36,10 @@ public class RatingServiceTest {
     private BookRepository bookRepository;
 
     private Member member;
+    private CustomMemberDetails memberDetails;
     private Book book;
     private RatingRequestDto ratingRequestDto;
+    private Rating existingRating;
 
     @BeforeEach
     void setUp() {
@@ -42,6 +48,20 @@ public class RatingServiceTest {
         member = new Member(); // 테스트용 Member 객체 생성
         book = new Book(); // 테스트용 Book 객체 생성
         ratingRequestDto = new RatingRequestDto(4.5); // 테스트용 RatingRequestDto 객체 생성
+
+        existingRating = new Rating(1L, book, member, 2.0);
+
+
+        // CustomMemberDetails 생성 (Member 기반)
+        memberDetails = new CustomMemberDetails(
+                member,
+                member.getId(),
+                member.getLoginId(),
+                member.getPassword(),
+                Collections.emptyList(),
+                member.getName(),
+                member.getEmail()
+        );
     }
 
     /**
@@ -56,7 +76,7 @@ public class RatingServiceTest {
                 .thenReturn(new Rating(1L, book, member, 4.5));
 
         // when
-        RatingResponseDto response = ratingService.createRating("bookId", ratingRequestDto, member);
+        RatingResponseDto response = ratingService.createRating("bookId", ratingRequestDto, memberDetails);
 
         // then
         assertNotNull(response);
@@ -71,16 +91,17 @@ public class RatingServiceTest {
     @Test
     void updateRating() {
         // given
-        Rating existingRating = new Rating(1L, book, member, 2.0);
-        when(ratingRepository.findByMemberIdAndBookId(member.getId(), "bookId")).thenReturn(java.util.Optional.of(existingRating));
+        when(ratingRepository.findByMemberIdAndBookId(member.getId(), "bookId"))
+                .thenReturn(Optional.of(existingRating));
 
         // when
-        RatingResponseDto response = ratingService.updateRating("bookId", ratingRequestDto, member);
+        RatingResponseDto response = ratingService.updateRating("bookId", ratingRequestDto, memberDetails);
 
         // then
         assertNotNull(response);
         assertEquals(4.5, response.getScore());
-        verify(ratingRepository, times(1)).save(argThat(rating -> rating.getScore().equals(4.5)));
+
+        assertEquals(4.5, existingRating.getScore());
     }
 
     /**
@@ -93,7 +114,7 @@ public class RatingServiceTest {
         when(ratingRepository.findByMemberIdAndBookId(member.getId(), "bookId")).thenReturn(java.util.Optional.of(existingRating));
 
         // when
-        ratingService.deleteRating("bookId", member);
+        ratingService.deleteRating("bookId", memberDetails);
 
         // then
         verify(ratingRepository, times(1)).delete(existingRating);
@@ -108,7 +129,7 @@ public class RatingServiceTest {
         when(bookRepository.findById("bookId")).thenReturn(java.util.Optional.empty());
 
         // when, then
-        assertThrows(BookNotFoundException.class, () -> ratingService.createRating("bookId", ratingRequestDto, member));
+        assertThrows(BookNotFoundException.class, () -> ratingService.createRating("bookId", ratingRequestDto, memberDetails));
     }
 
     /**
@@ -120,7 +141,7 @@ public class RatingServiceTest {
         when(ratingRepository.findByMemberIdAndBookId(member.getId(), "bookId")).thenReturn(java.util.Optional.empty());
 
         // when, then
-        assertThrows(RatingNotFoundException.class, () -> ratingService.updateRating("bookId", ratingRequestDto, member));
+        assertThrows(RatingNotFoundException.class, () -> ratingService.updateRating("bookId", ratingRequestDto, memberDetails));
     }
 
     /**
@@ -132,6 +153,6 @@ public class RatingServiceTest {
         when(ratingRepository.findByMemberIdAndBookId(member.getId(), "bookId")).thenReturn(java.util.Optional.empty());
 
         // when, then
-        assertThrows(RatingNotFoundException.class, () -> ratingService.deleteRating("bookId", member));
+        assertThrows(RatingNotFoundException.class, () -> ratingService.deleteRating("bookId", memberDetails));
     }
 }
