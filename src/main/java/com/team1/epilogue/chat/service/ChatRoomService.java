@@ -2,12 +2,14 @@ package com.team1.epilogue.chat.service;
 
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
+import com.team1.epilogue.book.dto.BookDetailRequest;
+import com.team1.epilogue.book.dto.BookDetailResponse;
+import com.team1.epilogue.book.entity.Book;
+import com.team1.epilogue.book.repository.BookRepository;
+import com.team1.epilogue.book.service.BookService;
 import com.team1.epilogue.chat.dto.ChatRoomDto;
 import com.team1.epilogue.chat.entity.ChatRoom;
 import com.team1.epilogue.chat.repository.ChatRoomRepository;
-import java.util.HashSet;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,7 +24,8 @@ public class ChatRoomService {
 
   private final ChatRoomRepository chatRoomRepository;
   private final MemberRepository memberRepository;
-
+  private final BookService bookService;
+  private final BookRepository bookRepository;
   /**
    * 채팅방을 생성 채팅방 생성시 책 이름과 동일함
    */
@@ -31,35 +34,50 @@ public class ChatRoomService {
     memberRepository.findById(memberId)
         .orElseThrow(() -> new MemberNotFoundException());
 
-    // 채팅방 생성
-    ChatRoom chatRoom = ChatRoom.builder()
-        .title(title)
-        .participants(new HashSet<>())
+    Book book = bookRepository.findByTitle(title)
+        .orElseGet(() -> {
+          BookDetailRequest request = BookDetailRequest.builder()
+              .type("title")
+              .query(title)
+              .build();
+
+          BookDetailResponse bookDetailResponse = bookService.getBookDetail(request);
+
+          return bookService.insertBookInfo(bookDetailResponse);
+        });
+
+    String chatRoomTitle = book.getTitle();
+
+    ChatRoom chatRoom = chatRoomRepository.findByTitle(chatRoomTitle)
+        .orElseGet(() -> chatRoomRepository.save(ChatRoom.builder()
+            .title(chatRoomTitle)
+            .memberCnt(0)
+            .createId(memberId)
+            .build()
+        ));
+
+    return ChatRoomDto.builder()
+        .id(chatRoom.getId())
+        .title(chatRoom.getTitle())
+        .memberCnt(chatRoom.getMemberCnt())
+        .createId(chatRoom.getCreateId())
         .build();
 
-    //채팅방 저장
-    ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
-    log.info("채팅방 저장 : " + savedRoom);
-
-    // 채팅방 생성 후, 참여자에 생성자 추가
-    chatRoom.participantsLimit(memberId); // 참여자 추가
-//    chatRoomRepository.save(chatRoom); // 참여자 추가 후 저장
-
-    log.info("참여자 추가: " + chatRoom.participantsLimit(memberId));
-    log.info("참여자 추가 후 저장 : " + chatRoomRepository.save(chatRoom));
-    return ChatRoomDto.fromEntity(savedRoom);
   }
 
   /**
    * 전체 채팅방 조회
    */
-  public List<ChatRoomDto> getAllRooms(int page, int size) {
+  public Page<ChatRoomDto> getAllRooms(int page, int size) {
     Pageable pageable = PageRequest.of(page, size);// 페이지 번호와 크기를 결정
     Page<ChatRoom> chatRoomsPage = chatRoomRepository.findAll(pageable); // 페이징 처리된 데이터 조회
 
-    return chatRoomsPage.getContent().stream() // 실제 데이터 목록 가져오기
-        .map(ChatRoomDto::fromEntity)
-        .collect(Collectors.toList());
+    return chatRoomsPage.map(chatRoom -> ChatRoomDto.builder()
+        .id(chatRoom.getId())
+        .title(chatRoom.getTitle())
+        .memberCnt(chatRoom.getMemberCnt())
+        .createId(chatRoom.getCreateId())
+        .build());
   }
 
 
