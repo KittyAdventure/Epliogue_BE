@@ -3,9 +3,11 @@ package com.team1.epilogue.comment.repository;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.comment.entity.Comment;
 import com.team1.epilogue.review.entity.Review;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -23,4 +25,11 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
 //      + " WHERE c.review = :review ORDER BY c.likes DESC")
 //  Page<Comment> findCommentsByReviewSortLike(Pageable pageable, Review review);
 
+  @Modifying
+  @Query("UPDATE Comment c SET c.likeCount = c.likeCount + 1 WHERE c.id = :commentId")
+  int increaseLikeCount(@Param("commentId") Long commentId);
+
+  @Modifying
+  @Query("UPDATE Comment c SET c.likeCount = c.likeCount - 1 WHERE c.id = :commentId AND c.likeCount > 0")
+  int decreaseLikeCount(@Param("commentId") Long commentId);
 }
