@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @RestController
@@ -31,9 +30,8 @@ public class MemberController {
 
   @PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ApiResponse<MemberResponse>> registerMember(
-          @RequestPart("data") @Validated RegisterRequest request,
-          @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
-    MemberResponse memberResponse = memberService.registerMember(request, profileImage);
+          @RequestBody @Validated RegisterRequest request) {
+    MemberResponse memberResponse = memberService.registerMember(request);
     ApiResponse<MemberResponse> response = new ApiResponse<>(true, memberResponse, null, "Registration success");
     return ResponseEntity.ok(response);
   }
@@ -46,14 +44,15 @@ public class MemberController {
     }
 
     Object principal = authentication.getPrincipal();
-    logger.info("Principal Class: {}", principal.getClass().getName());
+    logger.info("Principal 클래스: {}", principal.getClass().getName());
     if (principal instanceof CustomMemberDetails) {
       CustomMemberDetails userDetails = (CustomMemberDetails) principal;
-      logger.info("Member Information: {}", userDetails.getMember());
-      logger.info("Member Login Id: {}", userDetails.getMember().getLoginId());
+      logger.info("Member 정보: {}", userDetails.getMember());
+      logger.info("Member loginId: {}", userDetails.getMember().getLoginId());
     } else {
-      logger.info("Principal is not an instance");
+      logger.info("Principal is not an instance of CustomMemberDetails");
     }
+
 
     Long memberId = ((CustomMemberDetails) authentication.getPrincipal()).getId();
     memberWithdrawalService.withdrawMember(memberId);
@@ -64,15 +63,14 @@ public class MemberController {
 
   @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ApiResponse<MemberResponse>> updateMember(
-          @RequestPart("data") @Validated UpdateMemberRequest request,
-          @RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
+          @RequestBody @Validated UpdateMemberRequest request,
           Authentication authentication) {
     if (authentication == null || !authentication.isAuthenticated()) {
       ApiResponse<MemberResponse> errorResponse = new ApiResponse<>(false, null, "Unauthorized", null);
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
     Long memberId = ((CustomMemberDetails) authentication.getPrincipal()).getId();
-    MemberResponse updatedMember = memberService.updateMember(memberId, request, profileImage);
+    MemberResponse updatedMember = memberService.updateMember(memberId, request);
     if (updatedMember == null) {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
               .body(new ApiResponse<>(false, null, "Update failed", null));
