@@ -33,8 +33,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -56,6 +56,7 @@ public class MemberControllerTest {
     @MockitoBean
     private MemberWithdrawalService memberWithdrawalService;
 
+    @MockitoBean
     private CustomMemberDetails memberDetails;
 
     @BeforeEach
@@ -197,7 +198,7 @@ public class MemberControllerTest {
                         .file(imagePart)
                         .with(csrf())
                         .with(user(memberDetails))
-                        .with(request -> { request.setMethod("PUT"); return request; }))
+                        .with(req -> { req.setMethod("PUT"); return req; }))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.id").value("1"))
@@ -241,8 +242,8 @@ public class MemberControllerTest {
         mockMvc.perform(multipart("/api/members")
                         .file(dataPart)
                         .with(csrf())
-                        .with(request -> { request.setMethod("PUT"); return request; }))
+                        .with(req -> { req.setMethod("PUT"); return req; }))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Unauthorized"));
+                .andExpect(jsonPath("$.message").value("Unauthorized user"));
     }
 }

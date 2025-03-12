@@ -1,4 +1,4 @@
-package com.team1.epilogue.common.service;
+package com.team1.epilogue.auth.service;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

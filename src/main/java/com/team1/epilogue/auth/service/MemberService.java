@@ -6,7 +6,6 @@ import com.team1.epilogue.auth.dto.UpdateMemberRequest;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.*;
 import com.team1.epilogue.auth.repository.MemberRepository;
-import com.team1.epilogue.common.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,7 +31,7 @@ public class MemberService {
             throw new EmailAlreadyExistException();
         }
 
-        String profileUrl = request.getProfileUrl(); // 기본 이미지 URL (프론트엔드에서 기본값 지정 가능)
+        String profileUrl = request.getProfileUrl();
         if (profileImage != null && !profileImage.isEmpty()) {
             profileUrl = s3StorageService.uploadFile(profileImage);
         }
