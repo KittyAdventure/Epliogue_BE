@@ -198,7 +198,7 @@ class MeetingServiceTest {
       Pageable pageable = PageRequest.of(0,10,Sort.by("createdAt").descending());
       Page<Meeting> mockPage = new PageImpl<>(meetings, pageable,meetings.size());
 
-      when(meetingRepository.findAll(any(Pageable.class))).thenReturn(mockPage);
+      when(meetingRepository.findAllWithDetails(any(Pageable.class))).thenReturn(mockPage);
 
       // when
       Page<MeetingDto> result = meetingService.getMeetings(pageable);
