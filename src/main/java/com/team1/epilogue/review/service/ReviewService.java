@@ -4,6 +4,8 @@ import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
+import com.team1.epilogue.follow.entity.Follow;
+import com.team1.epilogue.follow.repository.FollowRepository;
 import com.team1.epilogue.review.dto.ReviewRequestDto;
 import com.team1.epilogue.review.dto.ReviewResponseDto;
 import com.team1.epilogue.review.entity.Review;
@@ -19,6 +21,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
@@ -26,6 +31,8 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final BookRepository bookRepository;
     private final ReviewLikeRepository reviewLikeRepository;
+    private final FollowRepository followRepository;
+
 
     @Transactional
     public ReviewResponseDto createReview(String bookId, ReviewRequestDto reviewRequestDto, CustomMemberDetails memberDetails) {
@@ -112,5 +119,19 @@ public class ReviewService {
         reviewLikeRepository.delete(reviewLike);
 
         reviewRepository.decreaseLikeCount(reviewId);
+    }
+
+    public Page<ReviewResponseDto> getFriendsReviews(String bookId, CustomMemberDetails memberDetails, int page, int size, String sortType) {
+        Member currentMember = memberDetails.getMember();
+        List<Follow> followings = followRepository.findByFollower(currentMember);
+        List<Member> friendMembers = followings.stream()
+                .map(Follow::getFollowed)
+                .collect(Collectors.toList());
+        if (friendMembers.isEmpty()) {
+            return Page.empty();
+        }
+        Pageable pageable = createPageable(page, size, sortType);
+        Page<Review> reviews = reviewRepository.findByBookIdAndMemberInWithFetchJoin(bookId, friendMembers, pageable);
+        return reviews.map(ReviewResponseDto::from);
     }
 }
