@@ -7,10 +7,12 @@ import com.team1.epilogue.chat.entity.Participation;
 import com.team1.epilogue.chat.repository.ChatRoomRepository;
 import com.team1.epilogue.chat.repository.ParticipationRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ParticipationService {
 
   private final ParticipationRepository participationRepository;
@@ -30,10 +32,12 @@ public class ParticipationService {
     ChatRoom chatRoom = chatRoomRepository.findById(roomId)
         .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
 
-    //최대인원 초과
-    if(!chatRoom.participantsLimit(memberId)) {
-      return false;
+
+    if(!chatRoom.canJoin()) {
+      throw new IllegalStateException("채팅방 최대 인원을 초과했습니다.");
     }
+
+
     //참여 정보를 저장
     if(!participationRepository.existsByRoomIdAndMemberId(roomId,memberId)){
       Participation participation = Participation.builder()
@@ -42,9 +46,10 @@ public class ParticipationService {
           .build();
 
       participationRepository.save(participation);
+      chatRoom.addMember(); // 인원증가
+      chatRoomRepository.save(chatRoom);
+      log.info("채팅방 참가: " + participationRepository.save(participation));
     }
-
-    chatRoomRepository.save(chatRoom);
     return true;
   }
 
@@ -52,7 +57,7 @@ public class ParticipationService {
   /**
    * 채팅방 나가기(0명이 되면 삭제)
    */
-  public void leaveRoom(String roomId, Long memberId){
+  public void leaveRoom(String roomId, Long memberId) {
     memberRepository.findById(memberId)
         .orElseThrow(() -> new MemberNotFoundException());
 
@@ -62,12 +67,14 @@ public class ParticipationService {
         .findFirst()
         .ifPresent(participationRepository::delete);
 
-    // 남은 인원 확인 후 삭제
-    if (participationRepository.findByRoomId(roomId).isEmpty()) {
+    ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+        .orElseThrow(() -> new IllegalArgumentException("채팅방이 존재하지 않습니다."));
+
+    if (chatRoom.removeMember()) {
       chatRoomRepository.deleteById(roomId);
+      log.info("채팅방 삭제됨 : roomId" + roomId);
+    } else {
+      chatRoomRepository.save(chatRoom);
     }
   }
-
-
-
 }

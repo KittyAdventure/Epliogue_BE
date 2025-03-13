@@ -3,6 +3,9 @@ package com.team1.epilogue.book.service;
 import com.team1.epilogue.book.client.NaverApiClient;
 import com.team1.epilogue.book.dto.BookDetailRequest;
 import com.team1.epilogue.book.dto.BookDetailResponse;
+import com.team1.epilogue.book.dto.BookMainPageDetail;
+import com.team1.epilogue.book.dto.BookMainPageDto;
+import com.team1.epilogue.book.dto.BookSearchFilter;
 import com.team1.epilogue.book.dto.SameAuthorBookTitleIsbn;
 import com.team1.epilogue.book.dto.xml.BookDetailXMLResponse;
 import com.team1.epilogue.book.dto.BookInfoRequest;
@@ -10,6 +13,9 @@ import com.team1.epilogue.book.dto.NaverBookSearchResponse;
 import com.team1.epilogue.book.dto.xml.Item;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
+import com.team1.epilogue.book.repository.CustomBookRepository;
+import com.team1.epilogue.keyword.service.KeyWordService;
+import com.team1.epilogue.trendingbook.service.TrendingBookService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +24,9 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -27,6 +35,9 @@ public class BookService {
 
   private final NaverApiClient naverApiClient;
   private final BookRepository bookRepository;
+  private final KeyWordService keyWordService;
+  private final TrendingBookService trendingBookService;
+  private final CustomBookRepository customBookRepository;
 
   @Value("${naver.base.url}")
   String naverUrl;
@@ -38,6 +49,8 @@ public class BookService {
    * @return 네이버에서 온 응답값을 return
    */
   public NaverBookSearchResponse searchBookInfo(BookInfoRequest dto) {
+    // 인기 검색어 기능을 위한 검색어 저장
+    keyWordService.saveKeyWord(dto.getQuery());
     NaverBookSearchResponse response = naverApiClient.getBookInfoFromNaver(naverUrl, dto);
     return response;
   }
@@ -48,6 +61,7 @@ public class BookService {
    * @param dto 책 제목 / ISBN 번호를 담은 DTO
    * @return 네이버에서 온 응답값을 return
    */
+  @Transactional
   public BookDetailResponse getBookDetail(BookDetailRequest dto) {
     Optional<Book> bookOpt; // repository 에서 가져올 Optional 객체
     Book book; // Optional 내부의 책 데이터
@@ -91,6 +105,11 @@ public class BookService {
         }
     );
 
+    // 인기 책 목록 기능을 위해 DB 에 조회기록 저장
+    trendingBookService.insertTrendingBookHistory(book.getId());
+
+    bookRepository.increaseView(book.getId());// 조회수 ++
+
     // DTO 로 반환 형식에 맞춰 return
     BookDetailResponse build = BookDetailResponse.builder()
         .title(book.getTitle())
@@ -127,8 +146,59 @@ public class BookService {
         .pubDate(Optional.ofNullable(dto.getPubDate())
             .map(LocalDate::parse)
             .orElse(null)) // null이면 그대로 null 할당
+        .chosung(getChosung(dto.getTitle())) // 이 책이 어떤 초성으로 시작하는지 설정
         .build();
 
     return bookRepository.save(book);
+  }
+
+  /**
+   * QueryDSL 을 이용한 CustomRepository 에서 Book 데이터들을 가져옵니다.
+   */
+  public BookMainPageDto getBookMainPage(BookSearchFilter filter) {
+    Page<Book> books = customBookRepository.findBooksWithFilter(filter);
+
+    List<BookMainPageDetail> list = new ArrayList<>();
+
+    books.stream().forEach(
+        data -> {
+          list.add(BookMainPageDetail.builder()
+              .bookId(data.getId())
+              .bookTitle(data.getTitle())
+              .thumbnail(data.getCoverUrl())
+              .build());
+        }
+    );
+
+    return BookMainPageDto.builder()
+        .page(filter.getPage())
+        .totalPages(books.getTotalPages())
+        .books(list)
+        .build();
+  }
+
+  // 책 제목 첫글자에서 초성 따는 메서드
+  private String getChosung(String title) {
+    if (title == null || title.isEmpty()) {
+      return "";
+    }
+
+    char firstChar = title.charAt(0);
+
+    if (firstChar >= '가' && firstChar <= '힣') {
+      // 한글 초성 추출
+      int unicode = firstChar - 0xAC00;
+      int chosungIndex = unicode / (21 * 28);
+      final char[] CHOSUNG_LIST = {
+          'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
+      };
+      return String.valueOf(CHOSUNG_LIST[chosungIndex]);
+    } else if ((firstChar >= 'A' && firstChar <= 'Z') || (firstChar >= 'a' && firstChar <= 'z')) {
+      // 영문자는 대문자로 변환
+      return String.valueOf(Character.toUpperCase(firstChar));
+    } else {
+      // 그 외 문자(숫자, 특수문자 등)는 그대로 반환
+      return String.valueOf(firstChar);
+    }
   }
 }

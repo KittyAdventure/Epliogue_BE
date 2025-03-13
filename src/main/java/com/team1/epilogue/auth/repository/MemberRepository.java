@@ -62,4 +62,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT m FROM Member m WHERE m.loginId = :loginId")
     Optional<Member> findByLoginIdWithLock(String loginId);
+
+    boolean existsByNickname(String nickname);
+
+    Optional<Member> findByNickname(String nickname);
+
+
 }

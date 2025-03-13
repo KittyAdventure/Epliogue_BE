@@ -1,13 +1,8 @@
 package com.team1.epilogue.book.entity;
 
 import com.team1.epilogue.common.entity.BaseEntity;
-import com.team1.epilogue.rating.entity.Rating;
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,4 +34,8 @@ public class Book extends BaseEntity {
   private String publisher;
 
   private LocalDate pubDate;
+
+  private String chosung; // 시작하는 초성
+
+  private int view; // 조회수
 }
