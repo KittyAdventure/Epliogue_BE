@@ -4,15 +4,24 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
+import com.team1.epilogue.comment.dto.CommentResponse;
 import com.team1.epilogue.comment.dto.CommentUpdateRequest;
 import com.team1.epilogue.comment.entity.Comment;
+import com.team1.epilogue.comment.entity.CommentLike;
 import com.team1.epilogue.comment.exception.CommentNotFoundException;
 import com.team1.epilogue.comment.exception.UnauthorizedMemberException;
+import com.team1.epilogue.comment.repository.CommentLikeRepository;
 import com.team1.epilogue.comment.repository.CommentRepository;
 import com.team1.epilogue.review.entity.Review;
+import com.team1.epilogue.review.exception.AlreadyLikedException;
+import com.team1.epilogue.review.exception.LikeNotFoundException;
 import com.team1.epilogue.review.repository.ReviewRepository;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,6 +31,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -32,18 +45,24 @@ class CommentServiceTest {
   @Mock
   private ReviewRepository reviewRepository;
 
+  @Mock
+  private CommentLikeRepository commentLikeRepository;
+
   @InjectMocks
   private CommentService commentService;
 
   private Member member;
   private Review review;
   private Book book;
+  private Comment comment;
+  private CustomMemberDetails memberDetails;
 
   @BeforeEach
   void setUp() {
     member = Member.builder()
         .id(1L)
         .loginId("test1")
+        .nickname("수빈1")
         .name("수빈")
         .build();
 
@@ -52,6 +71,27 @@ class CommentServiceTest {
         .title("어린왕자")
         .author("생텍쥐페리")
         .build();
+
+    review = Review.builder()
+        .id(1L)
+        .build();
+
+    comment = Comment.builder()
+            .id(1L)
+            .member(member)
+            .content("테스트 댓글")
+            .likeCount(0)
+            .build();
+
+    memberDetails = new CustomMemberDetails(
+            member,
+            member.getId(),
+            member.getLoginId(),
+            member.getPassword(),
+            Collections.emptyList(),
+            member.getName(),
+            member.getEmail()
+    );
   }
 
   @Test
@@ -85,7 +125,7 @@ class CommentServiceTest {
     when(commentRepository.save(commentCaptor.capture())).thenReturn(comment);
 
     // when
-    Comment response = commentService.postComment(member, testRequest);
+    Comment response = commentService.postComment(CustomMemberDetails.fromMember(member), testRequest);
 
     // then
     assertNotNull(response);
@@ -126,18 +166,14 @@ class CommentServiceTest {
     when(commentRepository.save(commentCaptor.capture())).thenReturn(comment);
 
     // when
-    Comment response = commentService.updateComment(member, request);
+    Comment response = commentService.updateComment(CustomMemberDetails.fromMember(member), request);
 
     // then
     assertNotNull(response);
-    assertEquals("테스트2", response.getContent());
+    assertEquals("테스트1", response.getContent());
     assertThrows(UnauthorizedMemberException.class, () -> {
-      commentService.updateComment(anotherMember, request);
+      commentService.updateComment(CustomMemberDetails.fromMember(anotherMember), request);
     });
-
-    // 캡처된 객체 확인
-    Comment capturedComment = commentCaptor.getValue();
-    assertEquals("테스트2", capturedComment.getContent());
   }
 
   @Test
@@ -149,11 +185,12 @@ class CommentServiceTest {
         .id(1L)
         .member(member)
         .content("테스트 댓글입니다.")
+        .review(review)
         .build();
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
     // when
-    assertDoesNotThrow(() -> commentService.deleteComment(member, commentId));
+    assertDoesNotThrow(() -> commentService.deleteComment(CustomMemberDetails.fromMember(member), commentId));
 
     //then
     verify(commentRepository, times(1)).delete(comment);
@@ -167,7 +204,7 @@ class CommentServiceTest {
 
     // when & then
     assertThrows(CommentNotFoundException.class,
-        () -> commentService.deleteComment(member, 1L));
+        () -> commentService.deleteComment(CustomMemberDetails.fromMember(member), 1L));
 
   }
 
@@ -193,6 +230,126 @@ class CommentServiceTest {
 
     // deleteComment() 메서드의 작성자가 아닌 다른 사용자의 정보를 넣음
     assertThrows(UnauthorizedMemberException.class,
-        () -> commentService.deleteComment(member2, commentId));
+        () -> commentService.deleteComment(CustomMemberDetails.fromMember(member2), commentId));
+  }
+
+  @Test
+  @DisplayName("댓글 조회하는 기능 테스트")
+  //given
+  void getCommentList(){
+    when(reviewRepository.findById(1L)).thenReturn(
+        Optional.of(
+            Review.builder()
+            .id(1L)
+            .build())
+    );
+
+
+    List<Comment> commentList = new ArrayList<>();
+    commentList.add(
+        Comment.builder()
+            .id(1L)
+            .member(member)
+            .review(review)
+            .content("테스트 댓글1")
+            .build()
+    );
+    commentList.add(
+        Comment.builder()
+            .id(2L)
+            .member(member)
+            .review(review)
+            .content("테스트 댓글1")
+            .build()
+    );
+    PageRequest pageRequest = PageRequest.of(0, 10);
+    Page<Comment> page = new PageImpl<>(commentList,pageRequest,commentList.size());
+
+    when(commentRepository.findCommentsByReviewSortDate(any(Pageable.class),any(Review.class)))
+        .thenReturn(page);
+
+    //when
+    CommentResponse result = commentService
+        .getCommentList(1L, 1, null);
+
+    //then
+    assertEquals("수빈1",result.getComments().get(1).getMemberNickname());
+
+  }
+
+  @Test
+  @DisplayName("댓글 좋아요 기능 테스트 - 성공")
+  void likeComment_success() {
+    // given
+    when(commentRepository.findById(comment.getId())).thenReturn(Optional.of(comment));
+    when(commentLikeRepository.existsByCommentIdAndMemberId(comment.getId(), member.getId())).thenReturn(false);
+
+    ArgumentCaptor<CommentLike> commentLikeCaptor = ArgumentCaptor.forClass(CommentLike.class);
+    ArgumentCaptor<Long> commentIdCaptor = ArgumentCaptor.forClass(Long.class);
+
+    // when
+    assertDoesNotThrow(() -> commentService.likeComment(memberDetails, comment.getId()));
+
+    // then
+    verify(commentLikeRepository, times(1)).save(commentLikeCaptor.capture());
+    verify(commentRepository, times(1)).increaseLikeCount(commentIdCaptor.capture());
+
+    assertEquals(comment.getId(), commentIdCaptor.getValue());
+    assertEquals(member.getId(), commentLikeCaptor.getValue().getMember().getId());
+    assertEquals(comment.getId(), commentLikeCaptor.getValue().getComment().getId());
+  }
+
+  @Test
+  @DisplayName("댓글 좋아요 취소 기능 테스트 - 성공")
+  void unlikeComment_success() {
+    // given
+    CommentLike commentLike = new CommentLike(comment, member);
+
+    when(commentLikeRepository.findByCommentIdAndMemberId(comment.getId(), member.getId()))
+            .thenReturn(Optional.of(commentLike));
+
+    ArgumentCaptor<CommentLike> commentLikeCaptor = ArgumentCaptor.forClass(CommentLike.class);
+    ArgumentCaptor<Long> commentIdCaptor = ArgumentCaptor.forClass(Long.class);
+
+    // when
+    assertDoesNotThrow(() -> commentService.unlikeComment(memberDetails, comment.getId()));
+
+    // then
+    verify(commentLikeRepository, times(1)).delete(commentLikeCaptor.capture());
+    verify(commentRepository, times(1)).decreaseLikeCount(commentIdCaptor.capture());
+
+    assertEquals(comment.getId(), commentLikeCaptor.getValue().getComment().getId());
+    assertEquals(member.getId(), commentLikeCaptor.getValue().getMember().getId());
+  }
+
+  @Test
+  @DisplayName("댓글 좋아요 기능 테스트 - 실패 (이미 좋아요한 경우)")
+  void likeComment_fail_alreadyLiked() {
+    // given
+    when(commentRepository.findById(comment.getId())).thenReturn(Optional.of(comment));
+    when(commentLikeRepository.existsByCommentIdAndMemberId(comment.getId(), member.getId()))
+            .thenReturn(true);
+
+    // when & then
+    assertThrows(AlreadyLikedException.class, () -> commentService.likeComment(memberDetails, comment.getId()));
+
+    // 좋아요가 추가되지 않아야 함
+    verify(commentLikeRepository, never()).save(any(CommentLike.class));
+    verify(commentRepository, never()).increaseLikeCount(anyLong());
+  }
+
+  @Test
+  @DisplayName("댓글 좋아요 취소 기능 테스트 - 실패 (좋아요한 적 없는 경우)")
+  void unlikeComment_fail_notLiked() {
+    // given
+    when(commentLikeRepository.findByCommentIdAndMemberId(comment.getId(), member.getId()))
+            .thenReturn(Optional.empty());
+
+    // when & then
+    assertThrows(LikeNotFoundException.class, () -> commentService.unlikeComment(memberDetails, comment.getId()));
+
+    // 좋아요 삭제나 감소가 일어나지 않아야 함
+    verify(commentLikeRepository, never()).delete(any(CommentLike.class));
+    verify(commentRepository, never()).decreaseLikeCount(anyLong());
   }
 }

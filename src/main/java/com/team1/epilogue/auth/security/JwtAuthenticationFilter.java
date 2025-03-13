@@ -3,6 +3,7 @@ package com.team1.epilogue.auth.security;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +23,7 @@ import java.util.Collections;
  * JWT 토큰을 검증하고 인증 정보를 SecurityContext에 저장하는 역할 수행
  */
 @Slf4j
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     /**
      * [필드 레벨]
@@ -29,17 +31,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private final JwtTokenProvider tokenProvider;
     private final MemberRepository memberRepository;
-
-    /**
-     * [생성자 레벨]
-     * JwtTokenProvider를 주입받아 초기화
-     *
-     * @param tokenProvider JWT 토큰 처리 객체
-     */
-    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, MemberRepository memberRepository) {
-        this.tokenProvider = tokenProvider;
-        this.memberRepository = memberRepository;
-    }
 
     /**
      * [메서드 레벨]
@@ -58,20 +49,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        // 요청에서 JWT 토큰 추출
+        String requestURI = request.getRequestURI();
+
         String token = getJwtFromRequest(request);
-        // 토큰이 존재하고 유효한 경우 사용자 인증 정보 설정
         if (token != null && tokenProvider.validateToken(token)) {
             String memberIdStr = tokenProvider.getMemberIdFromJWT(token);
             Member member = memberRepository.findById(Long.parseLong(memberIdStr))
                     .orElseThrow(() -> new MemberNotFoundException("회원이 존재하지 않습니다."));
+            CustomMemberDetails userDetails = CustomMemberDetails.fromMember(member);
             UsernamePasswordAuthenticationToken authentication =
-                    // 사용자 권한 정보 관리하는 부분이 없으므로 empty List 반환
-                    new UsernamePasswordAuthenticationToken(member, null, Collections.emptyList());
+                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
         }
-        // 다음 필터로 요청 전달
         filterChain.doFilter(request, response);
     }
 

@@ -93,8 +93,15 @@ public class SecurityConfig {
                             "/api/kp/success",
                             "/api/kp/fail",
                             "/api/kp/cancel",
+                            "/api/share",
+                            "/api/share/**",      // 공유 관련 URL은 인증 없이 접근 가능
+                            "/api/kp/cancel",
                             "/api/trending-books",
-                            "/api/keywords"
+                            "/api/books/main-page",
+                            "/api/keywords",
+                            "/api/mypage/calendar",
+                            "/api/mypage/reviews",
+                            "/api/comments/view"
                     ).permitAll()
                     .anyRequest().authenticated()
             )
