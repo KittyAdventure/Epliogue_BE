@@ -7,11 +7,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
-@EnableScheduling
 @SpringBootApplication
 @EnableTransactionManagement
 @EnableJpaAuditing
 @EnableMongoAuditing
+@EnableScheduling
 public class EpilogueApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(EpilogueApplication.class, args);

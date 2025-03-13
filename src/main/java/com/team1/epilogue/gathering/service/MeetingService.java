@@ -1,7 +1,6 @@
 package com.team1.epilogue.gathering.service;
 
 import com.team1.epilogue.auth.entity.Member;
-import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
@@ -11,6 +10,8 @@ import com.team1.epilogue.gathering.entity.Meeting;
 import com.team1.epilogue.gathering.repository.MeetingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,17 +26,14 @@ public class MeetingService {
   // 오프라인 모임생성
   @Transactional
   public MeetingDto createMeeting(CustomMemberDetails memberDetails,MeetingDto meetingDto){
-    Long memberId = memberDetails.getId();
-
-    Member member = memberRepository.findById(meetingDto.getMemberId())
-        .orElseThrow(() -> new MemberNotFoundException("회원이 존재하지 않습니다."));
+    Member member = memberDetails.getMember();
 
     Book book = bookRepository.findById(meetingDto.getBookId())
         .orElseThrow(() -> new IllegalArgumentException("책이 존재하지 않습니다."));
 
     Meeting meeting = Meeting.builder()
         .book(book)
-        .member(Member.builder().id(memberId).build())
+        .member(member)
         .title(meetingDto.getTitle())
         .content(meetingDto.getContent())
         .location(meetingDto.getLocation())
@@ -90,6 +88,9 @@ public class MeetingService {
   }
 
 
-
-
+  //모임 조회
+  public Page<MeetingDto> getMeetings(Pageable pageable) {
+    Page<Meeting> meetingPage = meetingRepository.findAllWithDetails(pageable);
+    return meetingPage.map(MeetingDto::fromEntity);
+  }
 }

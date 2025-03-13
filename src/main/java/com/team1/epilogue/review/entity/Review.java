@@ -40,6 +40,10 @@ public class Review extends BaseEntity {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private int likeCount = 0;
+
     /**
      * 리뷰 내용을 수정합니다
      *
@@ -48,5 +52,7 @@ public class Review extends BaseEntity {
     public void updateReview(String content) {
         this.content = content;
     }
+
+    private int commentsCount; // 댓글 갯수
 }
 

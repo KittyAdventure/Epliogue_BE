@@ -3,12 +3,15 @@ package com.team1.epilogue.book.controller;
 import com.team1.epilogue.book.dto.BookDetailRequest;
 import com.team1.epilogue.book.dto.BookDetailResponse;
 import com.team1.epilogue.book.dto.BookInfoRequest;
+import com.team1.epilogue.book.dto.BookMainPageDto;
+import com.team1.epilogue.book.dto.BookSearchFilter;
 import com.team1.epilogue.book.dto.NaverBookSearchResponse;
 import com.team1.epilogue.book.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -24,7 +27,7 @@ public class BookController {
    * @return 네이버에서 온 응답값을 return
    */
   @GetMapping("/api/books")
-  public ResponseEntity<?> searchBookInfo(@RequestBody BookInfoRequest dto) {
+  public ResponseEntity<NaverBookSearchResponse> searchBookInfo(@RequestBody BookInfoRequest dto) {
     NaverBookSearchResponse naverBookSearchResponse = bookService.searchBookInfo(dto);
     return ResponseEntity.ok(naverBookSearchResponse);
   }
@@ -36,8 +39,29 @@ public class BookController {
    * @return 네이버에서 온 응답값을 return
    */
   @GetMapping("/api/books/detail")
-  public ResponseEntity<?> getBookDetail(@RequestBody BookDetailRequest dto) {
+  public ResponseEntity<BookDetailResponse> getBookDetail(@RequestBody BookDetailRequest dto) {
     BookDetailResponse bookDetail = bookService.getBookDetail(dto);
     return ResponseEntity.ok(bookDetail);
+  }
+
+  /**
+   * 책 메인 페이지에 들어갈때 조회되는 정보를 return 하는 메서드입니다.
+   */
+  @GetMapping("/api/books/main-page")
+  public ResponseEntity<BookMainPageDto> getBookMainPage(
+      @RequestParam String sort,
+      @RequestParam String chosung,
+      @RequestParam int rating,
+      @RequestParam String startDate,
+      @RequestParam String endDate) {
+    BookSearchFilter filter = BookSearchFilter.builder()
+        .sort(sort)
+        .chosung(chosung)
+        .rating(rating)
+        .startDate(startDate)
+        .endDate(endDate)
+        .build();
+    BookMainPageDto bookMainPage = bookService.getBookMainPage(filter);
+    return ResponseEntity.ok(bookMainPage);
   }
 }

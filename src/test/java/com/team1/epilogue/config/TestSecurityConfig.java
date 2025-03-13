@@ -65,7 +65,8 @@ public class TestSecurityConfig {
                                 "/api/members/login/social",
                                 "/api/members/auth/kakao/callback",
                                 "/api/members/auth/google/callback",
-                                "/login/oauth2/**"
+                                "/login/oauth2/**",
+                                "/api/share/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -73,7 +74,7 @@ public class TestSecurityConfig {
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpStatus.UNAUTHORIZED.value());
                             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            response.getWriter().write("{\"상태\":401,\"에러코드\":\"UNAUTHORIZED\",\"메시지\":\"인증되지 않은 사용자\"}");
+                            response.getWriter().write("{\"status\":401,\"errorCode\":\"UNAUTHORIZED\",\"message\":\"Unauthorized user\"}");
                         })
                 )
                 .oauth2Login(withDefaults())

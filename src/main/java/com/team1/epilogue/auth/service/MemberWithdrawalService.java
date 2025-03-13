@@ -31,7 +31,7 @@ public class MemberWithdrawalService {
      *
      * @param memberId 탈퇴할 회원의 ID
      */
-    @Transactional
+
     public void withdrawMember(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(MemberNotFoundException::new); // 회원이 없으면 예외 발생

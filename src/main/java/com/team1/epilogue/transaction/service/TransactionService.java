@@ -48,7 +48,7 @@ public class TransactionService {
         .build();
 
     if (detail == TransactionDetail.KAKAOPAY) {
-      data.setTid(tid);
+      data = data.toBuilder().tid(tid).build();
     }
 
     // member Point 변경

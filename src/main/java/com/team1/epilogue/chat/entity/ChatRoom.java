@@ -22,18 +22,27 @@ public class ChatRoom extends BaseTimeDocument {
   @Id
   private String id; // MongoDB ObjectId
   private String title; // 책 제목과 동일한 채팅방 이름
-  private Set<Long> participants = new HashSet<>();
+  private int memberCnt; // 현재 인원수
+  private static final int MAX_MEMBERS = 30;  // 최대 인원
+  private Long createId; // 채팅방 생성자
 
-  // 채팅방에 참여자 추가 (최대 30명 제한)
-  public boolean participantsLimit(Long memberId) {
-    if(participants.size() >= 30){
-      return false;  // 30명 초과 시 참여자 추가 불가
+  public boolean canJoin(){
+    return memberCnt < MAX_MEMBERS;
+  }
+
+  public void addMember() {
+    if(canJoin()){
+      memberCnt++;
+    } else {
+      throw new IllegalStateException("채팅방 최대 인원 초과");
     }
-    // 추가 전 중복 여부를 확인
-    if (!participants.contains(memberId)) {
-      return participants.add(memberId);  // 중복되지 않으면 추가
+  }
+
+  public boolean removeMember() {
+    if(memberCnt > 0) {
+      memberCnt--;
     }
-    return false;  // 이미 존재하면 추가하지 않음
+    return memberCnt == 0;
   }
 
 }

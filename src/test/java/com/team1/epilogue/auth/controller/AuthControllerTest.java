@@ -1,246 +1,316 @@
 package com.team1.epilogue.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.team1.epilogue.auth.entity.Member;
-import com.team1.epilogue.auth.service.*;
-import com.team1.epilogue.config.TestSecurityConfig;
+import com.team1.epilogue.auth.dto.ApiResponse;
 import com.team1.epilogue.auth.dto.GeneralLoginRequest;
+import com.team1.epilogue.auth.dto.GoogleUserInfo;
 import com.team1.epilogue.auth.dto.KakaoUserInfo;
 import com.team1.epilogue.auth.dto.LoginResponse;
+import com.team1.epilogue.auth.dto.LoginResponse.UserInfo;
+import com.team1.epilogue.auth.dto.SuccessResponse;
+import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
+import com.team1.epilogue.auth.service.AuthService;
+import com.team1.epilogue.auth.service.GoogleAuthService;
+import com.team1.epilogue.auth.service.KakaoAuthService;
+import com.team1.epilogue.auth.service.GoogleWithdrawalService;
+import com.team1.epilogue.auth.service.KakaoWithdrawalService;
+import com.team1.epilogue.auth.service.LogoutService;
+import com.team1.epilogue.auth.service.MemberWithdrawalService;
+import com.team1.epilogue.config.TestSecurityConfig;
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
-/**
- * [클래스 레벨]
- * AuthController의 단위 테스트 클래스
- * - 로그인, 소셜 로그인, 소셜 회원 탈퇴 기능을 테스트
- */
 @WebMvcTest(AuthController.class)
 @Import(TestSecurityConfig.class)
+@DisplayName("AuthController 테스트")
+@RequiredArgsConstructor
 public class AuthControllerTest {
 
-    @Autowired
+
     private MockMvc mockMvc;
 
-    @Autowired
     private ObjectMapper objectMapper;
 
     @MockitoBean
     private AuthService authService;
-
     @MockitoBean
     private KakaoAuthService kakaoAuthService;
-
     @MockitoBean
     private GoogleAuthService googleAuthService;
-
-
-    @MockitoBean
-    private KakaoWithdrawalService kakaoWithdrawalService;
-
-    @MockitoBean
-    private GoogleWithdrawalService googleWithdrawalService;
-
-
     @MockitoBean
     private MemberWithdrawalService memberWithdrawalService;
-
+    @MockitoBean
+    private GoogleWithdrawalService googleWithdrawalService;
+    @MockitoBean
+    private KakaoWithdrawalService kakaoWithdrawalService;
     @MockitoBean
     private LogoutService logoutService;
-    /**
-     * [메서드 레벨]
-     * 일반 로그인 성공 테스트
-     * - 올바른 로그인 ID와 비밀번호 입력 시, 정상적으로 JWT 토큰과 사용자 정보를 반환하는지 확인
-     */
-    @Test
-    @DisplayName("일반 로그인 성공 테스트")
-    public void testLogin_Success() throws Exception {
-        GeneralLoginRequest request = new GeneralLoginRequest();
-        request.setLoginId("testUser");
-        request.setPassword("password");
 
+    @Test
+    @DisplayName("로그인 성공")
+    public void testLoginSuccess() throws Exception {
+        GeneralLoginRequest request = new GeneralLoginRequest("user1", "password");
+        UserInfo userInfo = UserInfo.builder()
+                .id("1")
+                .userId("user1")
+                .name("user1")
+                .profileImg("http://example.com/image.png")
+                .build();
         LoginResponse loginResponse = LoginResponse.builder()
-                .message("로그인 성공")
-                .accessToken("jwt-token")
-                .user(LoginResponse.UserInfo.builder()
-                        .id("1")
-                        .userId("testUser")
-                        .name("Test User")
-                        .profileImg("http://example.com/profile.jpg")
-                        .build())
+                .message("Login success")
+                .accessToken("dummyToken")
+                .user(userInfo)
                 .build();
 
-        Mockito.when(authService.login(Mockito.any(GeneralLoginRequest.class)))
-                .thenReturn(loginResponse);
+        when(authService.login(any(GeneralLoginRequest.class))).thenReturn(loginResponse);
 
         mockMvc.perform(post("/api/members/login")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("로그인 성공"))
-                .andExpect(jsonPath("$.accessToken").value("jwt-token"));
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.message", is("Login success")))
+                .andExpect(jsonPath("$.data.accessToken", is("dummyToken")))
+                .andExpect(jsonPath("$.data.user.userId", is("user1")));
     }
 
-
-    /**
-     * [메서드 레벨]
-     * 카카오 소셜 로그인 성공 테스트
-     * - 카카오 API에서 인증 코드를 받아, 정상적으로 로그인 응답을 반환하는지 확인
-     */
     @Test
-    @DisplayName("카카오 소셜 로그인 콜백 성공 테스트")
-    public void testSocialLogin_KakaoCallback_Success() throws Exception {
-        String code = "sample-code";
+    @DisplayName("로그인 실패")
+    public void testLoginFailure() throws Exception {
+        GeneralLoginRequest request = new GeneralLoginRequest("user1", "wrongPassword");
+        when(authService.login(any(GeneralLoginRequest.class)))
+                .thenThrow(new BadCredentialsException("Invalid username or password."));
 
+        mockMvc.perform(post("/api/members/login")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error", is("Invalid username or password.")));
+    }
+
+    @Test
+    @DisplayName("구글 콜백 성공")
+    public void testGoogleCallbackSuccess() throws Exception {
+        String code = "dummyCode";
+        GoogleUserInfo googleUserInfo = new GoogleUserInfo();
+        googleUserInfo.setSub("12345");
+        googleUserInfo.setEmail("test@example.com");
+        googleUserInfo.setName("user1");
+        googleUserInfo.setPicture("http://example.com/image.png");
+
+        UserInfo userInfo = UserInfo.builder()
+                .id("1")
+                .userId("google_12345")
+                .name("user1")
+                .profileImg("http://example.com/image.png")
+                .build();
+        LoginResponse loginResponse = LoginResponse.builder()
+                .message("Login success")
+                .accessToken("googleToken")
+                .user(userInfo)
+                .build();
+
+        when(googleAuthService.getGoogleUserInfo(code)).thenReturn(googleUserInfo);
+        when(authService.socialLoginGoogle(googleUserInfo)).thenReturn(loginResponse);
+
+        mockMvc.perform(get("/api/members/auth/google/callback")
+                        .param("code", code))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.message", is("Login success")))
+                .andExpect(jsonPath("$.data.accessToken", is("googleToken")));
+    }
+
+    @Test
+    @DisplayName("카카오 콜백 성공")
+    public void testKakaoCallbackSuccess() throws Exception {
+        String code = "dummyKakaoCode";
         KakaoUserInfo kakaoUserInfo = new KakaoUserInfo();
-        kakaoUserInfo.setId(12345L);
+        kakaoUserInfo.setId(100L);
+        KakaoUserInfo.KakaoProfile profile = new KakaoUserInfo.KakaoProfile();
+        profile.setNickname("user1");
+        profile.setProfileImageUrl("http://example.com/kakao.png");
         KakaoUserInfo.KakaoAccount account = new KakaoUserInfo.KakaoAccount();
         account.setEmail("kakao@example.com");
-        KakaoUserInfo.KakaoProfile profile = new KakaoUserInfo.KakaoProfile();
-        profile.setNickname("KakaoUser");
-        profile.setProfileImageUrl("http://example.com/kakao.jpg");
         account.setProfile(profile);
         kakaoUserInfo.setKakao_account(account);
 
+        UserInfo userInfo = UserInfo.builder()
+                .id("1")
+                .userId("kakao_100")
+                .name("user1")
+                .profileImg("http://example.com/kakao.png")
+                .build();
         LoginResponse loginResponse = LoginResponse.builder()
-                .message("로그인 성공")
-                .accessToken("jwt-token")
-                .user(LoginResponse.UserInfo.builder()
-                        .id("1")
-                        .userId("kakao_12345")
-                        .name("KakaoUser")
-                        .profileImg("http://example.com/kakao.jpg")
-                        .build())
+                .message("Login success")
+                .accessToken("kakaoToken")
+                .user(userInfo)
                 .build();
 
-        Mockito.when(kakaoAuthService.getKakaoUserInfo(code)).thenReturn(kakaoUserInfo);
-        Mockito.when(authService.socialLoginKakao(Mockito.any(KakaoUserInfo.class)))
-                .thenReturn(loginResponse);
+        when(kakaoAuthService.getKakaoUserInfo(code)).thenReturn(kakaoUserInfo);
+        when(authService.socialLoginKakao(kakaoUserInfo)).thenReturn(loginResponse);
 
         mockMvc.perform(get("/api/members/auth/kakao/callback")
                         .param("code", code))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("로그인 성공"))
-                .andExpect(jsonPath("$.accessToken").value("jwt-token"));
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.message", is("Login success")))
+                .andExpect(jsonPath("$.data.accessToken", is("kakaoToken")));
     }
 
-
-
-    // 카카오 소셜 회원 탈퇴 성공 테스트
     @Test
-    @DisplayName("카카오 소셜 회원 탈퇴 성공 테스트")
-    public void testWithdrawSocialMember_Kakao_Success() throws Exception {
-        // 인증된 사용자 생성
-        CustomMemberDetails customMemberDetails = CustomMemberDetails.fromMember(
-                Member.builder()
-                        .id(1L)
-                        .loginId("kakao_12345")
-                        .password("")
-                        .name("KakaoUser")
-                        .profileUrl("http://example.com/kakao.jpg")
-                        .build()
-        );
+    @DisplayName("로그아웃 성공")
+    public void testLogoutSuccess() throws Exception {
+        String token = "dummyToken";
+        Member dummyMember = Member.builder()
+                .id(1L)
+                .loginId("user1")
+                .password("dummyPassword")
+                .nickname("user1")
+                .name("user1")
+                .email("user1@example.com")
+                .phone("010-1111-1111")
+                .profileUrl("http://example.com/profile.png")
+                .point(0)
+                .social("local")
+                .build();
+        CustomMemberDetails userDetails = CustomMemberDetails.fromMember(dummyMember);
+        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
-        mockMvc.perform(delete("/api/members/social/withdraw")
-                        .with(csrf())
-                        .param("provider", "kakao")
-                        .param("accessToken", "sample-access-token")
-                        .with(user(customMemberDetails)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("소셜 회원 탈퇴 성공"));
-    }
-
-    /**
-     * [메서드 레벨]
-     * 구글 소셜 회원 탈퇴 성공 테스트
-     * - 인증된 사용자가 구글 연동을 해제하고, DB에서 정상적으로 삭제되는지 확인
-     */
-    // 구글 소셜 회원 탈퇴 성공 테스트
-    @Test
-    @DisplayName("구글 소셜 회원 탈퇴 성공 테스트")
-    public void testWithdrawSocialMember_Google_Success() throws Exception {
-        // 인증된 사용자 생성
-        CustomMemberDetails customMemberDetails = CustomMemberDetails.fromMember(
-                Member.builder()
-                        .id(1L)
-                        .loginId("testUser")
-                        .password("")
-                        .name("Test User")
-                        .profileUrl("http://example.com/profile.jpg")
-                        .build()
-        );
-        mockMvc.perform(delete("/api/members/social/withdraw")
-                        .with(csrf())
-                        .param("provider", "google")
-                        .param("accessToken", "sample-google-access-token")
-                        .with(user(customMemberDetails)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("소셜 회원 탈퇴 성공"));
-    }
-
-    // 테스트용 인증 principal 생성 (로그아웃 테스트용)
-    private CustomMemberDetails testUser() {
-        return CustomMemberDetails.fromMember(
-                Member.builder()
-                        .id(1L)
-                        .loginId("testUser")
-                        .password("encodedPassword")
-                        .name("Test User")
-                        .profileUrl("http://example.com/profile.jpg")
-                        .build()
-        );
-    }
-
-    // 일반 로그아웃 성공 테스트
-    @Test
-    @DisplayName("일반 로그아웃 성공 테스트")
-    public void testLogout_Success() throws Exception {
-        // 인증된 사용자 시뮬레이션
-        CustomMemberDetails user = testUser();
+        Mockito.doNothing().when(logoutService).invalidate(token);
 
         mockMvc.perform(post("/api/members/logout")
                         .with(csrf())
-                        .with(user(user))
-                        .header("Authorization", "Bearer jwt-token"))
+                        .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("로그아웃 성공"));
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.message", is("Logout Success")));
     }
-    @Test
-    @DisplayName("소셜 로그아웃 성공 테스트")
-    public void 소셜_로그아웃_성공_테스트() throws Exception {
-        CustomMemberDetails customMemberDetails = CustomMemberDetails.fromMember(
-                Member.builder()
-                        .id(1L)
-                        .loginId("testUser")
-                        .password("")
-                        .name("Test User")
-                        .profileUrl("http://example.com/profile.jpg")
-                        .build()
-        );
-        mockMvc.perform(post("/api/members/logout")
-                        .with(csrf())
-                        .with(user(customMemberDetails))
-                        .header("Authorization", "Bearer jwt-token"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("로그아웃 성공"));
 
+    @Test
+    @DisplayName("소셜 로그아웃 성공")
+    public void testSocialLogoutSuccess() throws Exception {
+        String token = "dummyToken";
+        Member dummyMember = Member.builder()
+                .id(1L)
+                .loginId("user1")
+                .password("dummyPassword")
+                .nickname("user1")
+                .name("user1")
+                .email("user1@example.com")
+                .phone("010-1111-1111")
+                .profileUrl("http://example.com/profile.png")
+                .build();
+        CustomMemberDetails userDetails = CustomMemberDetails.fromMember(dummyMember);
+        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        Mockito.doNothing().when(logoutService).invalidate(token);
+
+        mockMvc.perform(post("/api/members/logout/social")
+                        .with(csrf())
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.message", is("Social Logout Success")));
+    }
+
+
+    @Test
+    @DisplayName("소셜 회원 탈퇴 성공")
+    public void testWithdrawSocialMemberSuccess() throws Exception {
+        String provider = "google";
+        String accessToken = "dummyAccessToken";
+        Member dummyMember = Member.builder()
+                .id(1L)
+                .loginId("user1")
+                .password("dummyPassword")
+                .nickname("user1")
+                .name("user1")
+                .email("user1@example.com")
+                .phone("010-1111-1111")
+                .profileUrl("http://example.com/profile.png")
+                .point(0)
+                .social("google")
+                .build();
+        CustomMemberDetails userDetails = CustomMemberDetails.fromMember(dummyMember);
+        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        Mockito.doNothing().when(googleWithdrawalService).revokeGoogleAccount(accessToken);
+        Mockito.doNothing().when(memberWithdrawalService).withdrawMember(dummyMember.getId());
+
+        mockMvc.perform(delete("/api/members/social/withdraw")
+                        .with(csrf())
+                        .param("provider", provider)
+                        .param("accessToken", accessToken)
+                        .with(request -> {
+                            request.setUserPrincipal(auth);
+                            return request;
+                        }))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.message", is("Social member withdrawal success")));
+    }
+
+    @Test
+    @DisplayName("소셜 회원 탈퇴 실패 - 지원되지 않는 제공자")
+    public void testWithdrawSocialMemberUnsupportedProvider() throws Exception {
+        String provider = "facebook";
+        String accessToken = "dummyAccessToken";
+        Member dummyMember = Member.builder()
+                .id(1L)
+                .loginId("user1")
+                .password("dummyPassword")
+                .nickname("user1")
+                .name("user1")
+                .email("user1@example.com")
+                .phone("010-1111-1111")
+                .profileUrl("http://example.com/profile.png")
+                .point(0)
+                .social("local")
+                .build();
+        CustomMemberDetails userDetails = CustomMemberDetails.fromMember(dummyMember);
+        Authentication auth = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        mockMvc.perform(delete("/api/members/social/withdraw")
+                        .with(csrf())
+                        .param("provider", provider)
+                        .param("accessToken", accessToken)
+                        .with(request -> {
+                            request.setUserPrincipal(auth);
+                            return request;
+                        }))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.error", is("Unsupported social provider")));
     }
 }

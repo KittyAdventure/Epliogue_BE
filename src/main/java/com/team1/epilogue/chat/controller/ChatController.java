@@ -8,51 +8,28 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/meeting/chat")
 @Slf4j
 public class ChatController {
 
   private final ChatMessageService chatMessageService;
+  private final SimpMessagingTemplate messagingTemplate;
 
-
-  /**
-   * 채팅방에 메시지 저장
-   * @param roomId 채팅방 ID
-   * @param memberId 메시지를 보낼 사용자의 ID
-   * @param content 메시지 내용
-   * @return 저장된 메시지 정보
-   */
-  @PostMapping("/rooms/{roomId}/messages")
-  public ResponseEntity<ChatMessageDto> saveMessage(@PathVariable String roomId,
-      @RequestParam Long memberId,
-      @RequestParam String content) {
-    ChatMessageDto chatMessageDto = ChatMessageDto.builder()
-        .roomId(roomId)
-        .memberId(memberId)
-        .content(content)
-        .build();
-
-    log.info("메시지 저장 요청: roomId={}, memberId={}, content={}", roomId, memberId, content);
-
+  
+  //채팅보내기
+  @MessageMapping("/chat.sendMessage")
+  public void sendMessage(ChatMessageDto chatMessageDto){
     ChatMessageDto savedMessage = chatMessageService.saveMessage(chatMessageDto);
-
-    log.info(" 저장된 메시지: {}", savedMessage);
-
-    // savedMessage가 null인 경우 처리하기
-    if (savedMessage == null) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
-
-    return ResponseEntity.status(HttpStatus.CREATED).body(savedMessage);
+    messagingTemplate.convertAndSend("/topic/chat/" + savedMessage.getRoomId(), savedMessage);
   }
 
 
