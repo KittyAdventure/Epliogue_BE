@@ -1,5 +1,6 @@
 package com.team1.epilogue.transaction.controller;
 
+import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.comment.dto.MessageResponse;
 import com.team1.epilogue.transaction.domain.TransactionDetail;
 import com.team1.epilogue.transaction.dto.KakaoPayApproveResponse;
@@ -39,7 +40,8 @@ public class TransactionController {
   public ResponseEntity<KakaoPayRedirectUrlDto> kakaoPayPrepare(
       Authentication authentication,
       @RequestParam int amount) {
-    String memberId = authentication.getName(); // memberId 추출
+    CustomMemberDetails details = (CustomMemberDetails) authentication.getPrincipal();
+    String memberId = details.getUsername();
     String redirectUrl = kakaoPayService.prepareCharge(memberId, amount).getNextRedirectPCUrl();
 
     // 프론트 측으로 KakaoPay 서버에서온 Url 주소 return
