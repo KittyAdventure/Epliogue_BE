@@ -1,11 +1,9 @@
 package com.team1.epilogue.comment.service;
 
-import com.team1.epilogue.alarm.controller.AlarmController;
+import com.team1.epilogue.alarm.service.AlarmService;
 import com.team1.epilogue.auth.entity.Member;
-import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.comment.dto.CommentDetail;
-import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
 import com.team1.epilogue.comment.dto.CommentResponse;
 import com.team1.epilogue.comment.dto.CommentUpdateRequest;
@@ -34,8 +32,8 @@ public class CommentService {
 
   private final CommentRepository commentRepository;
   private final ReviewRepository reviewRepository;
-  private final AlarmController alarmController;
   private final CommentLikeRepository commentLikeRepository;
+  private final AlarmService alarmService;
 
   /**
    * 댓글 작성하는 메서드
@@ -63,10 +61,9 @@ public class CommentService {
     // 새 댓글이 달리면 SSE 알림을 보낸다
     String message = "새 댓글 : " + dto.getContent();
     Member reviewAuthor = review.getMember();
-    alarmController.sendNotification(reviewAuthor.getId(), review.getId(), message);
+    alarmService.sendNotification(reviewAuthor.getLoginId(), review.getId(), message);
 
     return comment;
-
   }
 
   /**
