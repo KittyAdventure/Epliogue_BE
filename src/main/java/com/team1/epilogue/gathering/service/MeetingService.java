@@ -10,6 +10,8 @@ import com.team1.epilogue.gathering.entity.Meeting;
 import com.team1.epilogue.gathering.repository.MeetingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -61,5 +63,11 @@ public class MeetingService {
     log.info("수정된 내용 : " + updatedMeeting);
     return meetingRepository.save(updatedMeeting);
   }
-
+  
+  
+  //모임 조회
+  public Page<MeetingDto> getMeetings(Pageable pageable) {
+    Page<Meeting> meetingPage = meetingRepository.findAllWithDetails(pageable);
+    return meetingPage.map(MeetingDto::fromEntity);
+  }
 }
