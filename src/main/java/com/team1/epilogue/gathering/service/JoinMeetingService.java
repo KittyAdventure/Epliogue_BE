@@ -70,7 +70,7 @@ public class JoinMeetingService {
     Meeting meeting = meetingRepository.findById(meetingId)
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 미팅입니다."));
 
-    List<JoinMeeting> participants = joinMeetingRepository.findByMeeting(meeting);
+    List<JoinMeeting> participants = joinMeetingRepository.findByMeetingWithMember(meeting);
     return participants.stream()
         .map(JoinMeetingResponseDto::fromEntity)
         .collect(Collectors.toList());

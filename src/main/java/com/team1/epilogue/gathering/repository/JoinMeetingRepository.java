@@ -6,6 +6,8 @@ import com.team1.epilogue.gathering.entity.Meeting;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface JoinMeetingRepository extends JpaRepository<JoinMeeting, Long> {
   Optional<JoinMeeting> findByMemberAndMeeting(Member member, Meeting meeting);
@@ -15,7 +17,8 @@ public interface JoinMeetingRepository extends JpaRepository<JoinMeeting, Long> 
   long countByMeeting(Meeting meeting);
 
   //특정 미팅의 참가자 목록 조회
-  List<JoinMeeting> findByMeeting(Meeting meeting);
+  @Query("SELECT jm FROM JoinMeeting jm JOIN FETCH jm.member WHERE jm.meeting = :meeting")
+  List<JoinMeeting> findByMeetingWithMember(@Param("meeting") Meeting meeting);
 }
 
 
