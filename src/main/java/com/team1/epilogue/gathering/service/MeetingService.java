@@ -67,7 +67,7 @@ public class MeetingService {
   
   //모임 조회
   public Page<MeetingDto> getMeetings(Pageable pageable) {
-    Page<Meeting> meetingPage = meetingRepository.findAll(pageable);
+    Page<Meeting> meetingPage = meetingRepository.findAllWithDetails(pageable);
     return meetingPage.map(MeetingDto::fromEntity);
   }
 }
