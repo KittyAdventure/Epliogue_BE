@@ -5,8 +5,10 @@ import com.team1.epilogue.auth.dto.MemberResponse;
 import com.team1.epilogue.auth.dto.UpdateMemberRequest;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.*;
+import com.team1.epilogue.auth.repository.CustomMemberRepository;
 import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.service.S3Service;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final S3Service s3StorageService;
+    private final CustomMemberRepository customMemberRepository;
 
     public MemberResponse registerMember(RegisterRequest request, MultipartFile profileImage) {
         validateRegisterRequest(request);
@@ -142,5 +145,10 @@ public class MemberService {
                                 .social(socialType)
                                 .build()
                 ));
+    }
+
+
+    public List<Member> searchLoginId(String loginId) {
+        return customMemberRepository.findByLoginIdContains(loginId);
     }
 }

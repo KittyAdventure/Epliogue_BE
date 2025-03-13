@@ -3,7 +3,10 @@ package com.team1.epilogue.auth.service;
 import com.team1.epilogue.auth.dto.*;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.*;
+import com.team1.epilogue.auth.repository.CustomMemberRepository;
 import com.team1.epilogue.auth.repository.MemberRepository;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,12 +23,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MemberService 테스트")
 public class MemberServiceTest {
 
     @Mock
     private MemberRepository memberRepository;
+
+    @Mock
+    private CustomMemberRepository customMemberRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -138,5 +145,39 @@ public class MemberServiceTest {
         when(memberRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(MemberNotFoundException.class, () -> memberService.updateMember(1L, updateRequest, null));
+    }
+
+
+    @Test
+    @DisplayName("회원 아이디로 검색 - LoginId 검색")
+    void searchLoginTest(){
+        List<Member> mockMembers = List.of(
+            new Member(1L, "testUser", "1234", "Tester", "Test", null, null, null, null, 0, null, null),
+            new Member(2L, "anotherTest", "5678", "AnotherTester", "Another", null, null, null, null, 0, null, null),
+            new Member(3L, "testAccount", "abcd", "TestNick", "TestName", null, null, null, null, 0, null, null),
+            new Member(4L, "user123", "pass123", "Nick1", "User One", null, null, null, null, 0, null, null),
+            new Member(5L, "superTest", "pass456", "Nick2", "User Two", null, null, null, null, 0, null, null),
+            new Member(6L, "helloTest", "pass789", "Nick3", "User Three", null, null, null, null, 0, null, null),
+            new Member(7L, "tester2024", "pass000", "Nick4", "User Four", null, null, null, null, 0, null, null),
+            new Member(8L, "exampleTest", "pass111", "Nick5", "User Five", null, null, null, null, 0, null, null),
+            new Member(9L, "finalTestUser", "pass222", "Nick6", "User Six", null, null, null, null, 0, null, null),
+            new Member(10L, "ultimateTester", "pass333", "Nick7", "User Seven", null, null, null, null, 0, null, null)
+        );
+        // "test"가 포함된 Member만 필터링하여 반환하도록 수정
+        List<Member> filteredMembers = mockMembers.stream()
+            .filter(member -> member.getLoginId().toLowerCase().contains("test")) // 수정: 대소문자 구분 제거
+            .toList();
+
+        log.info("Filtered Members: " + filteredMembers.size());
+        filteredMembers.forEach(member -> log.info(member.getLoginId()));
+
+        when(customMemberRepository.findByLoginIdContains("test")).thenReturn(filteredMembers);
+
+        //when
+        List<Member> result = memberService.searchLoginId("test");
+
+        //Then
+        assertEquals(9, result.size(), "검색된 회원 수가 예상과 다릅니다.");
+        verify(customMemberRepository, times(1)).findByLoginIdContains("test"); // findByLoginIdContains가 1회 호출되었는지 검증
     }
 }

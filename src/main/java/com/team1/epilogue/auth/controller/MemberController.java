@@ -5,9 +5,11 @@ import com.team1.epilogue.auth.dto.MemberResponse;
 import com.team1.epilogue.auth.dto.RegisterRequest;
 import com.team1.epilogue.auth.dto.SuccessResponse;
 import com.team1.epilogue.auth.dto.UpdateMemberRequest;
+import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.auth.service.MemberService;
 import com.team1.epilogue.auth.service.MemberWithdrawalService;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,5 +80,12 @@ public class MemberController {
     }
     ApiResponse<MemberResponse> response = new ApiResponse<>(true, updatedMember, null, "User information updated successfully");
     return ResponseEntity.ok(response);
+  }
+
+  // 회원 아이디 검색
+  @GetMapping("/search")
+  public ResponseEntity<List<Member>> searchLoginId(@RequestParam String loginId) {
+    List<Member> members = memberService.searchLoginId(loginId);
+    return ResponseEntity.ok(members);
   }
 }
