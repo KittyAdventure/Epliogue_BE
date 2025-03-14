@@ -123,10 +123,11 @@ public class ReviewService {
 
     public Page<ReviewResponseDto> getFriendsReviews(String bookId, CustomMemberDetails memberDetails, int page, int size, String sortType) {
         Member currentMember = memberDetails.getMember();
-        List<Follow> followings = followRepository.findByFollower(currentMember);
+        List<Follow> followings = followRepository.findByFollowerWithFollowed(currentMember);
         List<Member> friendMembers = followings.stream()
                 .map(Follow::getFollowed)
                 .collect(Collectors.toList());
+
         if (friendMembers.isEmpty()) {
             return Page.empty();
         }
