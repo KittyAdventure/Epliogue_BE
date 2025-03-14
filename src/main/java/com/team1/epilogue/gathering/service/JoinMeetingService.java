@@ -1,6 +1,8 @@
 package com.team1.epilogue.gathering.service;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.exception.MemberNotFoundException;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.gathering.dto.JoinMeetingRequestDto;
 import com.team1.epilogue.gathering.dto.JoinMeetingResponseDto;
@@ -20,11 +22,13 @@ public class JoinMeetingService {
 
   private final JoinMeetingRepository joinMeetingRepository;
   private final MeetingRepository meetingRepository;
+  private final MemberRepository memberRepository;
 
   //미팅 참가
   @Transactional
   public JoinMeetingResponseDto joinMeeting(CustomMemberDetails memberDetails, JoinMeetingRequestDto requestDto) {
-    Member member = memberDetails.getMember();
+    Member member = memberRepository.findById(memberDetails.getId())
+            .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
 
     Meeting meeting = meetingRepository.findById(requestDto.getMeetingId())
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않은 미팅입니다."));
@@ -46,7 +50,8 @@ public class JoinMeetingService {
 
   //미팅 나가기
   public void leaveMeeting(CustomMemberDetails memberDetails, JoinMeetingRequestDto requestDto) {
-    Member member = memberDetails.getMember();; // 로그인한 회원 정보 가져오기
+    Member member = memberRepository.findById(memberDetails.getId())
+            .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
 
     Meeting meeting = meetingRepository.findById(requestDto.getMeetingId())
         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 미팅입니다."));

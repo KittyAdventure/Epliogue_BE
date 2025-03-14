@@ -37,8 +37,8 @@ public class MyPageService {
 
   public MyPageCommentsResponse getMyComments(CustomMemberDetails details, int page) {
     PageRequest pageRequest = PageRequest.of(page - 1, 20);
-    Member member = details.getMember();
-
+      Member member = memberRepository.findById(details.getId()).orElseThrow(
+              () -> new MemberNotFoundException("ID가 " + details.getId() + "인 회원을 찾을 수 없습니다."));
     Page<Comment> result = commentRepository.findAllByMemberId(pageRequest, member);
 
     List<MyPageCommentsDetailResponse> list = new ArrayList<>();

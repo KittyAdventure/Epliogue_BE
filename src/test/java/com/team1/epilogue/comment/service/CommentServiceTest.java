@@ -84,7 +84,6 @@ class CommentServiceTest {
             .build();
 
     memberDetails = new CustomMemberDetails(
-            member,
             member.getId(),
             member.getLoginId(),
             member.getPassword(),

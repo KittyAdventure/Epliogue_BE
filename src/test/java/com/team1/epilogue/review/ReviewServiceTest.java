@@ -76,7 +76,6 @@ public class ReviewServiceTest {
                 .build();
 
         testMemberDetails = new CustomMemberDetails(
-                testMember,
                 testMember.getId(),
                 testMember.getLoginId(),
                 testMember.getPassword(),
@@ -162,9 +161,14 @@ public class ReviewServiceTest {
     @DisplayName("리뷰 수정 - 작성자가 아닐 때 예외 발생")
     void updateReview_Throws_UnauthorizedReviewAccessException() {
         // given
-        Member anotherMember = Member.builder().id(2L).nickname("다른 사용자").build();
+        Member anotherMember = Member.builder().id(2L).loginId("otherUser").nickname("다른 사용자").build();
         CustomMemberDetails anotherMemberDetails = new CustomMemberDetails(
-                anotherMember, anotherMember.getId(), "otherUser", "password", Collections.emptyList(), "다른 사용자", null
+                anotherMember.getId(),
+                anotherMember.getLoginId(),
+                "password",
+                Collections.emptyList(),
+                "다른 사용자",
+                null
         );
 
         ReviewRequestDto updateDto = new ReviewRequestDto("수정된 리뷰입니다.");
@@ -192,9 +196,14 @@ public class ReviewServiceTest {
     @DisplayName("리뷰 삭제 - 작성자가 아닐 때 예외 발생")
     void deleteReview_Throws_UnauthorizedReviewAccessException() {
         // given
-        Member anotherMember = Member.builder().id(2L).nickname("다른 사용자").build();
+        Member anotherMember = Member.builder().id(2L).loginId("otherUser").nickname("다른 사용자").build();
         CustomMemberDetails anotherMemberDetails = new CustomMemberDetails(
-                anotherMember, anotherMember.getId(), "otherUser", "password", Collections.emptyList(), "다른 사용자", null
+                anotherMember.getId(),
+                anotherMember.getLoginId(),
+                "password",
+                Collections.emptyList(),
+                "다른 사용자",
+                null
         );
 
         when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview));

@@ -9,6 +9,7 @@ import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.auth.service.MemberService;
 import com.team1.epilogue.auth.service.MemberWithdrawalService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/members")
@@ -26,7 +28,6 @@ public class MemberController {
 
   private final MemberService memberService;
   private final MemberWithdrawalService memberWithdrawalService;
-  private static final Logger logger = LoggerFactory.getLogger(MemberController.class);
 
   @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<ApiResponse<MemberResponse>> registerMember(

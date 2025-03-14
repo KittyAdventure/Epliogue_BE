@@ -1,6 +1,7 @@
 package com.team1.epilogue.gathering.service;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
@@ -26,7 +27,8 @@ public class MeetingService {
   // 오프라인 모임생성
   @Transactional
   public MeetingDto createMeeting(CustomMemberDetails memberDetails,MeetingDto meetingDto){
-    Member member = memberDetails.getMember();
+    Member member = memberRepository.findById(memberDetails.getId())
+            .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
 
     Book book = bookRepository.findById(meetingDto.getBookId())
         .orElseThrow(() -> new IllegalArgumentException("책이 존재하지 않습니다."));

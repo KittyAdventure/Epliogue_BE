@@ -54,11 +54,10 @@ public class RatingServiceTest {
 
         // CustomMemberDetails 생성 (Member 기반)
         memberDetails = new CustomMemberDetails(
-                member,
                 member.getId(),
                 member.getLoginId(),
                 member.getPassword(),
-                Collections.emptyList(),
+                Collections.emptyList(),  // 예: 권한 목록
                 member.getName(),
                 member.getEmail()
         );
