@@ -122,4 +122,16 @@ public class ReviewController {
         reviewService.unlikeReview(reviewId, member);
         return ResponseEntity.ok("좋아요 취소 성공");
     }
+
+    @GetMapping("/books/{bookId}/reviews/friends")
+    public ResponseEntity<Page<ReviewResponseDto>> getFriendsReviews(
+            @PathVariable String bookId,
+            @RequestParam("page") int page,
+            @RequestParam("size") int size,
+            @RequestParam(value = "sortType", defaultValue = "likes") String sortType,
+            Authentication authentication) {
+        CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
+        Page<ReviewResponseDto> reviews = reviewService.getFriendsReviews(bookId, member, page, size, sortType);
+        return ResponseEntity.ok(reviews);
+    }
 }
