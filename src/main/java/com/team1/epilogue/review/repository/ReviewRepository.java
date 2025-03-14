@@ -33,7 +33,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
   Page<Review> findByBookId(String bookId, Pageable pageable);
 
-  Page<Review> findByMemberIn(Iterable<Member> members, Pageable pageable);
+  @Query("SELECT r FROM Review r JOIN FETCH r.member m JOIN FETCH r.book b " +
+          "WHERE r.book.id = :bookId AND m IN :members")
+  Page<Review> findByBookIdAndMemberInWithFetchJoin(@Param("bookId") String bookId,
+                                                    @Param("members") Iterable<Member> members,
+                                                    Pageable pageable);
 
   @Query("SELECT r FROM Review r JOIN FETCH r.member m WHERE m IN :members")
   Page<Review> findByMemberInWithFetchJoin(@Param("members") Iterable<Member> members,
@@ -49,5 +53,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
   @Query("SELECT r FROM Review r JOIN FETCH r.book JOIN FETCH r.member WHERE r.member.id =:memberID")
   Page<Review> findByMemberId(@Param("memberID") String id, Pageable pageable);
+
+  @Query("SELECT r FROM Review r JOIN FETCH r.member m JOIN FETCH r.book b WHERE b.id = :bookId AND m IN :members")
+  Page<Review> findFriendReviewsByBookIdAndMemberIn(@Param("bookId") String bookId,
+                                                    @Param("members") Iterable<Member> members,
+                                                    Pageable pageable);
 
 }

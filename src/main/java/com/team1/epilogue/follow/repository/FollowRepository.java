@@ -26,12 +26,11 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     List<Follow> findByFollowed(Member followed);
     void deleteByFollowerAndFollowed(Member follower, Member followed);
 
-
     // Fetch Join: 팔로워를 함께 로딩 (언팔로워 목록)
-    @Query("select f from Follow f join fetch f.follower where f.followed = :member")
-    List<Follow> findByFollowedWithFollower(@Param("member") Member member);
+    @Query("select f from Follow f join fetch f.follower where f.followed = :followed")
+    List<Follow> findByFollowedWithFollower(@Param("followed") Member followed);
 
     // Fetch Join: 팔로우 대상을 함께 로딩 (팔로잉 목록)
-    @Query("select f from Follow f join fetch f.followed where f.follower = :member")
-    List<Follow> findByFollowerWithFollowed(@Param("member") Member member);
+    @Query("select f from Follow f join fetch f.followed where f.follower = :follower")
+    List<Follow> findByFollowerWithFollowed(@Param("follower") Member follower);
 }
