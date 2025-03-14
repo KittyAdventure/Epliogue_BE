@@ -1,7 +1,7 @@
 package com.team1.epilogue.gathering.dto;
 
 
-import com.team1.epilogue.auth.entity.Member;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.team1.epilogue.gathering.entity.Meeting;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
@@ -21,7 +21,10 @@ public class MeetingDto {
   private String title;
   private String content;
   private String location;
+
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime dateTime;
+
   private Integer nowPeople;
 
   public static MeetingDto fromEntity(Meeting meeting) {
