@@ -43,17 +43,6 @@ public class MemberController {
       ApiResponse<SuccessResponse> errorResponse = new ApiResponse<>(false, null, "Unauthorized user", null);
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
-
-    Object principal = authentication.getPrincipal();
-    logger.info("Principal Class: {}", principal.getClass().getName());
-    if (principal instanceof CustomMemberDetails) {
-      CustomMemberDetails userDetails = (CustomMemberDetails) principal;
-      logger.info("Member Information: {}", userDetails.getMember());
-      logger.info("Member Login Id: {}", userDetails.getMember().getLoginId());
-    } else {
-      logger.info("Principal is not an instance");
-    }
-
     Long memberId = ((CustomMemberDetails) authentication.getPrincipal()).getId();
     memberWithdrawalService.withdrawMember(memberId);
     SuccessResponse success = new SuccessResponse("User account deleted successfully");
