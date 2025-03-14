@@ -17,6 +17,7 @@ public class BookDetailResponse {
   private String description;
   private String pubDate;
   private String isbn;
+  private double avgRating;
   private List<SameAuthorBookTitleIsbn> sameAuthor;
 
 }
