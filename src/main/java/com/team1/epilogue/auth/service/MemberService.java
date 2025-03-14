@@ -10,6 +10,8 @@ import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.service.S3Service;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -103,6 +105,10 @@ public class MemberService {
                 .build();
     }
 
+    public Page<Member> searchMember(String searchType, String keyword, Pageable pageable) {
+        return customMemberRepository.searchMembers(searchType,keyword,pageable);
+    }
+
     private void validateRegisterRequest(RegisterRequest request) {
         if (request.getLoginId() == null || request.getLoginId().isBlank()) {
             throw new MissingRequiredFieldException();
@@ -147,8 +153,4 @@ public class MemberService {
                 ));
     }
 
-
-    public List<Member> searchLoginId(String loginId) {
-        return customMemberRepository.findByLoginIdContains(loginId);
-    }
 }

@@ -1,5 +1,7 @@
 package com.team1.epilogue.auth.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1.epilogue.auth.dto.*;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.*;
@@ -14,11 +16,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -27,6 +35,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("MemberService 테스트")
 public class MemberServiceTest {
+
+    ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
     private MemberRepository memberRepository;
@@ -150,7 +160,10 @@ public class MemberServiceTest {
 
     @Test
     @DisplayName("회원 아이디로 검색 - LoginId 검색")
-    void searchLoginTest(){
+    void searchLoginTest() throws JsonProcessingException {
+        //Given
+        Pageable pageable = PageRequest.of(0,9, Sort.by("id").ascending());
+
         List<Member> mockMembers = List.of(
             new Member(1L, "testUser", "1234", "Tester", "Test", null, null, null, null, 0, null, null),
             new Member(2L, "anotherTest", "5678", "AnotherTester", "Another", null, null, null, null, 0, null, null),
@@ -163,21 +176,128 @@ public class MemberServiceTest {
             new Member(9L, "finalTestUser", "pass222", "Nick6", "User Six", null, null, null, null, 0, null, null),
             new Member(10L, "ultimateTester", "pass333", "Nick7", "User Seven", null, null, null, null, 0, null, null)
         );
-        // "test"가 포함된 Member만 필터링하여 반환하도록 수정
+
+        // "test"가 포함된 데이터만 필터링
         List<Member> filteredMembers = mockMembers.stream()
-            .filter(member -> member.getLoginId().toLowerCase().contains("test")) // 수정: 대소문자 구분 제거
-            .toList();
+            .filter(member -> member.getLoginId().toLowerCase().contains("test"))
+            .toList(); // 9개만 남음!
+        log.info("필터링된 회원 수: " + objectMapper.writeValueAsString(filteredMembers));
+        filteredMembers.forEach(m -> log.info(m.getLoginId()));
 
-        log.info("Filtered Members: " + filteredMembers.size());
-        filteredMembers.forEach(member -> log.info(member.getLoginId()));
+        Page<Member> mockPage = new PageImpl<>(filteredMembers, pageable, filteredMembers.size());
 
-        when(customMemberRepository.findByLoginIdContains("test")).thenReturn(filteredMembers);
-
+        when(customMemberRepository.searchMembers("loginId", "test", pageable)).thenReturn(mockPage);
         //when
-        List<Member> result = memberService.searchLoginId("test");
-
+        Page<Member> result = memberService.searchMember("loginId", "test", pageable);
+        log.info("검색된 회원 개수: " + objectMapper.writeValueAsString(result.getContent().size()));
+        result.getContent().forEach(m -> {
+          try {
+            log.info(objectMapper.writeValueAsString(m.getLoginId()));
+          } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+          }
+        });
         //Then
-        assertEquals(9, result.size(), "검색된 회원 수가 예상과 다릅니다.");
-        verify(customMemberRepository, times(1)).findByLoginIdContains("test"); // findByLoginIdContains가 1회 호출되었는지 검증
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(9);
+        assertThat(result.getTotalElements()).isEqualTo(9);
+        verify(customMemberRepository, times(1)).searchMembers("loginId", "test", pageable);
     }
+
+
+    @Test
+    @DisplayName("회원 닉네임으로 검색 - Nick 검색")
+    void searchNicknameTest() throws JsonProcessingException {
+        //Given
+        Pageable pageable = PageRequest.of(0,9, Sort.by("id").ascending());
+
+        List<Member> mockMembers = List.of(
+            new Member(1L, "testUser", "1234", "Tester", "Test", null, "TESTER@gmail.com", null, null, 0, null, null),
+            new Member(2L, "anotherTest", "5678", "AnotherTester", "Another", null, "testga@gmail.com", null, null, 0, null, null),
+            new Member(3L, "testAccount", "abcd", "TestNick", "TestName", null, "ttttas@gmail.com", null, null, 0, null, null),
+            new Member(4L, "user123", "pass123", "Nick1", "User One", null, "tasttt@gmail.com", null, null, 0, null, null),
+            new Member(5L, "superTest", "pass456", "Nick2", "User Two", null, "tast234@gmail.com", null, null, 0, null, null),
+            new Member(6L, "helloTest", "pass789", "Nick3", "User Three", null, "zzang@gmail.com", null, null, 0, null, null),
+            new Member(7L, "tester2024", "pass000", "Nick4", "User Four", null, "CCOng@gmail.com", null, null, 0, null, null),
+            new Member(8L, "exampleTest", "pass111", "Nick5", "User Five", null, "RURU@gmail.com", null, null, 0, null, null),
+            new Member(9L, "finalTestUser", "pass222", "Nick6", "User Six", null, "test5566@gmail.com", null, null, 0, null, null),
+            new Member(10L, "ultimateTester", "pass333", "Nick7", "User Seven", null, "gametest@gmail.com", null, null, 0, null, null)
+        );
+
+        // "nick"가 포함된 데이터만 필터링
+        List<Member> filteredMembers = mockMembers.stream()
+            .filter(member -> member.getNickname().toLowerCase().contains("nick"))
+            .toList();
+        log.info("필터링된 회원 수: " + objectMapper.writeValueAsString(filteredMembers));
+        filteredMembers.forEach(m -> log.info(m.getNickname()));
+
+        Page<Member> mockPage = new PageImpl<>(filteredMembers, pageable, filteredMembers.size());
+
+        when(customMemberRepository.searchMembers("nickname", "nick", pageable)).thenReturn(mockPage);
+        //when
+        Page<Member> result = memberService.searchMember("nickname", "nick", pageable);
+        log.info("검색된 닉네임 개수: " + objectMapper.writeValueAsString(result.getContent().size()));
+        result.getContent().forEach(m -> {
+            try {
+                log.info(objectMapper.writeValueAsString(m.getNickname()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        //Then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(8);
+        assertThat(result.getTotalElements()).isEqualTo(8);
+        verify(customMemberRepository, times(1)).searchMembers("nickname", "nick", pageable);
+    }
+
+
+    @Test
+    @DisplayName("회원 이메일으로 검색 - email 검색")
+    void searchEmailTest() throws JsonProcessingException {
+        //Given
+        Pageable pageable = PageRequest.of(0,9, Sort.by("id").ascending());
+
+        List<Member> mockMembers = List.of(
+            new Member(1L, "testUser", "1234", "Tester", "Test", null, "TESTER@gmail.com", null, null, 0, null, null),
+            new Member(2L, "anotherTest", "5678", "AnotherTester", "Another", null, "testga@gmail.com", null, null, 0, null, null),
+            new Member(3L, "testAccount", "abcd", "TestNick", "TestName", null, "ttttas@gmail.com", null, null, 0, null, null),
+            new Member(4L, "user123", "pass123", "Nick1", "User One", null, "tasttt@gmail.com", null, null, 0, null, null),
+            new Member(5L, "superTest", "pass456", "Nick2", "User Two", null, "tast234@gmail.com", null, null, 0, null, null),
+            new Member(6L, "helloTest", "pass789", "Nick3", "User Three", null, "zzang@gmail.com", null, null, 0, null, null),
+            new Member(7L, "tester2024", "pass000", "Nick4", "User Four", null, "CCOng@gmail.com", null, null, 0, null, null),
+            new Member(8L, "exampleTest", "pass111", "Nick5", "User Five", null, "RURU@gmail.com", null, null, 0, null, null),
+            new Member(9L, "finalTestUser", "pass222", "Nick6", "User Six", null, "test5566@gmail.com", null, null, 0, null, null),
+            new Member(10L, "ultimateTester", "pass333", "Nick7", "User Seven", null, "gametest@gmail.com", null, null, 0, null, null)
+        );
+
+        // "nick"가 포함된 데이터만 필터링
+        List<Member> filteredMembers = mockMembers.stream()
+            .filter(member -> member.getEmail().toLowerCase().contains("test"))
+            .toList();
+        log.info("필터링된 이메일 수: " + objectMapper.writeValueAsString(filteredMembers));
+        filteredMembers.forEach(m -> log.info(m.getEmail()));
+
+        Page<Member> mockPage = new PageImpl<>(filteredMembers, pageable, filteredMembers.size());
+
+        when(customMemberRepository.searchMembers("email", "test", pageable)).thenReturn(mockPage);
+        //when
+        Page<Member> result = memberService.searchMember("email", "test", pageable);
+        log.info("검색된 email 개수: " + objectMapper.writeValueAsString(result.getContent().size()));
+        result.getContent().forEach(m -> {
+            try {
+                log.info(objectMapper.writeValueAsString(m.getEmail()));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        //Then
+        assertThat(result).isNotNull();
+        assertThat(result.getContent()).hasSize(4);
+        assertThat(result.getTotalElements()).isEqualTo(4);
+        verify(customMemberRepository, times(1)).searchMembers("email", "test", pageable);
+    }
+
+
+
 }

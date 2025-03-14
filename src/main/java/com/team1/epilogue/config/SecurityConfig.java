@@ -88,6 +88,7 @@ public class SecurityConfig {
                             "/api/members/login/social",
                             "/api/members/auth/kakao/callback",
                             "/api/members/auth/google/callback",
+                            "/api/members/search",
                             "/login/oauth2/**",    // OAuth2 로그인 콜백 URL 허용
                             "/api/books/**",
                             "/api/kp/success",
