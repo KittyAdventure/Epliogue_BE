@@ -50,6 +50,7 @@ public class AlarmService {
 
     emitter.onCompletion(() -> activeEmitters.remove(memberId)); // 연결해제 되면 삭제
     emitter.onTimeout(() -> activeEmitters.remove(memberId)); // 시간 10분 지나면 삭제
+    emitter.onError((e) -> activeEmitters.remove(memberId)); // 오류 생기면 삭제
 
     return emitter;
   }
