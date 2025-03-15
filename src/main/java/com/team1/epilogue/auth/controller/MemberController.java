@@ -93,7 +93,7 @@ public class MemberController {
 
   // 회원 아이디 검색
   @GetMapping("/search")
-  public ResponseEntity<Page<Member>> searchMember(@RequestParam String searchType,
+  public ResponseEntity<ApiResponse<Page<Member>>> searchMember(@RequestParam String searchType,
     @RequestParam String keyword,
     @RequestParam(defaultValue = "0") int page
   )
@@ -101,6 +101,8 @@ public class MemberController {
     Pageable pageable = PageRequest.of(page, 9);  // 한 페이지당 9개씩
     Page<Member> members = memberService.searchMember(searchType,keyword,pageable);
 
-    return ResponseEntity.ok(members);
+    ApiResponse<Page<Member>> response = new ApiResponse<>(true,members,null,"Search success");
+
+    return ResponseEntity.ok(response);
   }
 }
