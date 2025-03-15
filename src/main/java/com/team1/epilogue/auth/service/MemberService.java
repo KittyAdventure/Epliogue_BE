@@ -5,9 +5,13 @@ import com.team1.epilogue.auth.dto.MemberResponse;
 import com.team1.epilogue.auth.dto.UpdateMemberRequest;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.*;
+import com.team1.epilogue.auth.repository.CustomMemberRepository;
 import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.service.S3Service;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +26,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final S3Service s3StorageService;
+    private final CustomMemberRepository customMemberRepository;
 
     public MemberResponse registerMember(RegisterRequest request, MultipartFile profileImage) {
         validateRegisterRequest(request);
@@ -100,6 +105,10 @@ public class MemberService {
                 .build();
     }
 
+    public Page<Member> searchMember(String searchType, String keyword, Pageable pageable) {
+        return customMemberRepository.searchMembers(searchType,keyword,pageable);
+    }
+
     private void validateRegisterRequest(RegisterRequest request) {
         if (request.getLoginId() == null || request.getLoginId().isBlank()) {
             throw new MissingRequiredFieldException();
@@ -143,4 +152,5 @@ public class MemberService {
                                 .build()
                 ));
     }
+
 }

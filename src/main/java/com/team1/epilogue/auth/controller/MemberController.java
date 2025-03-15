@@ -5,6 +5,7 @@ import com.team1.epilogue.auth.dto.MemberResponse;
 import com.team1.epilogue.auth.dto.RegisterRequest;
 import com.team1.epilogue.auth.dto.SuccessResponse;
 import com.team1.epilogue.auth.dto.UpdateMemberRequest;
+import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.auth.service.MemberService;
 import com.team1.epilogue.auth.service.MemberWithdrawalService;
@@ -12,12 +13,22 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
@@ -67,6 +78,21 @@ public class MemberController {
               .body(new ApiResponse<>(false, null, "Update failed", null));
     }
     ApiResponse<MemberResponse> response = new ApiResponse<>(true, updatedMember, null, "User information updated successfully");
+    return ResponseEntity.ok(response);
+  }
+
+  // 회원 아이디 검색
+  @GetMapping("/search")
+  public ResponseEntity<ApiResponse<Page<Member>>> searchMember(@RequestParam String searchType,
+    @RequestParam String keyword,
+    @RequestParam(defaultValue = "0") int page
+  )
+  {
+    Pageable pageable = PageRequest.of(page, 9);  // 한 페이지당 9개씩
+    Page<Member> members = memberService.searchMember(searchType,keyword,pageable);
+
+    ApiResponse<Page<Member>> response = new ApiResponse<>(true,members,null,"Search success");
+
     return ResponseEntity.ok(response);
   }
 }
