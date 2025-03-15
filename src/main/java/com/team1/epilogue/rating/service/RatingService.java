@@ -1,6 +1,8 @@
 package com.team1.epilogue.rating.service;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.exception.MemberNotFoundException;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
@@ -20,10 +22,12 @@ public class RatingService {
 
     private final RatingRepository ratingRepository;
     private final BookRepository bookRepository;
+    private final MemberRepository memberRepository;
 
     @Transactional
     public RatingResponseDto createRating(String bookId, RatingRequestDto ratingRequestDto, CustomMemberDetails memberDetails) {
-        Member member = memberDetails.getMember();
+        Member member = memberRepository.findById(memberDetails.getId())
+                .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("존재하지 않는 책입니다."));
 
@@ -41,7 +45,8 @@ public class RatingService {
 
     @Transactional
     public RatingResponseDto updateRating(String bookId, RatingRequestDto ratingRequestDto, CustomMemberDetails memberDetails) {
-        Member member = memberDetails.getMember();
+        Member member = memberRepository.findById(memberDetails.getId())
+                .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
         Rating rating = ratingRepository.findByMemberIdAndBookId(member.getId(), bookId)
                 .orElseThrow(() -> new RatingNotFoundException("해당 책에 대한 별점이 존재하지 않습니다."));
 
@@ -53,7 +58,8 @@ public class RatingService {
 
     @Transactional
     public void deleteRating(String bookId, CustomMemberDetails memberDetails) {
-        Member member = memberDetails.getMember();
+        Member member = memberRepository.findById(memberDetails.getId())
+                .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
         Rating rating = ratingRepository.findByMemberIdAndBookId(member.getId(), bookId)
                 .orElseThrow(() -> new RatingNotFoundException("해당 책에 대한 별점이 존재하지 않습니다."));
 
@@ -68,5 +74,6 @@ public class RatingService {
                 .orElseThrow(() -> new BookNotFoundException("책을 찾을 수 없습니다."));
 
         book.updateAvgRating(avgRating != null ? avgRating : 0.0);
+        bookRepository.save(book);
     }
 }
