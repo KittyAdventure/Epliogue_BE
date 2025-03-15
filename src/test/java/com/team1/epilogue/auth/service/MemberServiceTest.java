@@ -54,7 +54,6 @@ public class MemberServiceTest {
         when(memberRepository.existsByLoginId("serviceMember")).thenReturn(false);
         when(memberRepository.existsByEmail("service@example.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword123");
-
         when(memberRepository.save(any(Member.class))).thenReturn(Member.builder()
                 .id(1L)
                 .loginId(registerRequest.getLoginId())
@@ -70,7 +69,6 @@ public class MemberServiceTest {
                 .build()
         );
 
-        // MultipartFile이 없으므로 null 전달
         MemberResponse response = memberService.registerMember(registerRequest, null);
 
         assertNotNull(response);

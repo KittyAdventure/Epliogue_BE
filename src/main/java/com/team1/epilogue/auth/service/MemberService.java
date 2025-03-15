@@ -32,7 +32,7 @@ public class MemberService {
             throw new EmailAlreadyExistException();
         }
 
-        String profileUrl = request.getProfileUrl(); // 기본 이미지 URL (프론트엔드에서 기본값 지정 가능)
+        String profileUrl = request.getProfileUrl();
         if (profileImage != null && !profileImage.isEmpty()) {
             profileUrl = s3StorageService.uploadFile(profileImage);
         }

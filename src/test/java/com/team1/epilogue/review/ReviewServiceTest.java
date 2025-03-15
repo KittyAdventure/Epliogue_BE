@@ -1,9 +1,13 @@
 package com.team1.epilogue.review;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
+import com.team1.epilogue.follow.dto.ReviewListResponse;
+import com.team1.epilogue.follow.entity.Follow;
+import com.team1.epilogue.follow.repository.FollowRepository;
 import com.team1.epilogue.review.dto.ReviewRequestDto;
 import com.team1.epilogue.review.dto.ReviewResponseDto;
 import com.team1.epilogue.review.entity.Review;
@@ -28,6 +32,7 @@ import org.springframework.data.domain.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -45,6 +50,12 @@ public class ReviewServiceTest {
 
     @Mock
     private BookRepository bookRepository;
+
+    @Mock
+    private FollowRepository followRepository;
+
+    @Mock
+    private MemberRepository memberRepository;
 
     @InjectMocks
     private ReviewService reviewService;
@@ -76,7 +87,6 @@ public class ReviewServiceTest {
                 .build();
 
         testMemberDetails = new CustomMemberDetails(
-                testMember,
                 testMember.getId(),
                 testMember.getLoginId(),
                 testMember.getPassword(),
@@ -162,9 +172,14 @@ public class ReviewServiceTest {
     @DisplayName("리뷰 수정 - 작성자가 아닐 때 예외 발생")
     void updateReview_Throws_UnauthorizedReviewAccessException() {
         // given
-        Member anotherMember = Member.builder().id(2L).nickname("다른 사용자").build();
+        Member anotherMember = Member.builder().id(2L).loginId("otherUser").nickname("다른 사용자").build();
         CustomMemberDetails anotherMemberDetails = new CustomMemberDetails(
-                anotherMember, anotherMember.getId(), "otherUser", "password", Collections.emptyList(), "다른 사용자", null
+                anotherMember.getId(),
+                anotherMember.getLoginId(),
+                "password",
+                Collections.emptyList(),
+                "다른 사용자",
+                null
         );
 
         ReviewRequestDto updateDto = new ReviewRequestDto("수정된 리뷰입니다.");
@@ -192,9 +207,14 @@ public class ReviewServiceTest {
     @DisplayName("리뷰 삭제 - 작성자가 아닐 때 예외 발생")
     void deleteReview_Throws_UnauthorizedReviewAccessException() {
         // given
-        Member anotherMember = Member.builder().id(2L).nickname("다른 사용자").build();
+        Member anotherMember = Member.builder().id(2L).loginId("otherUser").nickname("다른 사용자").build();
         CustomMemberDetails anotherMemberDetails = new CustomMemberDetails(
-                anotherMember, anotherMember.getId(), "otherUser", "password", Collections.emptyList(), "다른 사용자", null
+                anotherMember.getId(),
+                anotherMember.getLoginId(),
+                "password",
+                Collections.emptyList(),
+                "다른 사용자",
+                null
         );
 
         when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview));
@@ -278,5 +298,49 @@ public class ReviewServiceTest {
         // 좋아요 삭제나 감소가 일어나지 않아야 함
         verify(reviewLikeRepository, never()).delete(any(ReviewLike.class));
         verify(reviewRepository, never()).decreaseLikeCount(anyLong());
+    }
+
+    @Test
+    @DisplayName("친구 리뷰 조회 성공 테스트")
+    void getFriendsReviews_Success() {
+        // given
+        String bookId = testBook.getId(); // "1111111111111"
+
+        Member friend = Member.builder()
+                .id(2L)
+                .loginId("friendUser")
+                .nickname("친구닉네임")
+                .build();
+
+        Follow follow = Follow.builder()
+                .follower(testMember)
+                .followed(friend)
+                .build();
+        List<Follow> followings = List.of(follow);
+
+        Review friendReview = Review.builder()
+                .id(2L)
+                .content("친구가 작성한 리뷰입니다.")
+                .book(testBook)
+                .member(friend)
+                .build();
+
+        Pageable pageable = PageRequest.of(0, 10,
+                Sort.by(Sort.Direction.DESC, "likeCount")
+                        .and(Sort.by(Sort.Direction.DESC, "createdAt")));
+
+        Page<Review> reviewPage = new PageImpl<>(List.of(friendReview), pageable, 1);
+
+        when(followRepository.findByFollower(testMember)).thenReturn(followings);
+        when(reviewRepository.findByBookIdAndMemberInWithFetchJoin(eq(bookId), anyIterable(), eq(pageable)))
+                .thenReturn(reviewPage);
+
+        // when
+        Page<ReviewResponseDto> result = reviewService.getFriendsReviews(bookId, testMemberDetails, 1, 10, "likes");
+
+        // then
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        ReviewResponseDto dto = result.getContent().get(0);
+        assertThat(dto.getContent()).isEqualTo("친구가 작성한 리뷰입니다.");
     }
 }

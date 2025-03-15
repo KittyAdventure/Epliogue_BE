@@ -2,6 +2,8 @@ package com.team1.epilogue.comment.service;
 
 import com.team1.epilogue.alarm.service.AlarmService;
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.exception.MemberNotFoundException;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.comment.dto.CommentDetail;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
@@ -35,11 +37,13 @@ public class CommentService {
   private final CommentLikeRepository commentLikeRepository;
   private final AlarmService alarmService;
 
+  private final MemberRepository memberRepository;
   /**
    * 댓글 작성하는 메서드
    */
   public Comment postComment(CustomMemberDetails details, CommentPostRequest dto) {
-    Member member = details.getMember();
+    Member member = memberRepository.findById(details.getId())
+            .orElseThrow(() -> new MemberNotFoundException("ID가 " + details.getId() + "인 회원을 찾을 수 없습니다."));
 
     // review 정보를 가져온다.
     Review review = reviewRepository.findById(dto.getReviewId()).orElseThrow(
@@ -71,7 +75,8 @@ public class CommentService {
    */
   public Comment updateComment(CustomMemberDetails
       details, CommentUpdateRequest dto) {
-    Member member = details.getMember();
+    Member member = memberRepository.findById(details.getId()).orElseThrow(
+            () -> new MemberNotFoundException("ID가 " + details.getId() + "인 회원을 찾을 수 없습니다."));
     // 댓글 정보가 존재하지 않을 시 예외 처리
     Comment comment = commentRepository.findById(dto.getCommentId()).orElseThrow(
         () -> new CommentNotFoundException("존재하지 않는 댓글 정보입니다.")
@@ -89,7 +94,8 @@ public class CommentService {
    */
   @Transactional
   public void deleteComment(CustomMemberDetails details, Long commentId) {
-    Member member = details.getMember();
+    Member member = memberRepository.findById(details.getId()).orElseThrow(
+            () -> new MemberNotFoundException("ID가 " + details.getId() + "인 회원을 찾을 수 없습니다."));
     // 댓글 정보가 존재하지 않을 시 예외 처리
     Comment comment = commentRepository.findById(commentId).orElseThrow(
         () -> new CommentNotFoundException("존재하지 않는 댓글 정보입니다.")
@@ -108,7 +114,8 @@ public class CommentService {
 
   @Transactional
   public void likeComment(CustomMemberDetails details, Long commentId) {
-    Member member = details.getMember();
+    Member member = memberRepository.findById(details.getId()).orElseThrow(
+            () -> new MemberNotFoundException("ID가 " + details.getId() + "인 회원을 찾을 수 없습니다."));
     Comment comment = commentRepository.findById(commentId)
             .orElseThrow(() -> new CommentNotFoundException("댓글을 찾을 수 없습니다"));
 
@@ -124,7 +131,8 @@ public class CommentService {
 
   @Transactional
   public void unlikeComment(CustomMemberDetails details, Long commentId) {
-    Member member = details.getMember();
+    Member member = memberRepository.findById(details.getId()).orElseThrow(
+            () -> new MemberNotFoundException("ID가 " + details.getId() + "인 회원을 찾을 수 없습니다."));
     CommentLike commentLike = commentLikeRepository.findByCommentIdAndMemberId(commentId, member.getId())
             .orElseThrow(() -> new LikeNotFoundException("취소할 좋아요가 없습니다."));
 

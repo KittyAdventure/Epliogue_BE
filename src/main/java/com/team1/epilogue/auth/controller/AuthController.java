@@ -125,8 +125,9 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
             CustomMemberDetails userDetails = (CustomMemberDetails) authentication.getPrincipal();
-            Member member = userDetails.getMember();
-            memberWithdrawalService.withdrawMember(member.getId());
+            Long memberId = userDetails.getId();
+            memberWithdrawalService.withdrawMember(memberId);
+
             SuccessResponse success = new SuccessResponse("Social member withdrawal success");
             ApiResponse<SuccessResponse> apiResponse = new ApiResponse<>(true, success, null, "Withdrawal successful");
             return ResponseEntity.ok(apiResponse);

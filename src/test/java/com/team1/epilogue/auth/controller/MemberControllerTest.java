@@ -73,7 +73,6 @@ public class MemberControllerTest {
                 .profileUrl("http://example.com/profile.jpg")
                 .build();
         memberDetails = new CustomMemberDetails(
-                dummyMember,
                 dummyMember.getId(),
                 dummyMember.getLoginId(),
                 dummyMember.getPassword(),

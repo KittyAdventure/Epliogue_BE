@@ -2,6 +2,7 @@ package com.team1.epilogue.auth.security;
 
 import com.team1.epilogue.auth.entity.Member;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,27 +11,15 @@ import java.util.Collection;
 import java.util.Collections;
 
 @Getter
+@RequiredArgsConstructor
 public class CustomMemberDetails implements UserDetails {
 
-    private final Member member;
     private final Long id;
     private final String username;
     private final String password;
     private final Collection<GrantedAuthority> authorities;
     private final String name;
     private final String profileImg;
-
-    public CustomMemberDetails(Member member, Long id, String username, String password,
-                               Collection<GrantedAuthority> authorities,
-                               String name, String profileImg) {
-        this.member = member;
-        this.id = id;
-        this.username = username;
-        this.password = password;
-        this.authorities = authorities;
-        this.name = name;
-        this.profileImg = profileImg;
-    }
 
     @Override
     public Collection<GrantedAuthority> getAuthorities() {
@@ -69,7 +58,6 @@ public class CustomMemberDetails implements UserDetails {
 
     public static CustomMemberDetails fromMember(Member member) {
         return new CustomMemberDetails(
-                member,
                 member.getId(),
                 member.getLoginId(),
                 member.getPassword(),

@@ -1,9 +1,13 @@
 package com.team1.epilogue.review.service;
 
 import com.team1.epilogue.auth.entity.Member;
+import com.team1.epilogue.auth.exception.MemberNotFoundException;
+import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
+import com.team1.epilogue.follow.entity.Follow;
+import com.team1.epilogue.follow.repository.FollowRepository;
 import com.team1.epilogue.review.dto.ReviewRequestDto;
 import com.team1.epilogue.review.dto.ReviewResponseDto;
 import com.team1.epilogue.review.entity.Review;
@@ -18,6 +22,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,10 +32,14 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final BookRepository bookRepository;
     private final ReviewLikeRepository reviewLikeRepository;
+    private final MemberRepository memberRepository;
+    private final FollowRepository followRepository;
+
 
     @Transactional
     public ReviewResponseDto createReview(String bookId, ReviewRequestDto reviewRequestDto, CustomMemberDetails memberDetails) {
-        Member member = memberDetails.getMember();
+        Member member = memberRepository.findById(memberDetails.getId())
+                .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("존재하지 않는 책입니다."));
 
@@ -63,7 +73,8 @@ public class ReviewService {
 
     @Transactional
     public ReviewResponseDto updateReview(Long reviewId, ReviewRequestDto reviewRequestDto, CustomMemberDetails memberDetails) {
-        Member member = memberDetails.getMember();
+        Member member = memberRepository.findById(memberDetails.getId())
+                .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
@@ -76,7 +87,8 @@ public class ReviewService {
     }
 
     public void deleteReview(Long reviewId, CustomMemberDetails memberDetails) {
-        Member member = memberDetails.getMember();
+        Member member = memberRepository.findById(memberDetails.getId())
+                .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
@@ -89,7 +101,8 @@ public class ReviewService {
 
     @Transactional
     public void likeReview(Long reviewId, CustomMemberDetails memberDetails) {
-        Member member = memberDetails.getMember();
+        Member member = memberRepository.findById(memberDetails.getId())
+                .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
@@ -105,12 +118,29 @@ public class ReviewService {
 
     @Transactional
     public void unlikeReview(Long reviewId, CustomMemberDetails memberDetails) {
-        Member member = memberDetails.getMember();
+        Member member = memberRepository.findById(memberDetails.getId())
+                .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
         ReviewLike reviewLike = reviewLikeRepository.findByReviewIdAndMemberId(reviewId, member.getId())
                 .orElseThrow(() -> new LikeNotFoundException("취소할 좋아요가 없습니다."));
 
         reviewLikeRepository.delete(reviewLike);
 
         reviewRepository.decreaseLikeCount(reviewId);
+    }
+
+    public Page<ReviewResponseDto> getFriendsReviews(String bookId, CustomMemberDetails memberDetails, int page, int size, String sortType) {
+        Member currentMember = memberRepository.findById(memberDetails.getId())
+            .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
+        List<Follow> followings = followRepository.findByFollowerWithFollowed(currentMember);
+        List<Member> friendMembers = followings.stream()
+                .map(Follow::getFollowed)
+                .collect(Collectors.toList());
+
+        if (friendMembers.isEmpty()) {
+            return Page.empty();
+        }
+        Pageable pageable = createPageable(page, size, sortType);
+        Page<Review> reviews = reviewRepository.findByBookIdAndMemberInWithFetchJoin(bookId, friendMembers, pageable);
+        return reviews.map(ReviewResponseDto::from);
     }
 }

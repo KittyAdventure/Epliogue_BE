@@ -5,7 +5,6 @@ import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -20,7 +19,6 @@ public class JwtTokenProvider {
 
     public JwtTokenProvider(@Value("${jwt.secret}") String secret) {
         byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
-        // HS512 알고리즘은 최소 64바이트(512비트) 이상의 키가 필요합니다.
         if (secretBytes.length < 64) {
             throw new IllegalArgumentException("jwt.secret 값은 HS512 알고리즘을 위해 최소 64바이트 이상이어야 합니다.");
         }
@@ -31,7 +29,7 @@ public class JwtTokenProvider {
     public String generateToken(String memberId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + JWT_EXPIRATION);
-        log.debug("generateToken - 사용 중인 시크릿 키: {}", Base64.getEncoder().encodeToString(secretKey.getEncoded()));
+        log.debug("사용 중인 시크릿 키: {}", Base64.getEncoder().encodeToString(secretKey.getEncoded()));
         String token = Jwts.builder()
                 .setSubject(memberId)
                 .setIssuedAt(now)
@@ -43,7 +41,7 @@ public class JwtTokenProvider {
     }
 
     public String getMemberIdFromJWT(String token) {
-        log.debug("getMemberIdFromJWT - 사용 중인 시크릿 키: {}", Base64.getEncoder().encodeToString(secretKey.getEncoded()));
+        log.debug("사용 중인 시크릿 키: {}", Base64.getEncoder().encodeToString(secretKey.getEncoded()));
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
@@ -54,7 +52,7 @@ public class JwtTokenProvider {
     }
 
     public Date extractExpiration(String token) {
-        log.debug("extractExpiration - 사용 중인 시크릿 키: {}", Base64.getEncoder().encodeToString(secretKey.getEncoded()));
+        log.debug("사용 중인 시크릿 키: {}", Base64.getEncoder().encodeToString(secretKey.getEncoded()));
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()
@@ -65,13 +63,10 @@ public class JwtTokenProvider {
     }
 
     public boolean validateToken(String token) {
-        log.info("validateToken - 토큰 검증 시작: {}", token);
-        log.info("validateToken - 사용 중인 시크릿 키: {}", Base64.getEncoder().encodeToString(secretKey.getEncoded()));
+        log.info("토큰 검증 시작: {}", token);
+        log.info("사용 중인 시크릿 키: {}", Base64.getEncoder().encodeToString(secretKey.getEncoded()));
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
-                    .build()
-                    .parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
             log.debug("토큰이 유효합니다.");
             return true;
         } catch (ExpiredJwtException ex) {
