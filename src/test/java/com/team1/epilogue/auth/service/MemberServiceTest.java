@@ -7,7 +7,9 @@ import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.*;
 import com.team1.epilogue.auth.repository.CustomMemberRepository;
 import com.team1.epilogue.auth.repository.MemberRepository;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -163,6 +165,7 @@ public class MemberServiceTest {
     void searchLoginTest() throws JsonProcessingException {
         //Given
         Pageable pageable = PageRequest.of(0,9, Sort.by("id").ascending());
+        String sortType = "oldest"; // 오래된 순
 
         List<Member> mockMembers = List.of(
             new Member(1L, "testUser", "1234", "Tester", "Test", null, null, null, null, 0, null, null),
@@ -186,9 +189,9 @@ public class MemberServiceTest {
 
         Page<Member> mockPage = new PageImpl<>(filteredMembers, pageable, filteredMembers.size());
 
-        when(customMemberRepository.searchMembers("loginId", "test", pageable)).thenReturn(mockPage);
+        when(customMemberRepository.searchMembers("loginId", "test", pageable,null,sortType)).thenReturn(mockPage);
         //when
-        Page<Member> result = memberService.searchMember("loginId", "test", pageable);
+        Page<SearchMemberResponseDto> result = memberService.searchMember("loginId", "test", pageable,null,sortType);
         log.info("검색된 회원 개수: " + objectMapper.writeValueAsString(result.getContent().size()));
         result.getContent().forEach(m -> {
           try {
@@ -201,7 +204,7 @@ public class MemberServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(9);
         assertThat(result.getTotalElements()).isEqualTo(9);
-        verify(customMemberRepository, times(1)).searchMembers("loginId", "test", pageable);
+        verify(customMemberRepository, times(1)).searchMembers("loginId", "test", pageable,null,sortType);
     }
 
 
@@ -209,7 +212,8 @@ public class MemberServiceTest {
     @DisplayName("회원 닉네임으로 검색 - Nick 검색")
     void searchNicknameTest() throws JsonProcessingException {
         //Given
-        Pageable pageable = PageRequest.of(0,9, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(0,9);
+        String sortType = "newest"; // 최신
 
         List<Member> mockMembers = List.of(
             new Member(1L, "testUser", "1234", "Tester", "Test", null, "TESTER@gmail.com", null, null, 0, null, null),
@@ -233,9 +237,9 @@ public class MemberServiceTest {
 
         Page<Member> mockPage = new PageImpl<>(filteredMembers, pageable, filteredMembers.size());
 
-        when(customMemberRepository.searchMembers("nickname", "nick", pageable)).thenReturn(mockPage);
+        when(customMemberRepository.searchMembers("nickname", "nick", pageable,null,sortType)).thenReturn(mockPage);
         //when
-        Page<Member> result = memberService.searchMember("nickname", "nick", pageable);
+        Page<SearchMemberResponseDto> result = memberService.searchMember("nickname", "nick", pageable,null,sortType);
         log.info("검색된 닉네임 개수: " + objectMapper.writeValueAsString(result.getContent().size()));
         result.getContent().forEach(m -> {
             try {
@@ -248,7 +252,7 @@ public class MemberServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(8);
         assertThat(result.getTotalElements()).isEqualTo(8);
-        verify(customMemberRepository, times(1)).searchMembers("nickname", "nick", pageable);
+        verify(customMemberRepository, times(1)).searchMembers("nickname", "nick", pageable,null,sortType);
     }
 
 
@@ -257,7 +261,7 @@ public class MemberServiceTest {
     void searchEmailTest() throws JsonProcessingException {
         //Given
         Pageable pageable = PageRequest.of(0,9, Sort.by("id").ascending());
-
+        //String sortType = ""; // 기본 정렬
         List<Member> mockMembers = List.of(
             new Member(1L, "testUser", "1234", "Tester", "Test", null, "TESTER@gmail.com", null, null, 0, null, null),
             new Member(2L, "anotherTest", "5678", "AnotherTester", "Another", null, "testga@gmail.com", null, null, 0, null, null),
@@ -280,9 +284,9 @@ public class MemberServiceTest {
 
         Page<Member> mockPage = new PageImpl<>(filteredMembers, pageable, filteredMembers.size());
 
-        when(customMemberRepository.searchMembers("email", "test", pageable)).thenReturn(mockPage);
+        when(customMemberRepository.searchMembers("email", "test", pageable,null,"")).thenReturn(mockPage);
         //when
-        Page<Member> result = memberService.searchMember("email", "test", pageable);
+        Page<SearchMemberResponseDto> result = memberService.searchMember("email", "test", pageable,null,"");
         log.info("검색된 email 개수: " + objectMapper.writeValueAsString(result.getContent().size()));
         result.getContent().forEach(m -> {
             try {
@@ -295,9 +299,8 @@ public class MemberServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(4);
         assertThat(result.getTotalElements()).isEqualTo(4);
-        verify(customMemberRepository, times(1)).searchMembers("email", "test", pageable);
+        verify(customMemberRepository, times(1)).searchMembers("email", "test", pageable,null,"");
     }
-
 
 
 }
