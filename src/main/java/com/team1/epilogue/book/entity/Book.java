@@ -38,4 +38,8 @@ public class Book extends BaseEntity {
   private String chosung; // 시작하는 초성
 
   private int view; // 조회수
+
+  public void updateAvgRating(double newAvgRating) {
+    this.avgRating = newAvgRating;
+  }
 }

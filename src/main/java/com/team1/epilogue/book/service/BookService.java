@@ -15,6 +15,7 @@ import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.book.repository.CustomBookRepository;
 import com.team1.epilogue.keyword.service.KeyWordService;
+import com.team1.epilogue.rating.repository.RatingRepository;
 import com.team1.epilogue.trendingbook.service.TrendingBookService;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class BookService {
   private final KeyWordService keyWordService;
   private final TrendingBookService trendingBookService;
   private final CustomBookRepository customBookRepository;
+  private final RatingRepository ratingRepository;
 
   @Value("${naver.base.url}")
   String naverUrl;
@@ -89,6 +91,7 @@ public class BookService {
               .description(item.getDescription())
               .pubDate(item.getPubDate())
               .isbn(item.getIsbn())
+              .avgRating(ratingRepository.findAverageRatingByBookId(item.getIsbn()))
               .build();
 
           return insertBookInfo(build);
@@ -110,6 +113,8 @@ public class BookService {
 
     bookRepository.increaseView(book.getId());// 조회수 ++
 
+    Double avgRating = ratingRepository.findAverageRatingByBookId(book.getId());
+
     // DTO 로 반환 형식에 맞춰 return
     BookDetailResponse build = BookDetailResponse.builder()
         .title(book.getTitle())
@@ -120,6 +125,7 @@ public class BookService {
         .description(book.getDescription())
         .pubDate(Objects.toString(book.getPubDate(), ""))
         .isbn(book.getId())
+        .avgRating(avgRating != null ? avgRating : 0.0)
         .sameAuthor(dtoList)
         .build();
 
@@ -140,7 +146,7 @@ public class BookService {
         .author(dto.getAuthor())
         .price(dto.getPrice())
         .description(dto.getDescription())
-        .avgRating(0.0)
+        .avgRating(dto.getAvgRating())
         .coverUrl(dto.getImage())
         .publisher(dto.getPublisher())
         .pubDate(Optional.ofNullable(dto.getPubDate())
