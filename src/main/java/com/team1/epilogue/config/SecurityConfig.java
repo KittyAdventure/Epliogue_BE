@@ -92,7 +92,9 @@ public class SecurityConfig {
                             "/api/mypage/calendar",
                             "/api/mypage/reviews",
                             "/api/comments/view",
-                            "/api/mypage/meeting"
+                            "/api/mypage/meeting",
+                            "/api/item/bought",
+                            "/api/item/list"
                     ).permitAll()
                     .anyRequest().authenticated()
             )
