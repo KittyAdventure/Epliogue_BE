@@ -6,18 +6,20 @@ import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.comment.entity.Comment;
 import com.team1.epilogue.comment.repository.CommentRepository;
+import com.team1.epilogue.gathering.entity.JoinMeeting;
+import com.team1.epilogue.gathering.repository.JoinMeetingRepository;
+import com.team1.epilogue.mypage.dto.MeetingDetail;
 import com.team1.epilogue.mypage.dto.MyPageCalendarDetail;
 import com.team1.epilogue.mypage.dto.MyPageCalendarResponse;
 import com.team1.epilogue.mypage.dto.MyPageCommentsDetailResponse;
 import com.team1.epilogue.mypage.dto.MyPageCommentsResponse;
+import com.team1.epilogue.mypage.dto.MyPageMeetingResponse;
 import com.team1.epilogue.review.entity.Review;
 import com.team1.epilogue.review.repository.ReviewRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import com.team1.epilogue.mypage.dto.MyPageReviewDetail;
 import com.team1.epilogue.mypage.dto.MyPageReviewsResponse;
-import com.team1.epilogue.review.entity.Review;
-import com.team1.epilogue.review.repository.ReviewRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,11 +36,12 @@ public class MyPageService {
   private final CommentRepository commentRepository;
   private final ReviewRepository reviewRepository;
   private final MemberRepository memberRepository;
+  private final JoinMeetingRepository joinMeetingRepository;
 
   public MyPageCommentsResponse getMyComments(CustomMemberDetails details, int page) {
     PageRequest pageRequest = PageRequest.of(page - 1, 20);
-      Member member = memberRepository.findById(details.getId()).orElseThrow(
-              () -> new MemberNotFoundException("ID가 " + details.getId() + "인 회원을 찾을 수 없습니다."));
+    Member member = memberRepository.findById(details.getId()).orElseThrow(
+        () -> new MemberNotFoundException("ID가 " + details.getId() + "인 회원을 찾을 수 없습니다."));
     Page<Comment> result = commentRepository.findAllByMemberId(pageRequest, member);
 
     List<MyPageCommentsDetailResponse> list = new ArrayList<>();
@@ -131,5 +134,36 @@ public class MyPageService {
         .collect(Collectors.toList());
 
     return result;
+  }
+
+  public MyPageMeetingResponse getMeetings(String memberId, int page) {
+    Member member = memberRepository.findByLoginId(memberId).orElseThrow(
+        () -> new MemberNotFoundException("사용자 정보가 존재하지 않습니다.")
+    );
+    PageRequest pageRequest = PageRequest.of(page, 4);
+    Page<JoinMeeting> result = joinMeetingRepository
+        .findAllByMember_LoginId(memberId, pageRequest);
+
+    List<MeetingDetail> list = new ArrayList<>();
+    result.getContent().stream().forEach(
+        data -> {
+          list.add(
+              MeetingDetail.builder()
+                  .meetingId(data.getMeeting().getId())
+                  .meetingPeople(data.getMeeting().getNowPeople())
+                  .dateTime(data.getCreatedAt())
+                  .meetingBookTitle(data.getMeeting().getTitle())
+                  .location(data.getMeeting().getLocation())
+                  .thumbnail(data.getMeeting().getBook().getCoverUrl())
+                  .build()
+          );
+        }
+    );
+
+    return MyPageMeetingResponse.builder()
+        .totalPages(result.getTotalPages())
+        .meetings(list)
+        .build();
+
   }
 }
