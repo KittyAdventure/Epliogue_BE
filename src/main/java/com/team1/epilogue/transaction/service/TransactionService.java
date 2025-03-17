@@ -29,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,7 +81,14 @@ public class TransactionService {
    * @param dto 시작할 날짜와 끝나는 날짜 , 페이지 데이터 갯수제한, 페이지 번호를 담은 DTO
    * @return TransactionHistoryResponse 객체 return
    */
-  public TransactionHistoryResponse getTransactionHistory(TransactionHistoryRequest dto) {
+  public TransactionHistoryResponse getTransactionHistory(Authentication authentication,
+      TransactionHistoryRequest dto) {
+    CustomMemberDetails details = (CustomMemberDetails) authentication.getPrincipal();
+
+    Member member = memberRepository.findByLoginId(details.getUsername()).orElseThrow(
+        () -> new MemberNotFoundException("존재하지 않는 회원입니다.")
+    );
+
     // 시작 날짜 설정
     LocalDateTime start = dto.getStartDate().atStartOfDay();
     // 끝나는 날짜 설정
@@ -90,7 +98,7 @@ public class TransactionService {
 
     // Repository 에서 거래내역 가져오기
     Page<Transaction> response = transactionRepository
-        .findByDateTimeBetween(start, end, pageable);
+        .findByDateTimeBetweenAndMemberId(start, end, member.getId(),pageable);
 
     // 데이터 API 명세서에 맞게 가공해서 return
     return TransactionHistoryResponse.builder()
@@ -183,7 +191,8 @@ public class TransactionService {
                   .id(data.getId())
                   .name(data.getName())
                   .price(data.getPrice())
-                  .buy(allItemsHistories.contains(data.getId())) // allItemsHistories 에 포함되어있으면 구매한 아이템이다.
+                  .buy(allItemsHistories.contains(
+                      data.getId())) // allItemsHistories 에 포함되어있으면 구매한 아이템이다.
                   .build());
         }
     );

@@ -111,8 +111,9 @@ public class TransactionController {
    */
   @GetMapping("/api/transaction")
   public ResponseEntity<TransactionHistoryResponse> getTransactionHistory(
+      Authentication authentication,
       @RequestBody TransactionHistoryRequest dto) {
-    TransactionHistoryResponse response = transactionService.getTransactionHistory(dto);
+    TransactionHistoryResponse response = transactionService.getTransactionHistory(authentication,dto);
     return ResponseEntity.ok(response);
   }
 
