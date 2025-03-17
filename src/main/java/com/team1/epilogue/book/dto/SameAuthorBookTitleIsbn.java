@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class SameAuthorBookTitleIsbn {
-  private String id;
+  private String isbn;
   private String title;
 
 }
