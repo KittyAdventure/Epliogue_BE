@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ItemListDetail {
-  private int id;
+  private Long id;
   private String name;
   private int price;
   private boolean buy;

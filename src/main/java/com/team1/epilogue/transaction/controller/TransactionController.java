@@ -162,6 +162,7 @@ public class TransactionController {
   @GetMapping("/api/item/list")
   public ResponseEntity<ItemList> getItemList(@RequestParam String memberId,
       @RequestParam int page) {
-    transactionService.getItemList(memberId,page);
+    ItemList itemList = transactionService.getItemList(memberId, page);
+    return ResponseEntity.ok(itemList);
   }
 }

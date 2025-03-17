@@ -7,6 +7,8 @@ import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.transaction.domain.TransactionDetail;
 import com.team1.epilogue.transaction.dto.BoughtItemDetail;
 import com.team1.epilogue.transaction.dto.BoughtItemList;
+import com.team1.epilogue.transaction.dto.ItemList;
+import com.team1.epilogue.transaction.dto.ItemListDetail;
 import com.team1.epilogue.transaction.dto.TransactionHistoryDto;
 import com.team1.epilogue.transaction.dto.TransactionHistoryRequest;
 import com.team1.epilogue.transaction.dto.TransactionHistoryResponse;
@@ -137,7 +139,8 @@ public class TransactionService {
     );
     PageRequest request = PageRequest.of(page, 10);
 
-    Page<ItemBuyHistory> allHistories = buyHistoryRepository.findAllByMemberId(member.getId(),request);
+    Page<ItemBuyHistory> allHistories = buyHistoryRepository.findAllByMemberId(member.getId(),
+        request);
 
     List<BoughtItemDetail> list = new ArrayList<>();
 
@@ -161,19 +164,34 @@ public class TransactionService {
         .build();
   }
 
-  public void getItemList(String memberId, int page) {
+  public ItemList getItemList(String memberId, int page) {
     Member member = memberRepository.findByLoginId(memberId).orElseThrow(
         () -> new MemberNotFoundException("존재하지 않는 회원입니다.")
     );
-    PageRequest request = PageRequest.of(page,6);
+    PageRequest request = PageRequest.of(page, 6);
 
     Page<Item> allItems = itemRepository.findAll(request); //6개씩 페이징 처리해서 아이템 리스트를 불러옴.
 
     // 해당 회원이 구매한 아이템들의 PK 값 List 를 불러옴
     List<Long> allItemsHistories = buyHistoryRepository.findAllItemIdsByMemberId(member.getId());
 
-    //TODO
+    List<ItemListDetail> list = new ArrayList<>();
+    allItems.getContent().stream().forEach(
+        data -> {
+          list.add(
+              ItemListDetail.builder()
+                  .id(data.getId())
+                  .name(data.getName())
+                  .price(data.getPrice())
+                  .buy(allItemsHistories.contains(data.getId())) // allItemsHistories 에 포함되어있으면 구매한 아이템이다.
+                  .build());
+        }
+    );
 
-
+    return ItemList.builder()
+        .page(page)
+        .totalPages(allItems.getTotalPages())
+        .items(list)
+        .build();
   }
 }
