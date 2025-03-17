@@ -29,7 +29,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,9 +80,8 @@ public class TransactionService {
    * @param dto 시작할 날짜와 끝나는 날짜 , 페이지 데이터 갯수제한, 페이지 번호를 담은 DTO
    * @return TransactionHistoryResponse 객체 return
    */
-  public TransactionHistoryResponse getTransactionHistory(Authentication authentication,
+  public TransactionHistoryResponse getTransactionHistory(CustomMemberDetails details,
       TransactionHistoryRequest dto) {
-    CustomMemberDetails details = (CustomMemberDetails) authentication.getPrincipal();
 
     Member member = memberRepository.findByLoginId(details.getUsername()).orElseThrow(
         () -> new MemberNotFoundException("존재하지 않는 회원입니다.")
@@ -94,7 +92,7 @@ public class TransactionService {
     // 끝나는 날짜 설정
     LocalDateTime end = dto.getEndDate().atTime(23, 59, 59);
     // 페이징 설정 -> 프론트에서 넘어온 페이지 번호와, 한 페이지 데이터 갯수 설정
-    Pageable pageable = PageRequest.of(dto.getPage(), dto.getLimit());
+    Pageable pageable = PageRequest.of(dto.getPage() - 1, dto.getLimit());
 
     // Repository 에서 거래내역 가져오기
     Page<Transaction> response = transactionRepository
@@ -102,7 +100,7 @@ public class TransactionService {
 
     // 데이터 API 명세서에 맞게 가공해서 return
     return TransactionHistoryResponse.builder()
-        .total(response.getNumberOfElements())
+        .total(response.getTotalPages())
         .limit(response.getSize())
         .page(dto.getPage())
         // Page 객체 내부의 Transaction Entity -> DTO 로 변환
@@ -145,7 +143,7 @@ public class TransactionService {
     Member member = memberRepository.findByLoginId(memberId).orElseThrow(
         () -> new MemberNotFoundException("존재하지 않는 회원입니다.")
     );
-    PageRequest request = PageRequest.of(page, 10);
+    PageRequest request = PageRequest.of(page - 1, 10);
 
     Page<ItemBuyHistory> allHistories = buyHistoryRepository.findAllByMemberId(member.getId(),
         request);
@@ -176,7 +174,7 @@ public class TransactionService {
     Member member = memberRepository.findByLoginId(memberId).orElseThrow(
         () -> new MemberNotFoundException("존재하지 않는 회원입니다.")
     );
-    PageRequest request = PageRequest.of(page, 6);
+    PageRequest request = PageRequest.of(page - 1, 6);
 
     Page<Item> allItems = itemRepository.findAll(request); //6개씩 페이징 처리해서 아이템 리스트를 불러옴.
 

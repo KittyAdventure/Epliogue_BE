@@ -113,7 +113,8 @@ public class TransactionController {
   public ResponseEntity<TransactionHistoryResponse> getTransactionHistory(
       Authentication authentication,
       @RequestBody TransactionHistoryRequest dto) {
-    TransactionHistoryResponse response = transactionService.getTransactionHistory(authentication,dto);
+    CustomMemberDetails details = (CustomMemberDetails) authentication.getPrincipal();
+    TransactionHistoryResponse response = transactionService.getTransactionHistory(details,dto);
     return ResponseEntity.ok(response);
   }
 
