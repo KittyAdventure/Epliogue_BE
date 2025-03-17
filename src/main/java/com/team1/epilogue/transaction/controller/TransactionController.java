@@ -3,6 +3,8 @@ package com.team1.epilogue.transaction.controller;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.comment.dto.MessageResponse;
 import com.team1.epilogue.transaction.domain.TransactionDetail;
+import com.team1.epilogue.transaction.dto.BoughtItemList;
+import com.team1.epilogue.transaction.dto.ItemList;
 import com.team1.epilogue.transaction.dto.KakaoPayApproveResponse;
 import com.team1.epilogue.transaction.dto.KakaoPayRedirectUrlDto;
 import com.team1.epilogue.transaction.dto.TransactionHistoryRequest;
@@ -33,7 +35,7 @@ public class TransactionController {
    * 카카오페이 결제 준비를 요청하는 기능입니다.
    *
    * @param authentication 사용자 정보를 얻기위한 authentication 객체
-   * @param amount 충전 금액
+   * @param amount         충전 금액
    * @return 사용자에게 보여지는 Redirect Url 을 return
    */
   @PostMapping("/api/kp/prepare")
@@ -54,7 +56,7 @@ public class TransactionController {
    * 카카오페이 결제가 승인되었을때 카카오쪽에서 redirect 되는 URL
    *
    * @param memberId 사용자 ID
-   * @param pgToken 카카오 측에서 발급해준 pgToken
+   * @param pgToken  카카오 측에서 발급해준 pgToken
    * @return 결제 성공시 200 응답
    */
   @GetMapping("/api/kp/success")
@@ -109,8 +111,10 @@ public class TransactionController {
    */
   @GetMapping("/api/transaction")
   public ResponseEntity<TransactionHistoryResponse> getTransactionHistory(
+      Authentication authentication,
       @RequestBody TransactionHistoryRequest dto) {
-    TransactionHistoryResponse response = transactionService.getTransactionHistory(dto);
+    CustomMemberDetails details = (CustomMemberDetails) authentication.getPrincipal();
+    TransactionHistoryResponse response = transactionService.getTransactionHistory(details,dto);
     return ResponseEntity.ok(response);
   }
 
@@ -129,5 +133,38 @@ public class TransactionController {
     MessageResponse response = MessageResponse.builder()
         .message("취소 요청이 정상적으로 처리되었습니다.").build();
     return ResponseEntity.ok().body(response);
+  }
+
+  /**
+   * 아이템 구매하는 메서드
+   */
+  @PostMapping("/api/item")
+  public ResponseEntity<MessageResponse> buyItem(Authentication authentication,
+      @RequestParam Long itemId) {
+    CustomMemberDetails customMemberDetails = (CustomMemberDetails) authentication.getPrincipal();
+    transactionService.buyItem(customMemberDetails, itemId);
+    MessageResponse response = MessageResponse.builder()
+        .message("정상적으로 처리되었습니다.").build();
+    return ResponseEntity.ok().body(response);
+  }
+
+  /**
+   * 요청한 회원의 구매한 아이템 List 조회
+   */
+  @GetMapping("/api/item/bought")
+  public ResponseEntity<BoughtItemList> getBoughtItemList(@RequestParam String memberId,
+      @RequestParam int page) {
+    BoughtItemList boughtItemList = transactionService.getBoughtItemList(memberId, page);
+    return ResponseEntity.ok(boughtItemList);
+  }
+
+  /**
+   * 상점에 있는 아이템들 조회
+   */
+  @GetMapping("/api/item/list")
+  public ResponseEntity<ItemList> getItemList(@RequestParam String memberId,
+      @RequestParam int page) {
+    ItemList itemList = transactionService.getItemList(memberId, page);
+    return ResponseEntity.ok(itemList);
   }
 }

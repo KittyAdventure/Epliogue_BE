@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-  Page<Transaction> findByDateTimeBetween(LocalDateTime startDate, LocalDateTime endDate, Pageable page);
+  Page<Transaction> findByDateTimeBetweenAndMemberId(LocalDateTime startDate, LocalDateTime endDate,Long memberId, Pageable page);
 }
