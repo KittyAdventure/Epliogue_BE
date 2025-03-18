@@ -104,9 +104,7 @@ public class MemberController {
   {
     Pageable pageable = PageRequest.of(page, size);  // 한 페이지당 9개씩
     Page<SearchMemberResponseDto> members = memberService.searchMember(searchType,keyword,pageable,hasProfileUrl,sortType);
-
     ApiResponse<Page<SearchMemberResponseDto>> response = new ApiResponse<>(true,members,null,"Search success");
-
     return ResponseEntity.ok(response);
   }
 }

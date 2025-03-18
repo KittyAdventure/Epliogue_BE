@@ -19,7 +19,6 @@ public class CustomBookRepositoryImpl implements CustomMemberRepository{
 
   private final JPAQueryFactory queryFactory;
 
-
   @Override
   public Page<Member> searchMembers(String searchType, String keyword, Pageable pageable, Boolean hasProfileUrl, String sortType) {
     QMember member = QMember.member;
@@ -60,7 +59,6 @@ public class CustomBookRepositoryImpl implements CustomMemberRepository{
       default:
         orderSpecifier = member.id.desc(); // 기본 정렬 (id 역순)
     }
-
 
     List<Member> results = queryFactory
         .selectFrom(member)

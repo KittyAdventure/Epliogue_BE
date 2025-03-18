@@ -107,9 +107,7 @@ public class MemberService {
     }
 
     public Page<SearchMemberResponseDto> searchMember(String searchType, String keyword, Pageable pageable, Boolean hasProfileUrl, String sortType) {
-
         Page<Member> members = customMemberRepository.searchMembers(searchType,keyword,pageable,hasProfileUrl,sortType);
-
         return members.map(SearchMemberResponseDto::fromEntity);
     }
 

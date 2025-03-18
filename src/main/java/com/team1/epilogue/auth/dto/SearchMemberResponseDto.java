@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @Builder
 public class SearchMemberResponseDto {
-
   private String loginId;
   private String nickname;
   private String email;
