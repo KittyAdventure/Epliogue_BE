@@ -5,7 +5,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.entity.QMember;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,7 +14,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class CustomBookRepositoryImpl implements CustomMemberRepository{
+public class CustomMemberRepositoryImpl implements CustomMemberRepository{
 
   private final JPAQueryFactory queryFactory;
 
