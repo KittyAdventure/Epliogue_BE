@@ -14,7 +14,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 public class Review extends BaseEntity {
@@ -44,6 +43,10 @@ public class Review extends BaseEntity {
     @Column(nullable = false)
     private int likeCount = 0;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private int commentsCount = 0; // 댓글 갯수
+
     /**
      * 리뷰 내용을 수정합니다
      *
@@ -52,7 +55,5 @@ public class Review extends BaseEntity {
     public void updateReview(String content) {
         this.content = content;
     }
-
-    private int commentsCount; // 댓글 갯수
 }
 

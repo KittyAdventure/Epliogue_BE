@@ -72,6 +72,15 @@ public class ReviewController {
         return ResponseEntity.ok(reviewResponseDto);
     }
 
+    @GetMapping("/reviews/latest")
+    public ResponseEntity<Page<ReviewResponseDto>> getLatestReviews(
+            @RequestParam("page") int page,
+            @RequestParam("size") int size
+    ) {
+        Page<ReviewResponseDto> reviews = reviewService.getLatestReviews(page, size);
+        return ResponseEntity.ok(reviews);
+    }
+
     /**
      * 특정 리뷰를 수정합니다
      *

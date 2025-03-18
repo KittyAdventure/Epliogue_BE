@@ -65,10 +65,16 @@ public class ReviewService {
     }
 
     public ReviewResponseDto getReviewDetail(Long reviewId) {
-        Review review = reviewRepository.findById(reviewId)
+        Review review = reviewRepository.findByIdWithBookAndMember(reviewId)
                 .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
         return ReviewResponseDto.from(review);
+    }
+
+    public Page<ReviewResponseDto> getLatestReviews(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Review> reviews = reviewRepository.findAllReviewsSortedByLatest(pageable);
+        return reviews.map(ReviewResponseDto::from);
     }
 
     @Transactional
@@ -130,7 +136,7 @@ public class ReviewService {
 
     public Page<ReviewResponseDto> getFriendsReviews(String bookId, CustomMemberDetails memberDetails, int page, int size, String sortType) {
         Member currentMember = memberRepository.findById(memberDetails.getId())
-            .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
+                .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
         List<Follow> followings = followRepository.findByFollowerWithFollowed(currentMember);
         List<Member> friendMembers = followings.stream()
                 .map(Follow::getFollowed)

@@ -41,6 +41,7 @@ public class CommentService {
   /**
    * 댓글 작성하는 메서드
    */
+  @Transactional
   public Comment postComment(CustomMemberDetails details, CommentPostRequest dto) {
     Member member = memberRepository.findById(details.getId())
             .orElseThrow(() -> new MemberNotFoundException("ID가 " + details.getId() + "인 회원을 찾을 수 없습니다."));

@@ -18,9 +18,12 @@ public class ReviewResponseDto {
     private String content;
     private String nickname;
     private Long memberId;
+    private String memberProfileImage;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
     private int likeCount;
+    private int commentsCount;
+    private String bookTitle;
 
     /**
      * Review 엔티티를 DTO로 변환합니다
@@ -34,9 +37,12 @@ public class ReviewResponseDto {
                 .content(review.getContent())
                 .nickname(review.getMember().getNickname())
                 .memberId(review.getMember().getId())
+                .memberProfileImage(review.getMember().getProfileUrl())
                 .createdAt(review.getCreatedAt())
                 .modifiedAt(review.getModifiedAt())
                 .likeCount(review.getLikeCount())
+                .commentsCount(review.getCommentsCount())
+                .bookTitle(review.getBook().getTitle())
                 .build();
     }
 }
