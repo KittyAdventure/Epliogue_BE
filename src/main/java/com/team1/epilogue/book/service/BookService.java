@@ -103,7 +103,7 @@ public class BookService {
         data -> {
           if (data.getId() != book.getId()) { // 같은 작가의 현재 가져온 책을 제외한 다른 책들을 가져온다.
             dtoList.add(
-                SameAuthorBookTitleIsbn.builder().title(data.getTitle()).id(data.getId()).build());
+                SameAuthorBookTitleIsbn.builder().title(data.getTitle()).isbn(data.getId()).build());
           }
         }
     );
