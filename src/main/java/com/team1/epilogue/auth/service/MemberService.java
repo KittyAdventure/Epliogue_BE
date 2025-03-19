@@ -2,6 +2,7 @@ package com.team1.epilogue.auth.service;
 
 import com.team1.epilogue.auth.dto.RegisterRequest;
 import com.team1.epilogue.auth.dto.MemberResponse;
+import com.team1.epilogue.auth.dto.SearchMemberResponseDto;
 import com.team1.epilogue.auth.dto.UpdateMemberRequest;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.*;
@@ -105,8 +106,9 @@ public class MemberService {
                 .build();
     }
 
-    public Page<Member> searchMember(String searchType, String keyword, Pageable pageable) {
-        return customMemberRepository.searchMembers(searchType,keyword,pageable);
+    public Page<SearchMemberResponseDto> searchMember(String searchType, String keyword, Pageable pageable, Boolean hasProfileUrl, String sortType) {
+        Page<Member> members = customMemberRepository.searchMembers(searchType,keyword,pageable,hasProfileUrl,sortType);
+        return members.map(SearchMemberResponseDto::fromEntity);
     }
 
     private void validateRegisterRequest(RegisterRequest request) {

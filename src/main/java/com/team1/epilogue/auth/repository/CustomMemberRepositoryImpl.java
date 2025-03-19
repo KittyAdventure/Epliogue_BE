@@ -1,6 +1,7 @@
 package com.team1.epilogue.auth.repository;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.entity.QMember;
@@ -18,9 +19,8 @@ public class CustomMemberRepositoryImpl implements CustomMemberRepository{
 
   private final JPAQueryFactory queryFactory;
 
-
   @Override
-  public Page<Member> searchMembers(String searchType, String keyword, Pageable pageable) {
+  public Page<Member> searchMembers(String searchType, String keyword, Pageable pageable, Boolean hasProfileUrl, String sortType) {
     QMember member = QMember.member;
     BooleanBuilder booleanBuilder = new BooleanBuilder();
 
@@ -40,10 +40,30 @@ public class CustomMemberRepositoryImpl implements CustomMemberRepository{
       }
     }
 
+    if(hasProfileUrl != null){
+      if(hasProfileUrl) {
+        booleanBuilder.and(member.profileUrl.isNotNull());
+      } else {
+        booleanBuilder.and(member.profileUrl.isNull());
+      }
+    }
+
+    OrderSpecifier<?> orderSpecifier;
+    switch(sortType) {
+      case "oldest":
+        orderSpecifier = member.createdAt.asc(); // 오래된 가입순
+        break;
+      case "newest":
+        orderSpecifier = member.createdAt.desc(); // 최신 가입순
+        break;
+      default:
+        orderSpecifier = member.id.desc(); // 기본 정렬 (id 역순)
+    }
 
     List<Member> results = queryFactory
         .selectFrom(member)
         .where(booleanBuilder)
+        .orderBy(orderSpecifier) // 정렬 적용
         .offset(pageable.getOffset())
         .limit(pageable.getPageSize())
         .fetch();

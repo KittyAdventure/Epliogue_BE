@@ -3,6 +3,7 @@ package com.team1.epilogue.auth.controller;
 import com.team1.epilogue.auth.dto.ApiResponse;
 import com.team1.epilogue.auth.dto.MemberResponse;
 import com.team1.epilogue.auth.dto.RegisterRequest;
+import com.team1.epilogue.auth.dto.SearchMemberResponseDto;
 import com.team1.epilogue.auth.dto.SuccessResponse;
 import com.team1.epilogue.auth.dto.UpdateMemberRequest;
 import com.team1.epilogue.auth.entity.Member;
@@ -83,16 +84,17 @@ public class MemberController {
 
   // 회원 아이디 검색
   @GetMapping("/search")
-  public ResponseEntity<ApiResponse<Page<Member>>> searchMember(@RequestParam String searchType,
+  public ResponseEntity<ApiResponse<Page<SearchMemberResponseDto>>> searchMember(@RequestParam String searchType,
     @RequestParam String keyword,
-    @RequestParam(defaultValue = "0") int page
+    @RequestParam(defaultValue = "0") int page,
+    @RequestParam(defaultValue = "9") int size,
+    @RequestParam(required = false) Boolean hasProfileUrl,
+    @RequestParam(required = false, defaultValue = "latest") String sortType
   )
   {
-    Pageable pageable = PageRequest.of(page, 9);  // 한 페이지당 9개씩
-    Page<Member> members = memberService.searchMember(searchType,keyword,pageable);
-
-    ApiResponse<Page<Member>> response = new ApiResponse<>(true,members,null,"Search success");
-
+    Pageable pageable = PageRequest.of(page, size);  // 한 페이지당 9개씩
+    Page<SearchMemberResponseDto> members = memberService.searchMember(searchType,keyword,pageable,hasProfileUrl,sortType);
+    ApiResponse<Page<SearchMemberResponseDto>> response = new ApiResponse<>(true,members,null,"Search success");
     return ResponseEntity.ok(response);
   }
 }
