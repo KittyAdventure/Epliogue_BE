@@ -105,10 +105,11 @@ public class SecurityConfig {
                             "/api/books/{bookId}/reviews",
                             "/api/reviews/**"
                     ).permitAll()
-                    .anyRequest().authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/reviews/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/books/**/reviews").authenticated()
+                    .anyRequest().authenticated()
+
             )
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, memberRepository), UsernamePasswordAuthenticationFilter.class)
             .oauth2Login(withDefaults())
