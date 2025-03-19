@@ -72,6 +72,10 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+tasks.withType(JavaCompile) {
+	options.annotationProcessorPath = configurations.annotationProcessor
+}
+
 // gradle clean 시에 QClass 디렉토리 삭제
 clean {
 	delete file('src/main/generated')
@@ -85,4 +89,3 @@ application {
 //tasks.withType(Test) {
 //	enabled = false
 //}
-
