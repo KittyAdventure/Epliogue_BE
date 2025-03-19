@@ -45,7 +45,7 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
     // 출간일 필터
     if (filter.getStartDate() != null && filter.getEndDate() != null) {
       // "yyyy-MM" 형식을 LocalDate로 변환
-      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM");
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
       // 시작 날짜: 해당 월의 첫 번째 날짜
       LocalDate startDate = LocalDate.parse(filter.getStartDate() + "-01", formatter);
