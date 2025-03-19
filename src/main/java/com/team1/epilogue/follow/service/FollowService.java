@@ -162,7 +162,7 @@ public class FollowService {
                 .id(String.valueOf(review.getId()))
                 .bookId(review.getBook() != null ? String.valueOf(review.getBook().getId()) : null)
                 .content(review.getContent())
-                .imageUrl(review.getImageUrl())
+                .imageUrls(review.getImageUrls())
                 .createdAt(review.getCreatedAt())
                 .member(convertToMemberDto(review.getMember()))
                 .build();
