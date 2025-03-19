@@ -16,15 +16,15 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RatingRequestDto {
 
-    @DecimalMin("0.5")
-    @DecimalMax("5")
-    private Double score;  // 0.5 ~ 5 사이의 점수를 받습니다
+  @DecimalMin("0.5")
+  @DecimalMax("5")
+  private Double score;  // 0.5 ~ 5 사이의 점수를 받습니다
 
-    public Rating toEntity(Book book, Member member) {
-        return Rating.builder()
-                .score(score)
-                .book(book)
-                .member(member)
-                .build();
-    }
+  public Rating toEntity(Book book, Member member) {
+    return Rating.builder()
+        .score(score)
+        .book(book)
+        .member(member)
+        .build();
+  }
 }
