@@ -6,9 +6,12 @@ import com.team1.epilogue.review.dto.ReviewResponseDto;
 import com.team1.epilogue.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,13 +28,16 @@ public class ReviewController {
      * @param authentication   현재 인증된 사용자
      * @return 생성된 리뷰의 상세 정보를 담은 DTO
      */
-    @PostMapping("/books/{bookId}/reviews")
-    public ResponseEntity<ReviewResponseDto> createReview(@PathVariable String bookId,
-                                                          @RequestBody ReviewRequestDto reviewRequestDto,
-                                                          Authentication authentication) {
+    @PostMapping(value = "/books/{bookId}/reviews", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ReviewResponseDto> createReview(
+            @PathVariable String bookId,
+            @RequestPart(value = "data") ReviewRequestDto reviewRequestDto,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            Authentication authentication
+    ) {
         CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
         ReviewResponseDto reviewResponseDto =
-                reviewService.createReview(bookId, reviewRequestDto, member);
+                reviewService.createReview(bookId, reviewRequestDto, images, member);
 
         return ResponseEntity.ok(reviewResponseDto);
     }
@@ -89,12 +95,15 @@ public class ReviewController {
      * @param authentication   현재 인증된 사용자
      * @return 수정된 리뷰의 상세 정보를 담은 DTO
      */
-    @PutMapping("/reviews/{reviewId}")
-    public ResponseEntity<ReviewResponseDto> updateReview(@PathVariable Long reviewId,
-                                                          @RequestBody ReviewRequestDto reviewRequestDto,
-                                                          Authentication authentication) {
+    @PutMapping(value = "/reviews/{reviewId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ReviewResponseDto> updateReview(
+            @PathVariable Long reviewId,
+            @RequestPart(value = "data") ReviewRequestDto reviewRequestDto,
+            @RequestPart(value = "images", required = false) List<MultipartFile> images,
+            Authentication authentication
+    ) {
         CustomMemberDetails member = (CustomMemberDetails) authentication.getPrincipal();
-        ReviewResponseDto updatedReview = reviewService.updateReview(reviewId, reviewRequestDto, member);
+        ReviewResponseDto updatedReview = reviewService.updateReview(reviewId, reviewRequestDto, images, member);
 
         return ResponseEntity.ok(updatedReview);
     }

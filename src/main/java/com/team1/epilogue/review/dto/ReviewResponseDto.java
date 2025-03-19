@@ -4,8 +4,8 @@ import com.team1.epilogue.review.entity.Review;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 클라이언트에게 전달할 리뷰 상세 정보를 담는 DTO입니다
@@ -24,6 +24,7 @@ public class ReviewResponseDto {
     private int likeCount;
     private int commentsCount;
     private String bookTitle;
+    private List<String> imageUrls;
 
     /**
      * Review 엔티티를 DTO로 변환합니다
@@ -43,6 +44,7 @@ public class ReviewResponseDto {
                 .likeCount(review.getLikeCount())
                 .commentsCount(review.getCommentsCount())
                 .bookTitle(review.getBook().getTitle())
+                .imageUrls(review.getImageUrls())
                 .build();
     }
 }

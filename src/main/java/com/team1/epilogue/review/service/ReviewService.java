@@ -4,6 +4,7 @@ import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
+import com.team1.epilogue.auth.service.S3Service;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.follow.entity.Follow;
@@ -22,6 +23,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,16 +37,32 @@ public class ReviewService {
     private final ReviewLikeRepository reviewLikeRepository;
     private final MemberRepository memberRepository;
     private final FollowRepository followRepository;
+    private final S3Service s3Service;
 
 
     @Transactional
-    public ReviewResponseDto createReview(String bookId, ReviewRequestDto reviewRequestDto, CustomMemberDetails memberDetails) {
+    public ReviewResponseDto createReview(String bookId, ReviewRequestDto reviewRequestDto, List<MultipartFile> images, CustomMemberDetails memberDetails) {
         Member member = memberRepository.findById(memberDetails.getId())
                 .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new BookNotFoundException("존재하지 않는 책입니다."));
 
-        Review review = reviewRequestDto.toEntity(book, member);
+        if (images != null && images.size() > 5) {
+            throw new IllegalArgumentException("최대 5개의 이미지만 업로드할 수 있습니다.");
+        }
+
+        // 여러 개의 이미지 업로드 처리
+        List<String> imageUrls = new ArrayList<>();
+        if (images != null && !images.isEmpty()) {
+            for (MultipartFile image : images) {
+                if (image != null && !image.isEmpty()) {
+                    String imageUrl = s3Service.uploadFile(image);
+                    imageUrls.add(imageUrl);
+                }
+            }
+        }
+
+        Review review = reviewRequestDto.toEntity(book, member, imageUrls);
         reviewRepository.save(review);
 
         return ReviewResponseDto.from(review);
@@ -78,7 +97,7 @@ public class ReviewService {
     }
 
     @Transactional
-    public ReviewResponseDto updateReview(Long reviewId, ReviewRequestDto reviewRequestDto, CustomMemberDetails memberDetails) {
+    public ReviewResponseDto updateReview(Long reviewId, ReviewRequestDto reviewRequestDto, List<MultipartFile> images, CustomMemberDetails memberDetails) {
         Member member = memberRepository.findById(memberDetails.getId())
                 .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
         Review review = reviewRepository.findById(reviewId)
@@ -89,6 +108,38 @@ public class ReviewService {
         }
 
         review.updateReview(reviewRequestDto.getContent());
+
+        List<String> existingImageUrls = new ArrayList<>(review.getImageUrls());
+        List<String> updatedImageUrls = new ArrayList<>();
+
+        // 기존 이미지 유지 여부 확인 (기본값: 빈 리스트)
+        List<String> imageUrlsToKeep = (reviewRequestDto.getImageUrls() != null) ? reviewRequestDto.getImageUrls() : new ArrayList<>();
+
+        for (String imageUrl : existingImageUrls) {
+            if (imageUrlsToKeep.contains(imageUrl)) { // 기존 이미지 유지 확인
+                updatedImageUrls.add(imageUrl);
+            } else {
+                s3Service.deleteFile(imageUrl); // 삭제할 이미지는 S3에서도 삭제
+            }
+        }
+
+        // 새로운 이미지 업로드
+        if (images != null && !images.isEmpty()) {
+            if (updatedImageUrls.size() + images.size() > 5) {
+                throw new IllegalArgumentException("최대 5개의 이미지만 업로드할 수 있습니다.");
+            }
+
+            for (MultipartFile image : images) {
+                if (image != null && !image.isEmpty()) {
+                    String imageUrl = s3Service.uploadFile(image);
+                    updatedImageUrls.add(imageUrl);
+                }
+            }
+        }
+
+        // 항상 업데이트 (이미지 변경 여부와 상관없이)
+        review.updateImageUrls(updatedImageUrls);
+
         return ReviewResponseDto.from(review);
     }
 

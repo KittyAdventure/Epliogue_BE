@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 클라이언트로부터 전달받은 리뷰 생성/수정 데이터를 담는 DTO입니다
@@ -19,18 +21,15 @@ public class ReviewRequestDto {
 
     private String content;
 
-    /**
-     * DTO의 데이터를 이용해 Review 엔티티를 생성합니다
-     *
-     * @param book   리뷰와 연관된 책 엔티티
-     * @param member 리뷰 작성자 엔티티
-     * @return Review 엔티티
-     */
-    public Review toEntity(Book book, Member member) {
+    @Builder.Default
+    private List<String> imageUrls = new ArrayList<>();
+
+    public Review toEntity(Book book, Member member, List<String> imageUrls) {
         return Review.builder()
                 .content(content)
                 .book(book)
                 .member(member)
+                .imageUrls(imageUrls)
                 .build();
     }
 }

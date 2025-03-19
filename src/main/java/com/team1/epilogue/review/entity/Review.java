@@ -3,12 +3,15 @@ package com.team1.epilogue.review.entity;
 import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.common.entity.BaseEntity;
+import com.team1.epilogue.review.service.StringListConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
@@ -35,9 +38,10 @@ public class Review extends BaseEntity {
     // 리뷰 내용
     private String content;
 
-    // 리뷰에 첨부된 이미지 URL
-    @Column(name = "image_url")
-    private String imageUrl;
+    @Builder.Default
+    @Convert(converter = StringListConverter.class) //  변환기 적용
+    @Column(columnDefinition = "TEXT") //  길이 제한 없음
+    private List<String> imageUrls = new ArrayList<>();
 
     @Builder.Default
     @Column(nullable = false)
@@ -54,6 +58,10 @@ public class Review extends BaseEntity {
      */
     public void updateReview(String content) {
         this.content = content;
+    }
+
+    public void updateImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
 }
 
