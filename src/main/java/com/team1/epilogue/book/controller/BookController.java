@@ -49,12 +49,12 @@ public class BookController {
    */
   @GetMapping("/api/books/main-page")
   public ResponseEntity<BookMainPageDto> getBookMainPage(
-      @RequestParam int page,
-      @RequestParam String sort,
-      @RequestParam String chosung,
-      @RequestParam int rating,
-      @RequestParam String startDate,
-      @RequestParam String endDate) {
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "") String sort,
+      @RequestParam(defaultValue = "") String chosung,
+      @RequestParam(defaultValue = "0") int rating,
+      @RequestParam(defaultValue = "") String startDate,
+      @RequestParam(defaultValue = "") String endDate) {
     BookSearchFilter filter = BookSearchFilter.builder()
         .page(page)
         .sort(sort)

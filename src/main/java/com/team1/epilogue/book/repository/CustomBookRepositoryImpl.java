@@ -33,17 +33,17 @@ public class CustomBookRepositoryImpl implements CustomBookRepository {
     BooleanBuilder booleanBuilder = new BooleanBuilder();
 
     // 초성 필터
-    if (filter.getChosung() != null) {
+    if (!filter.getChosung() .equals("")) {
       booleanBuilder.and(book.chosung.eq(filter.getChosung()));
     }
     // 별점 필터
-    if (filter.getRating() != null) {
+    if (filter.getRating() != 0) {
       int rating = filter.getRating();
       booleanBuilder.and(book.avgRating.goe((double) rating)) // avgRating >= rating
           .and(book.avgRating.lt((double) rating + 1)); // avgRating < rating + 1 (3.9 까지)
     }
     // 출간일 필터
-    if (filter.getStartDate() != null && filter.getEndDate() != null) {
+    if (!filter.getStartDate().equals("") && !filter.getEndDate().equals("")) {
       // "yyyy-MM" 형식을 LocalDate로 변환
       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
