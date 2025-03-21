@@ -25,6 +25,7 @@ public class ReviewResponseDto {
   private int likeCount;
   private int commentsCount;
   private String bookTitle;
+  private String bookCoverUrl;
   private List<String> imageUrls;
 
   /**
@@ -45,6 +46,7 @@ public class ReviewResponseDto {
         .likeCount(review.getLikeCount())
         .commentsCount(review.getCommentsCount())
         .bookTitle(review.getBook().getTitle())
+        .bookCoverUrl(review.getBook().getCoverUrl())
         .imageUrls(review.getImageUrls())
         .build();
   }
