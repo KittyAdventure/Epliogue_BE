@@ -21,17 +21,19 @@ public class MeetingDto {
   private String title;
   private String content;
   private String location;
-
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime dateTime;
-
   private Integer nowPeople;
+  private String bookImage;
+  private String bookTitle;
 
   public static MeetingDto fromEntity(Meeting meeting) {
     return MeetingDto.builder()
         .id(meeting.getId())
         .memberId(meeting.getMember().getId())
         .bookId(meeting.getBook().getId())
+        .bookImage(meeting.getBook().getCoverUrl())
+        .bookTitle(meeting.getBook().getTitle())
         .title(meeting.getTitle())
         .content(meeting.getContent())
         .location(meeting.getLocation())
