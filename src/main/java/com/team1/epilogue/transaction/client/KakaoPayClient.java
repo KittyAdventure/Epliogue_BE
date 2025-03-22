@@ -26,13 +26,15 @@ public class KakaoPayClient {
   private String kakaoPayCid; // 카카오페이 결제를 위한 cid
   @Value("${kakao.pay.apikey}")
   private String kakaoPayApiKey; // 카카오페이 결제를 위한 api key
+  @Value(("${baseIp}"))
+  private String baseUrl;
   private final String KAKAOPAY_PATH = "/online/v1/payment"; // 카카오페이 path
   private final String KAKAOPAY_PREPARE_PATH = "/ready"; // 카카오페이 준비를 위한 path
   private final String KAKAOPAY_APPROVE_PATH = "/approve";
   private final String KAKAOPAY_CANCEL_PATH = "cancel";
-  private final String APPROVAL_URL = "http://localhost:8080/api/kp/success"; // 카카오페이 성공시 redirect 할 URl
-  private final String CANCEL_URL = "http://localhost:8080/api/kp/cancel"; // 카카오페이 취소시 redirect 할 URl
-  private final String FAIL_URL = "http://localhost:8080/api/kp/fail"; // 카카오페이 실패시 redirect 할 URl
+  private final String APPROVAL_URL = "http://" + baseUrl+"/api/kp/success"; // 카카오페이 성공시 redirect 할 URl
+  private final String CANCEL_URL = "http://"+baseUrl+"/api/kp/cancel"; // 카카오페이 취소시 redirect 할 URl
+  private final String FAIL_URL = "http://"+baseUrl+"/api/kp/fail"; // 카카오페이 실패시 redirect 할 URl
 
 
   /**
