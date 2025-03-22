@@ -38,7 +38,7 @@ public class MemberService {
             throw new EmailAlreadyExistException();
         }
 
-        String profileUrl = request.getProfileUrl();
+        String profileUrl = "";
         if (profileImage != null && !profileImage.isEmpty()) {
             profileUrl = s3StorageService.uploadFile(profileImage);
         }
