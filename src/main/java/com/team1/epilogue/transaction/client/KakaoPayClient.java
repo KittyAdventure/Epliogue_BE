@@ -26,7 +26,7 @@ public class KakaoPayClient {
   private String kakaoPayCid; // 카카오페이 결제를 위한 cid
   @Value("${kakao.pay.apikey}")
   private String kakaoPayApiKey; // 카카오페이 결제를 위한 api key
-  @Value(("${baseIp}"))
+  @Value("${baseIp}")
   private String baseUrl;
   private final String KAKAOPAY_PATH = "/online/v1/payment"; // 카카오페이 path
   private final String KAKAOPAY_PREPARE_PATH = "/ready"; // 카카오페이 준비를 위한 path
