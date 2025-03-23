@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -141,7 +140,7 @@ class FollowServiceTest {
                 .member(followed)
                 .book(testBook)
                 .content("Test review content")
-                .imageUrl("http://example.com/image.png")
+//                .imageUrl("http://example.com/image.png")
 //                .createdAt(LocalDateTime.now())
                 .build();
         reviewRepository.save(review);

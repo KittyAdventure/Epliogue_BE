@@ -14,4 +14,5 @@ public class BookSearchFilter {
   private Integer rating;
   private String startDate;
   private String endDate;
+  private int size;
 }

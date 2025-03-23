@@ -1,6 +1,5 @@
 package com.team1.epilogue.book.controller;
 
-import com.team1.epilogue.book.dto.BookDetailRequest;
 import com.team1.epilogue.book.dto.BookDetailResponse;
 import com.team1.epilogue.book.dto.BookInfoRequest;
 import com.team1.epilogue.book.dto.BookMainPageDto;
@@ -10,7 +9,6 @@ import com.team1.epilogue.book.service.BookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,24 +21,32 @@ public class BookController {
   /**
    * 책 제목으로 검색하는 메서드입니다.
    *
-   * @param dto 책 정보를 담은 DTO
    * @return 네이버에서 온 응답값을 return
    */
   @GetMapping("/api/books")
-  public ResponseEntity<NaverBookSearchResponse> searchBookInfo(@RequestBody BookInfoRequest dto) {
-    NaverBookSearchResponse naverBookSearchResponse = bookService.searchBookInfo(dto);
+  public ResponseEntity<NaverBookSearchResponse> searchBookInfo(@RequestParam String query,
+      @RequestParam(defaultValue = "sim") String sort,
+      @RequestParam(defaultValue = "10") int display, @RequestParam(defaultValue = "1") int start) {
+
+    NaverBookSearchResponse naverBookSearchResponse = bookService.searchBookInfo(
+        BookInfoRequest.builder()
+            .start(start)
+            .query(query)
+            .display(display)
+            .sort(sort)
+            .build());
     return ResponseEntity.ok(naverBookSearchResponse);
   }
 
   /**
    * 책 제목 or ISBN 번호로 상세검색하는 메서드입니다.
    *
-   * @param dto 책 제목 / ISBN 번호를 담은 DTO
    * @return 네이버에서 온 응답값을 return
    */
   @GetMapping("/api/books/detail")
-  public ResponseEntity<BookDetailResponse> getBookDetail(@RequestBody BookDetailRequest dto) {
-    BookDetailResponse bookDetail = bookService.getBookDetail(dto);
+  public ResponseEntity<BookDetailResponse> getBookDetail(@RequestParam String query,
+      @RequestParam String type) {
+    BookDetailResponse bookDetail = bookService.getBookDetail(query, type);
     return ResponseEntity.ok(bookDetail);
   }
 
@@ -49,12 +55,14 @@ public class BookController {
    */
   @GetMapping("/api/books/main-page")
   public ResponseEntity<BookMainPageDto> getBookMainPage(
-      @RequestParam String sort,
-      @RequestParam String chosung,
-      @RequestParam int rating,
-      @RequestParam String startDate,
-      @RequestParam String endDate) {
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "") String sort,
+      @RequestParam(defaultValue = "") String chosung,
+      @RequestParam(defaultValue = "0") int rating,
+      @RequestParam(defaultValue = "") String startDate,
+      @RequestParam(defaultValue = "") String endDate) {
     BookSearchFilter filter = BookSearchFilter.builder()
+        .page(page)
         .sort(sort)
         .chosung(chosung)
         .rating(rating)

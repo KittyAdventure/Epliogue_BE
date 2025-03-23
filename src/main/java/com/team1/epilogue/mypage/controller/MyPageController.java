@@ -5,6 +5,7 @@ import com.team1.epilogue.mypage.dto.MyPageCalendarResponse;
 import com.team1.epilogue.mypage.dto.MyPageCommentsResponse;
 import com.team1.epilogue.mypage.dto.MyPageMeetingResponse;
 import com.team1.epilogue.mypage.dto.MyPageReviewsResponse;
+import com.team1.epilogue.mypage.dto.MyPageUserInfo;
 import com.team1.epilogue.mypage.service.MyPageService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -49,8 +50,9 @@ public class MyPageController {
 
   /**
    * 마이 페이지 내부 "해당 유저의 캘린더 보기" 기능을 위한 메서드
+   *
    * @param memberId 조회할 유저의 ID
-   * @param date 조회할 월
+   * @param date     조회할 월
    */
   @GetMapping("/api/mypage/calendar")
   public ResponseEntity<List<MyPageCalendarResponse>> getCalendar(@RequestParam String memberId,
@@ -61,8 +63,9 @@ public class MyPageController {
 
   /**
    * 마이 페이지 내부 "해당 유저의 모임 기록 보기" 기능을 위한 메서드
+   *
    * @param memberId 조회할 유저의 ID
-   * @param page 조회할 페이지
+   * @param page     조회할 페이지
    */
   @GetMapping("/api/mypage/meeting")
   public ResponseEntity<MyPageMeetingResponse> getMeetingByMember(
@@ -71,5 +74,13 @@ public class MyPageController {
   ) {
     MyPageMeetingResponse response = myPageService.getMeetings(memberId, page);
     return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/api/mypage/user-info")
+  public ResponseEntity<MyPageUserInfo> getMemberInfoData(
+      @RequestParam String memberId
+  ) {
+    MyPageUserInfo memberData = myPageService.getMemberData(memberId);
+    return ResponseEntity.ok(memberData);
   }
 }

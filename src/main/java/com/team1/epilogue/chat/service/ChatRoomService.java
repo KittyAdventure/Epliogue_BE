@@ -26,6 +26,7 @@ public class ChatRoomService {
   private final MemberRepository memberRepository;
   private final BookService bookService;
   private final BookRepository bookRepository;
+
   /**
    * 채팅방을 생성 채팅방 생성시 책 이름과 동일함
    */
@@ -41,7 +42,8 @@ public class ChatRoomService {
               .query(title)
               .build();
 
-          BookDetailResponse bookDetailResponse = bookService.getBookDetail(request);
+          BookDetailResponse bookDetailResponse = bookService.getBookDetail(request.getQuery(),
+              request.getType());
 
           return bookService.insertBookInfo(bookDetailResponse);
         });

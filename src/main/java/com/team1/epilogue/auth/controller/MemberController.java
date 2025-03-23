@@ -1,5 +1,6 @@
 package com.team1.epilogue.auth.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team1.epilogue.auth.dto.ApiResponse;
 import com.team1.epilogue.auth.dto.MemberResponse;
 import com.team1.epilogue.auth.dto.RegisterRequest;
@@ -32,6 +33,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -40,14 +43,23 @@ public class MemberController {
 
   private final MemberService memberService;
   private final MemberWithdrawalService memberWithdrawalService;
+  private final ObjectMapper objectMapper; //
 
   @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<ApiResponse<MemberResponse>> registerMember(
-          @RequestPart("data") @Validated RegisterRequest request,
+          // 기존에 RegisterRequest로 바로 받았던 부분을 String으로 변경
+          @RequestPart("data") String data,
           @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
-    MemberResponse memberResponse = memberService.registerMember(request, profileImage);
-    ApiResponse<MemberResponse> response = new ApiResponse<>(true, memberResponse, null, "Registration success");
-    return ResponseEntity.ok(response);
+    try {
+      // 받은 JSON 문자열을 ObjectMapper를 사용해 RegisterRequest로 변환
+      RegisterRequest request = objectMapper.readValue(data, RegisterRequest.class);
+      MemberResponse memberResponse = memberService.registerMember(request, profileImage);
+      ApiResponse<MemberResponse> response = new ApiResponse<>(true, memberResponse, null, "Registration success");
+      return ResponseEntity.ok(response);
+    } catch (IOException e) {
+      ApiResponse<MemberResponse> errorResponse = new ApiResponse<>(false, null, "Invalid registration data: " + e.getMessage(), "Registration failed");
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
   }
 
   @DeleteMapping

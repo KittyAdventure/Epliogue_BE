@@ -60,24 +60,25 @@ public class BookService {
   /**
    * 책 제목 or ISBN 번호로 상세검색하는 메서드입니다.
    *
-   * @param dto 책 제목 / ISBN 번호를 담은 DTO
    * @return 네이버에서 온 응답값을 return
    */
   @Transactional
-  public BookDetailResponse getBookDetail(BookDetailRequest dto) {
+  public BookDetailResponse getBookDetail(String query, String type) {
     Optional<Book> bookOpt; // repository 에서 가져올 Optional 객체
     Book book; // Optional 내부의 책 데이터
 
-    if ("d_isbn".equals(dto.getType())) { // dto 의 Type 에 따라 다른 쿼리문 호출
-      bookOpt = bookRepository.findById(dto.getQuery()); // 책 ISBN 으로 DB 조회
+    if ("d_isbn".equals(type)) { // dto 의 Type 에 따라 다른 쿼리문 호출
+      bookOpt = bookRepository.findById(query); // 책 ISBN 으로 DB 조회
     } else {
-      bookOpt = bookRepository.findByTitle(dto.getQuery()); // 책 제목으로 DB 조회
+      bookOpt = bookRepository.findByTitle(query); // 책 제목으로 DB 조회
     }
 
     // Optional 내부에 Book 데이터가 존재하지 않는다면 Naver API 호출 -> DB 에 저장
     book = bookOpt.orElseGet(
         () -> {
-          BookDetailXMLResponse response = naverApiClient.getBookDetail(naverUrl, dto);
+          BookDetailXMLResponse response = naverApiClient.getBookDetail(naverUrl,
+              BookDetailRequest.builder()
+                  .query(query).type(type).build());
 
           Item item = response.getItems().get(0);
 
@@ -103,7 +104,8 @@ public class BookService {
         data -> {
           if (data.getId() != book.getId()) { // 같은 작가의 현재 가져온 책을 제외한 다른 책들을 가져온다.
             dtoList.add(
-                SameAuthorBookTitleIsbn.builder().title(data.getTitle()).isbn(data.getId()).build());
+                SameAuthorBookTitleIsbn.builder().title(data.getTitle()).isbn(data.getId())
+                    .build());
           }
         }
     );
@@ -196,7 +198,8 @@ public class BookService {
       int unicode = firstChar - 0xAC00;
       int chosungIndex = unicode / (21 * 28);
       final char[] CHOSUNG_LIST = {
-          'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'
+          'ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ',
+          'ㅎ'
       };
       return String.valueOf(CHOSUNG_LIST[chosungIndex]);
     } else if ((firstChar >= 'A' && firstChar <= 'Z') || (firstChar >= 'a' && firstChar <= 'z')) {

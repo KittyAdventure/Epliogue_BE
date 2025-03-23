@@ -12,7 +12,6 @@ import java.util.Optional;
 /**
  * [클래스 레벨]
  * FollowRepository는 회원 간의 팔로우 관계를 관리하는 JPA 리포지토리이
- *
  * 주요 기능:
  * - 특정 회원이 특정 회원을 팔로우했는지 확인
  * - 특정 회원이 팔로우한 회원 목록 조회
@@ -33,4 +32,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
     // Fetch Join: 팔로우 대상을 함께 로딩 (팔로잉 목록)
     @Query("select f from Follow f join fetch f.followed where f.follower = :follower")
     List<Follow> findByFollowerWithFollowed(@Param("follower") Member follower);
+
+    int countAllByFollowed(Member member);
+    int countAllByFollower(Member member);
 }
