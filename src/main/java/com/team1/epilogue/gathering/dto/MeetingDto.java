@@ -24,6 +24,7 @@ public class MeetingDto {
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime dateTime;
   private Integer nowPeople;
+  private Integer maxPeople;
   private String bookImage;
   private String bookTitle;
 
@@ -39,6 +40,7 @@ public class MeetingDto {
         .location(meeting.getLocation())
         .dateTime(meeting.getDateTime())
         .nowPeople(meeting.getNowPeople())
+        .maxPeople(30)
         .build();
   }
 
