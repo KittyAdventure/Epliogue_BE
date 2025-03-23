@@ -26,6 +26,7 @@ public class MeetingDto {
   private LocalDateTime dateTime;
 
   private Integer nowPeople;
+  private Integer maxPeople;
 
   public static MeetingDto fromEntity(Meeting meeting) {
     return MeetingDto.builder()
@@ -37,6 +38,7 @@ public class MeetingDto {
         .location(meeting.getLocation())
         .dateTime(meeting.getDateTime())
         .nowPeople(meeting.getNowPeople())
+        .maxPeople(30)
         .build();
   }
 
