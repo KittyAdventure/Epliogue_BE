@@ -25,4 +25,6 @@ public interface CollectionRepository extends JpaRepository<CollectionEntity,Lon
   void deleteByMemberAndBookId(@Param("memberId") Long memberId, @Param("bookId") String bookId);
 
   boolean existsByMemberAndBook(Member member, Book book);
+
+  int countAllByMember(Member member);
 }

@@ -4,8 +4,10 @@ import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
+import com.team1.epilogue.collection.repository.CollectionRepository;
 import com.team1.epilogue.comment.entity.Comment;
 import com.team1.epilogue.comment.repository.CommentRepository;
+import com.team1.epilogue.follow.repository.FollowRepository;
 import com.team1.epilogue.gathering.entity.JoinMeeting;
 import com.team1.epilogue.gathering.repository.JoinMeetingRepository;
 import com.team1.epilogue.mypage.dto.MeetingDetail;
@@ -14,6 +16,7 @@ import com.team1.epilogue.mypage.dto.MyPageCalendarResponse;
 import com.team1.epilogue.mypage.dto.MyPageCommentsDetailResponse;
 import com.team1.epilogue.mypage.dto.MyPageCommentsResponse;
 import com.team1.epilogue.mypage.dto.MyPageMeetingResponse;
+import com.team1.epilogue.mypage.dto.MyPageUserInfo;
 import com.team1.epilogue.review.entity.Review;
 import com.team1.epilogue.review.repository.ReviewRepository;
 import java.time.LocalDate;
@@ -37,6 +40,8 @@ public class MyPageService {
   private final ReviewRepository reviewRepository;
   private final MemberRepository memberRepository;
   private final JoinMeetingRepository joinMeetingRepository;
+  private final FollowRepository followRepository;
+  private final CollectionRepository collectionRepository;
 
   public MyPageCommentsResponse getMyComments(CustomMemberDetails details, int page) {
     PageRequest pageRequest = PageRequest.of(page - 1, 20);
@@ -165,5 +170,23 @@ public class MyPageService {
         .meetings(list)
         .build();
 
+  }
+
+  public MyPageUserInfo getMemberData(String memberId) {
+    Member member = memberRepository.findByLoginId(memberId).orElseThrow(
+        () -> new MemberNotFoundException("사용자 정보가 존재하지 않습니다.")
+    );
+    return MyPageUserInfo.builder()
+        .nickName(member.getNickname())
+        .loginId(member.getLoginId())
+        .email(member.getEmail())
+        .follower(followRepository.countAllByFollowed(member))
+        .following(followRepository.countAllByFollower(member))
+        .reviewCount(reviewRepository.countAllByMember(member))
+        .commentCount(commentRepository.countAllByMember(member))
+        .meetingCount(joinMeetingRepository.countAllByMember(member))
+        .collectionCount(collectionRepository.countAllByMember(member))
+        .point(member.getPoint())
+        .build();
   }
 }

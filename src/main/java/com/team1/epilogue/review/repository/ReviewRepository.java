@@ -71,4 +71,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
       @Param("members") Iterable<Member> members,
       Pageable pageable);
 
+  int countAllByMember(Member member);
+
 }
