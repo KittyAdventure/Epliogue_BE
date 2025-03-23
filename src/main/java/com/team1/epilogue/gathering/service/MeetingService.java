@@ -33,6 +33,10 @@ public class MeetingService {
     Book book = bookRepository.findById(meetingDto.getBookId())
         .orElseThrow(() -> new IllegalArgumentException("책이 존재하지 않습니다."));
 
+    if(meetingDto.getMaxPeople() != null && meetingDto.getMaxPeople() > 30){
+      throw new IllegalArgumentException("최대 인원 30명을 초과 할 수 없습니다.");
+    }
+
     Meeting meeting = Meeting.builder()
         .book(book)
         .member(member)
