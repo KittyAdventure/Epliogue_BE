@@ -1,10 +1,15 @@
+# General
 HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+
+# 환경 설정 파일 (업로드하지 않아도 되는 파일들)
 application.properties
+docker-compose.yml
+.DS_Store
 
 ### STS ###
 .apt_generated
@@ -36,3 +41,10 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# QueryDSL QEntity 자동 생성 파일 제외
+/build/
+!/build.gradle
+!/gradle/
+.gradle/
+build/generated/
