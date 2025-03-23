@@ -10,6 +10,7 @@ import com.team1.epilogue.auth.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -20,6 +21,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import java.util.List;
 import org.springframework.web.cors.CorsConfiguration;
@@ -103,7 +105,8 @@ public class SecurityConfig {
                             "/api/books/detail",
                             "/api/reviews/latest",
                             "/api/books/{bookId}/reviews",
-                            "/api/reviews/**"
+                            "/api/reviews/**",
+                            "/api/mypage/user-info"
                     ).permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/reviews/**").authenticated()
@@ -112,7 +115,8 @@ public class SecurityConfig {
 
             )
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider, memberRepository), UsernamePasswordAuthenticationFilter.class)
-            .oauth2Login(withDefaults())
+            .oauth2Login(withDefaults()).exceptionHandling( ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(
+            HttpStatus.UNAUTHORIZED)))
             .httpBasic(httpBasic -> httpBasic.disable());
     return http.build();
   }

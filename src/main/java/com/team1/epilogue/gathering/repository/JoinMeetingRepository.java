@@ -25,6 +25,8 @@ public interface JoinMeetingRepository extends JpaRepository<JoinMeeting, Long> 
 
   @EntityGraph(attributePaths = {"meeting","meeting.book"})
   Page<JoinMeeting> findAllByMember_LoginId(String memberLoginId,Pageable page);
+
+  int countAllByMember(Member member);
 }
 
 
