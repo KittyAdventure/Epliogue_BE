@@ -1,6 +1,8 @@
 package com.team1.epilogue.follow.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.team1.epilogue.config.TestMongoConfig;
+import com.team1.epilogue.config.TestSecurityConfig;
 import com.team1.epilogue.follow.dto.FollowActionResponse;
 import com.team1.epilogue.follow.dto.MembersResponse;
 import com.team1.epilogue.follow.dto.MessageResponse;
@@ -14,6 +16,8 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -29,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = FollowController.class)
+@Import({TestSecurityConfig.class, TestMongoConfig.class})
 @DisplayName("FollowController 테스트")
 @RequiredArgsConstructor
 public class FollowControllerTest {
@@ -37,6 +42,8 @@ public class FollowControllerTest {
     @MockitoBean
     private FollowService followService;
     private ObjectMapper objectMapper;
+    @MockitoBean
+    private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
     @BeforeEach
     void setUp() {
