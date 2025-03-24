@@ -45,11 +45,13 @@ public class ReviewService {
 
 
   @Transactional
-  public ReviewResponseDto createReview(String bookId, ReviewRequestDto reviewRequestDto,
-      List<MultipartFile> images, CustomMemberDetails memberDetails) {
-    Member member = memberRepository.findById(memberDetails.getId())
-        .orElseThrow(
-            () -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
+  public ReviewResponseDto createReview(
+      String bookId,
+      ReviewRequestDto reviewRequestDto,
+      List<MultipartFile> images,
+      CustomMemberDetails memberDetails
+  ) {
+    Member member = getMemberOrThrow(memberDetails.getId());
     Book book = bookRepository.findById(bookId)
         .orElseThrow(() -> new BookNotFoundException("존재하지 않는 책입니다."));
 
@@ -57,16 +59,7 @@ public class ReviewService {
       throw new IllegalArgumentException("최대 5개의 이미지만 업로드할 수 있습니다.");
     }
 
-    // 여러 개의 이미지 업로드 처리
-    List<String> imageUrls = new ArrayList<>();
-    if (images != null && !images.isEmpty()) {
-      for (MultipartFile image : images) {
-        if (image != null && !image.isEmpty()) {
-          String imageUrl = s3Service.uploadFile(image);
-          imageUrls.add(imageUrl);
-        }
-      }
-    }
+    List<String> imageUrls = uploadImages(images);
 
     Review review = reviewRequestDto.toEntity(book, member, imageUrls);
     reviewRepository.save(review);
@@ -74,19 +67,16 @@ public class ReviewService {
     return ReviewResponseDto.from(review);
   }
 
-  public Page<ReviewResponseDto> getReviews(String bookId, int page, int size, String sortType) {
+  public Page<ReviewResponseDto> getReviews(
+      String bookId,
+      int page,
+      int size,
+      String sortType
+  ) {
     Pageable pageable = createPageable(page, size, sortType);
     Page<Review> reviews = reviewRepository.findByBookIdWithMember(bookId, pageable);
 
     return reviews.map(ReviewResponseDto::from);
-  }
-
-  private Pageable createPageable(int page, int size, String sortType) {
-    Sort sort = sortType.equals("likes")
-        ? Sort.by(Sort.Direction.DESC, "likeCount").and(Sort.by(Sort.Direction.DESC, "createdAt"))
-        : Sort.by(Sort.Direction.DESC, "createdAt");
-
-    return PageRequest.of(page - 1, size, sort);
   }
 
   public ReviewResponseDto getReviewDetail(Long reviewId) {
@@ -103,11 +93,13 @@ public class ReviewService {
   }
 
   @Transactional
-  public ReviewResponseDto updateReview(Long reviewId, ReviewRequestDto reviewRequestDto,
-      List<MultipartFile> images, CustomMemberDetails memberDetails) {
-    Member member = memberRepository.findById(memberDetails.getId())
-        .orElseThrow(
-            () -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
+  public ReviewResponseDto updateReview(
+      Long reviewId,
+      ReviewRequestDto reviewRequestDto,
+      List<MultipartFile> images,
+      CustomMemberDetails memberDetails
+  ) {
+    Member member = getMemberOrThrow(memberDetails.getId());
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
@@ -138,13 +130,7 @@ public class ReviewService {
       if (updatedImageUrls.size() + images.size() > 5) {
         throw new IllegalArgumentException("최대 5개의 이미지만 업로드할 수 있습니다.");
       }
-
-      for (MultipartFile image : images) {
-        if (image != null && !image.isEmpty()) {
-          String imageUrl = s3Service.uploadFile(image);
-          updatedImageUrls.add(imageUrl);
-        }
-      }
+      updatedImageUrls.addAll(uploadImages(images));
     }
 
     // 항상 업데이트 (이미지 변경 여부와 상관없이)
@@ -154,9 +140,7 @@ public class ReviewService {
   }
 
   public void deleteReview(Long reviewId, CustomMemberDetails memberDetails) {
-    Member member = memberRepository.findById(memberDetails.getId())
-        .orElseThrow(
-            () -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
+    Member member = getMemberOrThrow(memberDetails.getId());
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
@@ -169,9 +153,7 @@ public class ReviewService {
 
   @Transactional
   public void likeReview(Long reviewId, CustomMemberDetails memberDetails) {
-    Member member = memberRepository.findById(memberDetails.getId())
-        .orElseThrow(
-            () -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
+    Member member = getMemberOrThrow(memberDetails.getId());
     Review review = reviewRepository.findById(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
@@ -187,9 +169,7 @@ public class ReviewService {
 
   @Transactional
   public void unlikeReview(Long reviewId, CustomMemberDetails memberDetails) {
-    Member member = memberRepository.findById(memberDetails.getId())
-        .orElseThrow(
-            () -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
+    Member member = getMemberOrThrow(memberDetails.getId());
     ReviewLike reviewLike = reviewLikeRepository.findByReviewIdAndMemberId(reviewId, member.getId())
         .orElseThrow(() -> new LikeNotFoundException("취소할 좋아요가 없습니다."));
 
@@ -198,11 +178,14 @@ public class ReviewService {
     reviewRepository.decreaseLikeCount(reviewId);
   }
 
-  public Page<ReviewResponseDto> getFriendsReviews(String bookId, CustomMemberDetails memberDetails,
-      int page, int size, String sortType) {
-    Member currentMember = memberRepository.findById(memberDetails.getId())
-        .orElseThrow(
-            () -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
+  public Page<ReviewResponseDto> getFriendsReviews(
+      String bookId,
+      CustomMemberDetails memberDetails,
+      int page,
+      int size,
+      String sortType
+  ) {
+    Member currentMember = getMemberOrThrow(memberDetails.getId());
     List<Follow> followings = followRepository.findByFollowerWithFollowed(currentMember);
     List<Member> friendMembers = followings.stream()
         .map(Follow::getFollowed)
@@ -215,5 +198,32 @@ public class ReviewService {
     Page<Review> reviews = reviewRepository.findByBookIdAndMemberInWithFetchJoin(bookId,
         friendMembers, pageable);
     return reviews.map(ReviewResponseDto::from);
+  }
+
+  // === 헬퍼 메서드 ===
+
+  private Member getMemberOrThrow(Long memberId) {
+    return memberRepository.findById(memberId)
+        .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberId + "인 회원을 찾을 수 없습니다."));
+  }
+
+  private List<String> uploadImages(List<MultipartFile> images) {
+    List<String> imageUrls = new ArrayList<>();
+    if (images != null && !images.isEmpty()) {
+      for (MultipartFile image : images) {
+        if (image != null && !image.isEmpty()) {
+          imageUrls.add(s3Service.uploadFile(image));
+        }
+      }
+    }
+    return imageUrls;
+  }
+
+  private Pageable createPageable(int page, int size, String sortType) {
+    Sort sort = sortType.equals("likes")
+        ? Sort.by(Sort.Direction.DESC, "likeCount").and(Sort.by(Sort.Direction.DESC, "createdAt"))
+        : Sort.by(Sort.Direction.DESC, "createdAt");
+
+    return PageRequest.of(page - 1, size, sort);
   }
 }
