@@ -17,12 +17,16 @@ import com.team1.epilogue.auth.service.GoogleWithdrawalService;
 import com.team1.epilogue.auth.service.KakaoWithdrawalService;
 import com.team1.epilogue.auth.service.LogoutService;
 import com.team1.epilogue.auth.service.MemberWithdrawalService;
+import com.team1.epilogue.config.TestMongoConfig;
 import com.team1.epilogue.config.TestSecurityConfig;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -32,42 +36,55 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
-@WebMvcTest(AuthController.class)
-@Import(TestSecurityConfig.class)
+@WebMvcTest(controllers = AuthController.class,
+        excludeAutoConfiguration = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
+@Import({TestSecurityConfig.class, TestMongoConfig.class})
 @DisplayName("AuthController 테스트")
-@RequiredArgsConstructor
 public class AuthControllerTest {
 
-
+    @Autowired
     private MockMvc mockMvc;
 
+    @Autowired
     private ObjectMapper objectMapper;
 
     @MockitoBean
     private AuthService authService;
+
     @MockitoBean
     private KakaoAuthService kakaoAuthService;
+
     @MockitoBean
     private GoogleAuthService googleAuthService;
+
     @MockitoBean
     private MemberWithdrawalService memberWithdrawalService;
+
     @MockitoBean
     private GoogleWithdrawalService googleWithdrawalService;
+
     @MockitoBean
     private KakaoWithdrawalService kakaoWithdrawalService;
+
     @MockitoBean
     private LogoutService logoutService;
+
+
+    // 추가: JPA 메타모델 관련 빈 모의 객체 제공
+    @MockitoBean
+    private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
     @Test
     @DisplayName("로그인 성공")
@@ -241,7 +258,6 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.message", is("Social Logout Success")));
     }
-
 
     @Test
     @DisplayName("소셜 회원 탈퇴 성공")
