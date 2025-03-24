@@ -108,6 +108,7 @@ public class SecurityConfig {
                             "/api/reviews/**",
                             "/api/mypage/user-info"
                     ).permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/reviews/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/books/{bookId}/reviews").authenticated()
