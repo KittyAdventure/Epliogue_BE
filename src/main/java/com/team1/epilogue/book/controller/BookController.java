@@ -6,6 +6,7 @@ import com.team1.epilogue.book.dto.BookMainPageDto;
 import com.team1.epilogue.book.dto.BookSearchFilter;
 import com.team1.epilogue.book.dto.NaverBookSearchResponse;
 import com.team1.epilogue.book.service.BookService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,8 +46,9 @@ public class BookController {
    */
   @GetMapping("/api/books/detail")
   public ResponseEntity<BookDetailResponse> getBookDetail(@RequestParam String query,
-      @RequestParam String type) {
-    BookDetailResponse bookDetail = bookService.getBookDetail(query, type);
+      @RequestParam String type,
+      HttpServletRequest request) {
+    BookDetailResponse bookDetail = bookService.getBookDetail(query, type, request.getHeader("Authorization"));
     return ResponseEntity.ok(bookDetail);
   }
 

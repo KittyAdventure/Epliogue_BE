@@ -43,7 +43,7 @@ public class ChatRoomService {
               .build();
 
           BookDetailResponse bookDetailResponse = bookService.getBookDetail(request.getQuery(),
-              request.getType());
+              request.getType(), null);
 
           return bookService.insertBookInfo(bookDetailResponse);
         });

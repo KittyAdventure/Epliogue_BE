@@ -1,5 +1,6 @@
 package com.team1.epilogue.book.service;
 
+import com.team1.epilogue.auth.security.JwtTokenProvider;
 import com.team1.epilogue.book.client.NaverApiClient;
 import com.team1.epilogue.book.dto.BookDetailRequest;
 import com.team1.epilogue.book.dto.BookDetailResponse;
@@ -14,6 +15,7 @@ import com.team1.epilogue.book.dto.xml.Item;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.book.repository.CustomBookRepository;
+import com.team1.epilogue.collection.repository.CollectionRepository;
 import com.team1.epilogue.keyword.service.KeyWordService;
 import com.team1.epilogue.rating.repository.RatingRepository;
 import com.team1.epilogue.trendingbook.service.TrendingBookService;
@@ -40,6 +42,8 @@ public class BookService {
   private final TrendingBookService trendingBookService;
   private final CustomBookRepository customBookRepository;
   private final RatingRepository ratingRepository;
+  private final JwtTokenProvider jwtTokenProvider;
+  private final CollectionRepository collectionRepository;
 
   @Value("${naver.base.url}")
   String naverUrl;
@@ -63,9 +67,10 @@ public class BookService {
    * @return 네이버에서 온 응답값을 return
    */
   @Transactional
-  public BookDetailResponse getBookDetail(String query, String type) {
+  public BookDetailResponse getBookDetail(String query, String type, String jwt) {
     Optional<Book> bookOpt; // repository 에서 가져올 Optional 객체
     Book book; // Optional 내부의 책 데이터
+    boolean existCollection = false;
 
     if ("d_isbn".equals(type)) { // dto 의 Type 에 따라 다른 쿼리문 호출
       bookOpt = bookRepository.findById(query); // 책 ISBN 으로 DB 조회
@@ -117,6 +122,15 @@ public class BookService {
 
     Double avgRating = ratingRepository.findAverageRatingByBookId(book.getId());
 
+    // 현재 유저가 해당 책을 좋아요 했는지 체크하는 부분
+    if (jwt != null && jwt.startsWith("Bearer ")) {
+      String token = jwt.substring(7);
+      String memberIdFromJWT = jwtTokenProvider.getMemberIdFromJWT(token);
+      existCollection = collectionRepository.existsByMember_IdAndBook_Id(
+          Long.parseLong(memberIdFromJWT),
+          book.getId());
+    }
+
     // DTO 로 반환 형식에 맞춰 return
     BookDetailResponse build = BookDetailResponse.builder()
         .title(book.getTitle())
@@ -125,6 +139,7 @@ public class BookService {
         .price(book.getPrice())
         .publisher(book.getPublisher())
         .description(book.getDescription())
+        .existCollection(existCollection)
         .pubDate(Objects.toString(book.getPubDate(), ""))
         .isbn(book.getId())
         .avgRating(avgRating != null ? avgRating : 0.0)

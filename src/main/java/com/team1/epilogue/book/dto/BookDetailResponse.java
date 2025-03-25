@@ -19,5 +19,6 @@ public class BookDetailResponse {
   private String isbn;
   private double avgRating;
   private List<SameAuthorBookTitleIsbn> sameAuthor;
+  private boolean existCollection;
 
 }
