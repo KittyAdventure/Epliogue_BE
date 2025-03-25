@@ -16,5 +16,6 @@ public class MyPageUserInfo {
   private int meetingCount;
   private int collectionCount;
   private int point;
+  private String profileUrl;
 
 }

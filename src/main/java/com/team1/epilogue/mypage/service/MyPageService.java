@@ -183,6 +183,7 @@ public class MyPageService {
         .nickName(member.getNickname())
         .loginId(member.getLoginId())
         .email(member.getEmail())
+        .profileUrl(member.getProfileUrl() != null ? member.getProfileUrl() : "")
         .follower(followRepository.countAllByFollowed(member))
         .following(followRepository.countAllByFollower(member))
         .reviewCount(reviewRepository.countAllByMember(member))
