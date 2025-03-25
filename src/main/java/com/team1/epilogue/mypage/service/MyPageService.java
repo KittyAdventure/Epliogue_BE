@@ -83,7 +83,10 @@ public class MyPageService {
                   .reviewBookTitle(data.getBook().getTitle())
                   .reviewBookAuthor(data.getBook().getAuthor())
                   .reviewContent(data.getContent())
-                  .reviewBookPubYear(data.getBook().getPubDate().getYear())
+                  .reviewBookPubYear(data.getBook().getPubDate() != null
+                      ? data.getBook().getPubDate().getYear()
+                      : null
+                  )
                   .reviewCommentsCount(data.getCommentsCount())
                   .thumbnail(data.getBook().getCoverUrl())
                   .build()

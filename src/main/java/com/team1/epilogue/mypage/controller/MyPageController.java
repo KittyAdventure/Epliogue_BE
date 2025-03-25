@@ -9,6 +9,7 @@ import com.team1.epilogue.mypage.dto.MyPageUserInfo;
 import com.team1.epilogue.mypage.service.MyPageService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class MyPageController {
 
   private final MyPageService myPageService;
@@ -44,6 +46,7 @@ public class MyPageController {
   @GetMapping("/api/mypage/reviews")
   public ResponseEntity<MyPageReviewsResponse> getReviewsByMember(@RequestParam String memberId,
       @RequestParam int page) {
+    log.info(memberId);
     MyPageReviewsResponse reviews = myPageService.getReviewsByMember(memberId, page);
     return ResponseEntity.ok(reviews);
   }
