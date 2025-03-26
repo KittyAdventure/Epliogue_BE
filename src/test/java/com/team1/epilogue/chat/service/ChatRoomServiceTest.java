@@ -80,7 +80,7 @@ class ChatRoomServiceTest {
   void createRoom_Success() {
     when(memberRepository.findById(1L)).thenReturn(Optional.of(new Member()));
     when(bookRepository.findByTitle("Book Title")).thenReturn(Optional.empty());
-    when(bookService.getBookDetail(any(), any()))
+    when(bookService.getBookDetail(any(), any(), null))
         .thenReturn(BookDetailResponse.builder().title("Book Title").build());
     when(bookService.insertBookInfo(any())).thenReturn(new Book());
     when(chatRoomRepository.findByTitle(any())).thenReturn(Optional.empty());

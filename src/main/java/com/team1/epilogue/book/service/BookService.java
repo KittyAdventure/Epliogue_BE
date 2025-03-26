@@ -17,6 +17,7 @@ import com.team1.epilogue.book.repository.BookRepository;
 import com.team1.epilogue.book.repository.CustomBookRepository;
 import com.team1.epilogue.collection.repository.CollectionRepository;
 import com.team1.epilogue.keyword.service.KeyWordService;
+import com.team1.epilogue.rating.entity.Rating;
 import com.team1.epilogue.rating.repository.RatingRepository;
 import com.team1.epilogue.trendingbook.service.TrendingBookService;
 import java.time.LocalDate;
@@ -71,6 +72,7 @@ public class BookService {
     Optional<Book> bookOpt; // repository 에서 가져올 Optional 객체
     Book book; // Optional 내부의 책 데이터
     boolean existCollection = false;
+    Double myRating = null;
 
     if ("d_isbn".equals(type)) { // dto 의 Type 에 따라 다른 쿼리문 호출
       bookOpt = bookRepository.findById(query); // 책 ISBN 으로 DB 조회
@@ -126,9 +128,14 @@ public class BookService {
     if (jwt != null && jwt.startsWith("Bearer ")) {
       String token = jwt.substring(7);
       String memberIdFromJWT = jwtTokenProvider.getMemberIdFromJWT(token);
+      Long memberId = Long.parseLong(memberIdFromJWT);
       existCollection = collectionRepository.existsByMember_IdAndBook_Id(
-          Long.parseLong(memberIdFromJWT),
+          memberId,
           book.getId());
+
+      myRating = ratingRepository.findByMemberIdAndBookId(memberId, book.getId())
+          .map(Rating::getScore)
+          .orElse(null);
     }
 
     // DTO 로 반환 형식에 맞춰 return
@@ -144,6 +151,7 @@ public class BookService {
         .isbn(book.getId())
         .avgRating(avgRating != null ? avgRating : 0.0)
         .sameAuthor(dtoList)
+        .myRating(myRating != null ? myRating : 0.0)
         .build();
 
     return build;

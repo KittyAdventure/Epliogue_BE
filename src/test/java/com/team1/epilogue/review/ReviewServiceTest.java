@@ -147,7 +147,7 @@ public class ReviewServiceTest {
         reviewPage);
 
     // when
-    Page<ReviewResponseDto> response = reviewService.getReviews(testBook.getId(), 1, 10, sortType);
+    Page<ReviewResponseDto> response = reviewService.getReviews(testBook.getId(), 1, 10, sortType, null);
 
     // then
     assertThat(response.getTotalElements()).isEqualTo(1);
@@ -162,7 +162,7 @@ public class ReviewServiceTest {
         Optional.of(testReview));
 
     // when
-    ReviewResponseDto response = reviewService.getReviewDetail(testReview.getId());
+    ReviewResponseDto response = reviewService.getReviewDetail(testReview.getId(), null);
 
     // then
     assertThat(response.getId()).isEqualTo(testReview.getId());
@@ -176,7 +176,7 @@ public class ReviewServiceTest {
     when(reviewRepository.findByIdWithBookAndMember(anyLong())).thenReturn(Optional.empty());
 
     // when & then
-    assertThrows(ReviewNotFoundException.class, () -> reviewService.getReviewDetail(999L));
+    assertThrows(ReviewNotFoundException.class, () -> reviewService.getReviewDetail(999L, null));
   }
 
   @Test

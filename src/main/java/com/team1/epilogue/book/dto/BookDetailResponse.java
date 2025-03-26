@@ -20,5 +20,5 @@ public class BookDetailResponse {
   private double avgRating;
   private List<SameAuthorBookTitleIsbn> sameAuthor;
   private boolean existCollection;
-
+  private Double myRating;
 }

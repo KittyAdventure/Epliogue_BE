@@ -4,6 +4,7 @@ import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
+import com.team1.epilogue.auth.security.JwtTokenProvider;
 import com.team1.epilogue.auth.service.S3Service;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
@@ -21,7 +22,9 @@ import com.team1.epilogue.review.exception.UnauthorizedReviewAccessException;
 import com.team1.epilogue.review.repository.ReviewLikeRepository;
 import com.team1.epilogue.review.repository.ReviewRepository;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -42,6 +45,7 @@ public class ReviewService {
   private final MemberRepository memberRepository;
   private final FollowRepository followRepository;
   private final S3Service s3Service;
+  private final JwtTokenProvider jwtTokenProvider;
 
 
   @Transactional
@@ -71,19 +75,70 @@ public class ReviewService {
       String bookId,
       int page,
       int size,
-      String sortType
+      String sortType,
+      String token
   ) {
     Pageable pageable = createPageable(page, size, sortType);
     Page<Review> reviews = reviewRepository.findByBookIdWithMember(bookId, pageable);
 
-    return reviews.map(ReviewResponseDto::from);
+    Long memberId = null;
+
+    // 토큰이 있을때만 사용자 ID 추출
+    if (token != null && token.startsWith("Bearer ")) {
+      try {
+        String pureToken = token.substring(7);
+        String memberIdStr = jwtTokenProvider.getMemberIdFromJWT(pureToken);
+        memberId = Long.parseLong(memberIdStr);
+      } catch (Exception e) {
+        memberId = null;
+      }
+    }
+
+    Map<Long, Boolean> likedMap = new HashMap<>();
+
+    if (memberId != null) {
+      // 현재 페이지의 리뷰 ID 목록 수집
+      List<Long> reviewIds = reviews.getContent().stream()
+          .map(Review::getId)
+          .collect(Collectors.toList());
+
+      List<Long> likedReviewIds = reviewLikeRepository.findLikedReviewIdsByMemberId(memberId,
+          reviewIds);
+      likedMap = likedReviewIds.stream()
+          .collect(Collectors.toMap(id -> id, id -> true)); // 빠른 조회를 위한 Map 변환
+    }
+
+    Map<Long, Boolean> finalLikedMap = likedMap;
+
+    return reviews.map(review -> {
+      ReviewResponseDto dto = ReviewResponseDto.from(review);
+
+      // Map을 활용해 좋아요 여부 설정
+      dto.setLiked(finalLikedMap.getOrDefault(review.getId(), false));
+      return dto;
+    });
   }
 
-  public ReviewResponseDto getReviewDetail(Long reviewId) {
+  public ReviewResponseDto getReviewDetail(Long reviewId, String token) {
     Review review = reviewRepository.findByIdWithBookAndMember(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
-    return ReviewResponseDto.from(review);
+    ReviewResponseDto dto = ReviewResponseDto.from(review);
+
+    if (token != null && token.startsWith("Bearer ")) {
+      try {
+        String pureToken = token.substring(7);
+        Long memberId = Long.parseLong(jwtTokenProvider.getMemberIdFromJWT(pureToken));
+        boolean liked = reviewLikeRepository.existsByReviewIdAndMemberId(review.getId(), memberId);
+        dto.setLiked(liked);
+      } catch (Exception e) {
+        dto.setLiked(false);
+      }
+    } else {
+      dto.setLiked(false);
+    }
+
+    return dto;
   }
 
   public Page<ReviewResponseDto> getLatestReviews(int page, int size) {
