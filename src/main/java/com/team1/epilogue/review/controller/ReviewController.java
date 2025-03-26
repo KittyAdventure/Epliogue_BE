@@ -82,10 +82,14 @@ public class ReviewController {
    * @return 해당 리뷰의 상세 정보를 담은 DTO
    */
   @GetMapping("/reviews/{reviewId}")
-  public ResponseEntity<ReviewResponseDto> getReviewDetail(@PathVariable Long reviewId) {
-    ReviewResponseDto reviewResponseDto = reviewService.getReviewDetail(reviewId);
+  public ResponseEntity<ReviewResponseDto> getReviewDetail(
+      @PathVariable Long reviewId,
+      HttpServletRequest request
+  ) {
+    String token = request.getHeader("Authorization");
+    ReviewResponseDto dto = reviewService.getReviewDetail(reviewId, token);
 
-    return ResponseEntity.ok(reviewResponseDto);
+    return ResponseEntity.ok(dto);
   }
 
   @GetMapping("/reviews/latest")

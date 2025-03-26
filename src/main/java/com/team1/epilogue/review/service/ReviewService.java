@@ -110,11 +110,26 @@ public class ReviewService {
     });
   }
 
-  public ReviewResponseDto getReviewDetail(Long reviewId) {
+  public ReviewResponseDto getReviewDetail(Long reviewId, String token) {
     Review review = reviewRepository.findByIdWithBookAndMember(reviewId)
         .orElseThrow(() -> new ReviewNotFoundException("리뷰를 찾을 수 없습니다."));
 
-    return ReviewResponseDto.from(review);
+    ReviewResponseDto dto = ReviewResponseDto.from(review);
+
+    if (token != null && token.startsWith("Bearer ")) {
+      try {
+        String pureToken = token.substring(7);
+        Long memberId = Long.parseLong(jwtTokenProvider.getMemberIdFromJWT(pureToken));
+        boolean liked = reviewLikeRepository.existsByReviewIdAndMemberId(review.getId(), memberId);
+        dto.setLiked(liked);
+      } catch (Exception e) {
+        dto.setLiked(false);
+      }
+    } else {
+      dto.setLiked(false);
+    }
+
+    return dto;
   }
 
   public Page<ReviewResponseDto> getLatestReviews(int page, int size) {
