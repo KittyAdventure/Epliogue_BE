@@ -22,7 +22,9 @@ import com.team1.epilogue.review.exception.UnauthorizedReviewAccessException;
 import com.team1.epilogue.review.repository.ReviewLikeRepository;
 import com.team1.epilogue.review.repository.ReviewRepository;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -92,20 +94,27 @@ public class ReviewService {
       }
     }
 
-    Long finalMemberId = memberId;
+    Map<Long, Boolean> likedMap = new HashMap<>();
+
+    if (memberId != null) {
+      // 현재 페이지의 리뷰 ID 목록 수집
+      List<Long> reviewIds = reviews.getContent().stream()
+          .map(Review::getId)
+          .collect(Collectors.toList());
+
+      List<Long> likedReviewIds = reviewLikeRepository.findLikedReviewIdsByMemberId(memberId,
+          reviewIds);
+      likedMap = likedReviewIds.stream()
+          .collect(Collectors.toMap(id -> id, id -> true)); // 빠른 조회를 위한 Map 변환
+    }
+
+    Map<Long, Boolean> finalLikedMap = likedMap;
 
     return reviews.map(review -> {
       ReviewResponseDto dto = ReviewResponseDto.from(review);
 
-      // 로그인 사용자일 경우만 좋아요 여부 확인
-      if (finalMemberId != null) {
-        boolean liked = reviewLikeRepository.existsByReviewIdAndMemberId(review.getId(),
-            finalMemberId);
-        dto.setLiked(liked);
-      } else {
-        dto.setLiked(false);
-      }
-
+      // Map을 활용해 좋아요 여부 설정
+      dto.setLiked(finalLikedMap.getOrDefault(review.getId(), false));
       return dto;
     });
   }
