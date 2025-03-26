@@ -4,6 +4,7 @@ import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
+import com.team1.epilogue.auth.security.JwtTokenProvider;
 import com.team1.epilogue.auth.service.S3Service;
 import com.team1.epilogue.book.entity.Book;
 import com.team1.epilogue.book.repository.BookRepository;
@@ -42,6 +43,7 @@ public class ReviewService {
   private final MemberRepository memberRepository;
   private final FollowRepository followRepository;
   private final S3Service s3Service;
+  private final JwtTokenProvider jwtTokenProvider;
 
 
   @Transactional
@@ -71,12 +73,41 @@ public class ReviewService {
       String bookId,
       int page,
       int size,
-      String sortType
+      String sortType,
+      String token
   ) {
     Pageable pageable = createPageable(page, size, sortType);
     Page<Review> reviews = reviewRepository.findByBookIdWithMember(bookId, pageable);
 
-    return reviews.map(ReviewResponseDto::from);
+    Long memberId = null;
+
+    // 토큰이 있을때만 사용자 ID 추출
+    if (token != null && token.startsWith("Bearer ")) {
+      try {
+        String pureToken = token.substring(7);
+        String memberIdStr = jwtTokenProvider.getMemberIdFromJWT(pureToken);
+        memberId = Long.parseLong(memberIdStr);
+      } catch (Exception e) {
+        memberId = null;
+      }
+    }
+
+    Long finalMemberId = memberId;
+
+    return reviews.map(review -> {
+      ReviewResponseDto dto = ReviewResponseDto.from(review);
+
+      // 로그인 사용자일 경우만 좋아요 여부 확인
+      if (finalMemberId != null) {
+        boolean liked = reviewLikeRepository.existsByReviewIdAndMemberId(review.getId(),
+            finalMemberId);
+        dto.setLiked(liked);
+      } else {
+        dto.setLiked(false);
+      }
+
+      return dto;
+    });
   }
 
   public ReviewResponseDto getReviewDetail(Long reviewId) {

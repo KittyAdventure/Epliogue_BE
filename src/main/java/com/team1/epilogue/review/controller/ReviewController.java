@@ -4,6 +4,7 @@ import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.review.dto.ReviewRequestDto;
 import com.team1.epilogue.review.dto.ReviewResponseDto;
 import com.team1.epilogue.review.service.ReviewService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -65,9 +66,11 @@ public class ReviewController {
       @PathVariable String bookId,
       @RequestParam("page") int page,
       @RequestParam("size") int size,
-      @RequestParam(value = "sortType", defaultValue = "likes") String sortType
+      @RequestParam(value = "sortType", defaultValue = "likes") String sortType,
+      HttpServletRequest request
   ) {
-    Page<ReviewResponseDto> reviews = reviewService.getReviews(bookId, page, size, sortType);
+    String token = request.getHeader("Authorization");
+    Page<ReviewResponseDto> reviews = reviewService.getReviews(bookId, page, size, sortType, token);
 
     return ResponseEntity.ok(reviews);
   }
