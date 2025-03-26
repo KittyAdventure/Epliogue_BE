@@ -151,7 +151,7 @@ public class BookService {
         .isbn(book.getId())
         .avgRating(avgRating != null ? avgRating : 0.0)
         .sameAuthor(dtoList)
-        .myRating(myRating)
+        .myRating(myRating != null ? myRating : 0.0)
         .build();
 
     return build;
