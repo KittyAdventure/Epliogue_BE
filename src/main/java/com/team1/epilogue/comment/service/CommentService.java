@@ -5,6 +5,7 @@ import com.team1.epilogue.auth.entity.Member;
 import com.team1.epilogue.auth.exception.MemberNotFoundException;
 import com.team1.epilogue.auth.repository.MemberRepository;
 import com.team1.epilogue.auth.security.CustomMemberDetails;
+import com.team1.epilogue.auth.security.JwtTokenProvider;
 import com.team1.epilogue.comment.dto.CommentDetail;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
 import com.team1.epilogue.comment.dto.CommentResponse;
@@ -36,7 +37,7 @@ public class CommentService {
   private final ReviewRepository reviewRepository;
   private final CommentLikeRepository commentLikeRepository;
   private final AlarmService alarmService;
-
+  private final JwtTokenProvider jwtTokenProvider;
   private final MemberRepository memberRepository;
   /**
    * 댓글 작성하는 메서드
@@ -148,7 +149,7 @@ public class CommentService {
    * @param page 페이지 번호
    * @param sort 기본적으로는 최신순 / "like" 로 들어온다면 좋아요 많은순
    */
-  public CommentResponse getCommentList(Long reviewId,int page,String sort) {
+  public CommentResponse getCommentList(Long reviewId,int page,String sort,String jwt) {
 
     Page<Comment> comments;
     Review review = reviewRepository.findById(reviewId).orElseThrow(
@@ -157,9 +158,7 @@ public class CommentService {
     PageRequest pageRequest = PageRequest.of(page - 1, 10);
 
     if (sort != null && sort.equals("like")) {
-      // TODO 좋아요 순 정렬 작업해야함.
-      // 아래 메서드는 컴파일을 위해 임시로 넣어놓은거
-      comments = commentRepository.findCommentsByReviewSortDate(pageRequest, review);
+      comments = commentRepository.findCommentsByReviewSortLike(pageRequest, review);
     } else {
       // 최신 순 정렬
       comments = commentRepository.findCommentsByReviewSortDate(pageRequest, review);
@@ -169,6 +168,15 @@ public class CommentService {
 
     comments.getContent().stream().forEach(
         data -> {
+          // 댓글 좋아요 존재여부를 위한 boolean 변수 선언
+          boolean existLike = false;
+
+          if (jwt != null && jwt.startsWith("Bearer ")) {
+            String memberIdFromJWT = jwtTokenProvider.getMemberIdFromJWT(jwt.substring(7));
+            existLike = commentLikeRepository.existsByCommentIdAndMemberId(data.getId(),
+                Long.parseLong(memberIdFromJWT));
+          }
+
           dtoList.add(
               CommentDetail.builder()
                   .commentId(data.getId())
@@ -177,8 +185,9 @@ public class CommentService {
                   .memberNickname(data.getMember().getNickname())
                   .memberProfile(data.getMember().getProfileUrl())
                   .commentPostDateTime(data.getCreatedAt())
-//                  .commentLike(data.getCommentLikes) 댓글 좋아요 추가되면 추가해야함
+                  .commentLike(data.getLikeCount())
                   .commentColor(data.getColor())
+                  .existLike(existLike)
                   .build()
           );
         }

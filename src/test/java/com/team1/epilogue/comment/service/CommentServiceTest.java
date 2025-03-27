@@ -77,19 +77,19 @@ class CommentServiceTest {
         .build();
 
     comment = Comment.builder()
-            .id(1L)
-            .member(member)
-            .content("테스트 댓글")
-            .likeCount(0)
-            .build();
+        .id(1L)
+        .member(member)
+        .content("테스트 댓글")
+        .likeCount(0)
+        .build();
 
     memberDetails = new CustomMemberDetails(
-            member.getId(),
-            member.getLoginId(),
-            member.getPassword(),
-            Collections.emptyList(),
-            member.getName(),
-            member.getEmail()
+        member.getId(),
+        member.getLoginId(),
+        member.getPassword(),
+        Collections.emptyList(),
+        member.getName(),
+        member.getEmail()
     );
   }
 
@@ -124,7 +124,8 @@ class CommentServiceTest {
     when(commentRepository.save(commentCaptor.capture())).thenReturn(comment);
 
     // when
-    Comment response = commentService.postComment(CustomMemberDetails.fromMember(member), testRequest);
+    Comment response = commentService.postComment(CustomMemberDetails.fromMember(member),
+        testRequest);
 
     // then
     assertNotNull(response);
@@ -165,7 +166,8 @@ class CommentServiceTest {
     when(commentRepository.save(commentCaptor.capture())).thenReturn(comment);
 
     // when
-    Comment response = commentService.updateComment(CustomMemberDetails.fromMember(member), request);
+    Comment response = commentService.updateComment(CustomMemberDetails.fromMember(member),
+        request);
 
     // then
     assertNotNull(response);
@@ -189,7 +191,8 @@ class CommentServiceTest {
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
 
     // when
-    assertDoesNotThrow(() -> commentService.deleteComment(CustomMemberDetails.fromMember(member), commentId));
+    assertDoesNotThrow(
+        () -> commentService.deleteComment(CustomMemberDetails.fromMember(member), commentId));
 
     //then
     verify(commentRepository, times(1)).delete(comment);
@@ -234,15 +237,14 @@ class CommentServiceTest {
 
   @Test
   @DisplayName("댓글 조회하는 기능 테스트")
-  //given
-  void getCommentList(){
+    //given
+  void getCommentList() {
     when(reviewRepository.findById(1L)).thenReturn(
         Optional.of(
             Review.builder()
-            .id(1L)
-            .build())
+                .id(1L)
+                .build())
     );
-
 
     List<Comment> commentList = new ArrayList<>();
     commentList.add(
@@ -262,17 +264,17 @@ class CommentServiceTest {
             .build()
     );
     PageRequest pageRequest = PageRequest.of(0, 10);
-    Page<Comment> page = new PageImpl<>(commentList,pageRequest,commentList.size());
+    Page<Comment> page = new PageImpl<>(commentList, pageRequest, commentList.size());
 
-    when(commentRepository.findCommentsByReviewSortDate(any(Pageable.class),any(Review.class)))
+    when(commentRepository.findCommentsByReviewSortDate(any(Pageable.class), any(Review.class)))
         .thenReturn(page);
 
     //when
     CommentResponse result = commentService
-        .getCommentList(1L, 1, null);
+        .getCommentList(1L, 1, null, null);
 
     //then
-    assertEquals("수빈1",result.getComments().get(1).getMemberNickname());
+    assertEquals("수빈1", result.getComments().get(1).getMemberNickname());
 
   }
 
@@ -281,7 +283,8 @@ class CommentServiceTest {
   void likeComment_success() {
     // given
     when(commentRepository.findById(comment.getId())).thenReturn(Optional.of(comment));
-    when(commentLikeRepository.existsByCommentIdAndMemberId(comment.getId(), member.getId())).thenReturn(false);
+    when(commentLikeRepository.existsByCommentIdAndMemberId(comment.getId(),
+        member.getId())).thenReturn(false);
 
     ArgumentCaptor<CommentLike> commentLikeCaptor = ArgumentCaptor.forClass(CommentLike.class);
     ArgumentCaptor<Long> commentIdCaptor = ArgumentCaptor.forClass(Long.class);
@@ -305,7 +308,7 @@ class CommentServiceTest {
     CommentLike commentLike = new CommentLike(comment, member);
 
     when(commentLikeRepository.findByCommentIdAndMemberId(comment.getId(), member.getId()))
-            .thenReturn(Optional.of(commentLike));
+        .thenReturn(Optional.of(commentLike));
 
     ArgumentCaptor<CommentLike> commentLikeCaptor = ArgumentCaptor.forClass(CommentLike.class);
     ArgumentCaptor<Long> commentIdCaptor = ArgumentCaptor.forClass(Long.class);
@@ -327,10 +330,11 @@ class CommentServiceTest {
     // given
     when(commentRepository.findById(comment.getId())).thenReturn(Optional.of(comment));
     when(commentLikeRepository.existsByCommentIdAndMemberId(comment.getId(), member.getId()))
-            .thenReturn(true);
+        .thenReturn(true);
 
     // when & then
-    assertThrows(AlreadyLikedException.class, () -> commentService.likeComment(memberDetails, comment.getId()));
+    assertThrows(AlreadyLikedException.class,
+        () -> commentService.likeComment(memberDetails, comment.getId()));
 
     // 좋아요가 추가되지 않아야 함
     verify(commentLikeRepository, never()).save(any(CommentLike.class));
@@ -342,10 +346,11 @@ class CommentServiceTest {
   void unlikeComment_fail_notLiked() {
     // given
     when(commentLikeRepository.findByCommentIdAndMemberId(comment.getId(), member.getId()))
-            .thenReturn(Optional.empty());
+        .thenReturn(Optional.empty());
 
     // when & then
-    assertThrows(LikeNotFoundException.class, () -> commentService.unlikeComment(memberDetails, comment.getId()));
+    assertThrows(LikeNotFoundException.class,
+        () -> commentService.unlikeComment(memberDetails, comment.getId()));
 
     // 좋아요 삭제나 감소가 일어나지 않아야 함
     verify(commentLikeRepository, never()).delete(any(CommentLike.class));

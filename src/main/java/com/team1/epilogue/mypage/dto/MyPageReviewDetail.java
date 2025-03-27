@@ -10,7 +10,7 @@ import lombok.Setter;
 public class MyPageReviewDetail {
   private long reviewId;
   private String reviewBookTitle;
-  private int reviewBookPubYear;
+  private Integer reviewBookPubYear;
   private String reviewBookAuthor;
   private String reviewContent;
   private int reviewCommentsCount;

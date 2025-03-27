@@ -26,5 +26,7 @@ public interface CollectionRepository extends JpaRepository<CollectionEntity,Lon
 
   boolean existsByMemberAndBook(Member member, Book book);
 
+  boolean existsByMember_IdAndBook_Id(Long memberId, String bookId);
+
   int countAllByMember(Member member);
 }

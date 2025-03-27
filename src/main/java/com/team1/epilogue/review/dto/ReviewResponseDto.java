@@ -27,6 +27,7 @@ public class ReviewResponseDto {
   private String bookTitle;
   private String bookCoverUrl;
   private List<String> imageUrls;
+  private boolean liked;
 
   /**
    * Review 엔티티를 DTO로 변환합니다
@@ -49,5 +50,9 @@ public class ReviewResponseDto {
         .bookCoverUrl(review.getBook().getCoverUrl())
         .imageUrls(review.getImageUrls())
         .build();
+  }
+
+  public void setLiked(boolean liked) {
+    this.liked = liked;
   }
 }

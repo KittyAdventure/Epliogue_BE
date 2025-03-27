@@ -4,6 +4,7 @@ import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.review.dto.ReviewRequestDto;
 import com.team1.epilogue.review.dto.ReviewResponseDto;
 import com.team1.epilogue.review.service.ReviewService;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -65,9 +66,11 @@ public class ReviewController {
       @PathVariable String bookId,
       @RequestParam("page") int page,
       @RequestParam("size") int size,
-      @RequestParam(value = "sortType", defaultValue = "likes") String sortType
+      @RequestParam(value = "sortType", defaultValue = "likes") String sortType,
+      HttpServletRequest request
   ) {
-    Page<ReviewResponseDto> reviews = reviewService.getReviews(bookId, page, size, sortType);
+    String token = request.getHeader("Authorization");
+    Page<ReviewResponseDto> reviews = reviewService.getReviews(bookId, page, size, sortType, token);
 
     return ResponseEntity.ok(reviews);
   }
@@ -79,18 +82,25 @@ public class ReviewController {
    * @return 해당 리뷰의 상세 정보를 담은 DTO
    */
   @GetMapping("/reviews/{reviewId}")
-  public ResponseEntity<ReviewResponseDto> getReviewDetail(@PathVariable Long reviewId) {
-    ReviewResponseDto reviewResponseDto = reviewService.getReviewDetail(reviewId);
+  public ResponseEntity<ReviewResponseDto> getReviewDetail(
+      @PathVariable Long reviewId,
+      HttpServletRequest request
+  ) {
+    String token = request.getHeader("Authorization");
+    ReviewResponseDto dto = reviewService.getReviewDetail(reviewId, token);
 
-    return ResponseEntity.ok(reviewResponseDto);
+    return ResponseEntity.ok(dto);
   }
 
   @GetMapping("/reviews/latest")
   public ResponseEntity<Page<ReviewResponseDto>> getLatestReviews(
       @RequestParam("page") int page,
-      @RequestParam("size") int size
+      @RequestParam("size") int size,
+      HttpServletRequest request
   ) {
-    Page<ReviewResponseDto> reviews = reviewService.getLatestReviews(page, size);
+    String token = request.getHeader("Authorization");
+    Page<ReviewResponseDto> reviews = reviewService.getLatestReviews(page, size, token);
+
     return ResponseEntity.ok(reviews);
   }
 

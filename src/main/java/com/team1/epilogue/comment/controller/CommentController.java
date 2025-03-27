@@ -1,13 +1,12 @@
 package com.team1.epilogue.comment.controller;
 
 import com.team1.epilogue.auth.security.CustomMemberDetails;
-import com.team1.epilogue.auth.entity.Member;
-import com.team1.epilogue.auth.security.CustomMemberDetails;
 import com.team1.epilogue.comment.dto.CommentPostRequest;
 import com.team1.epilogue.comment.dto.CommentResponse;
 import com.team1.epilogue.comment.dto.CommentUpdateRequest;
 import com.team1.epilogue.comment.dto.MessageResponse;
 import com.team1.epilogue.comment.service.CommentService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -115,8 +114,11 @@ public class CommentController {
   public ResponseEntity<CommentResponse> getCommentList(
       @RequestParam Long reviewId,
       @RequestParam int page,
-      @RequestParam String sort) {
-    CommentResponse commentList = commentService.getCommentList(reviewId, page, sort);
+      @RequestParam String sort,
+      HttpServletRequest request) {
+
+    String authorization = request.getHeader("Authorization");
+    CommentResponse commentList = commentService.getCommentList(reviewId, page, sort, authorization);
     return ResponseEntity.ok(commentList);
   }
 }

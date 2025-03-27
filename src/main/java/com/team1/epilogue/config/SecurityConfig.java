@@ -25,6 +25,8 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import java.util.List;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -33,6 +35,23 @@ public class SecurityConfig {
 
   private final JwtTokenProvider jwtTokenProvider;
   private final MemberRepository memberRepository;
+
+  /** cors 설정 bean */
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration configuration = new CorsConfiguration();
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
+    configuration.addAllowedOriginPattern("*");
+    configuration.addAllowedHeader("*");
+    configuration.addAllowedMethod("*");
+    configuration.addExposedHeader("x-auth-token");
+    configuration.setAllowCredentials(true);
+    configuration.setMaxAge(3600L);
+
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
+  }
 
   // 사용자의 비밀번호 암호화, 인증시 입력된 비밀번호 비교
   @Bean
@@ -72,7 +91,7 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
-            .cors(cors -> cors.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues()))
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
@@ -108,6 +127,7 @@ public class SecurityConfig {
                             "/api/reviews/**",
                             "/api/mypage/user-info"
                     ).permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/reviews/**").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/reviews/**").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/books/{bookId}/reviews").authenticated()

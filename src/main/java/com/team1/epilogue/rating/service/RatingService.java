@@ -25,13 +25,13 @@ public class RatingService {
   private final MemberRepository memberRepository;
 
   @Transactional
-  public RatingResponseDto createRating(String bookId, RatingRequestDto ratingRequestDto,
-      CustomMemberDetails memberDetails) {
-    Member member = memberRepository.findById(memberDetails.getId())
-        .orElseThrow(
-            () -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
-    Book book = bookRepository.findById(bookId)
-        .orElseThrow(() -> new BookNotFoundException("존재하지 않는 책입니다."));
+  public RatingResponseDto createRating(
+      String bookId,
+      RatingRequestDto ratingRequestDto,
+      CustomMemberDetails memberDetails
+  ) {
+    Member member = getMemberOrThrow(memberDetails.getId());
+    Book book = getBookOrThrow(bookId);
 
     if (ratingRepository.findByMemberIdAndBookId(member.getId(), bookId).isPresent()) {
       throw new IllegalArgumentException("이미 별점을 남겼습니다. 수정하려면 PUT 요청을 사용하세요");
@@ -46,13 +46,13 @@ public class RatingService {
   }
 
   @Transactional
-  public RatingResponseDto updateRating(String bookId, RatingRequestDto ratingRequestDto,
-      CustomMemberDetails memberDetails) {
-    Member member = memberRepository.findById(memberDetails.getId())
-        .orElseThrow(
-            () -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
-    Rating rating = ratingRepository.findByMemberIdAndBookId(member.getId(), bookId)
-        .orElseThrow(() -> new RatingNotFoundException("해당 책에 대한 별점이 존재하지 않습니다."));
+  public RatingResponseDto updateRating(
+      String bookId,
+      RatingRequestDto ratingRequestDto,
+      CustomMemberDetails memberDetails
+  ) {
+    Member member = getMemberOrThrow(memberDetails.getId());
+    Rating rating = getRatingOrThrow(member.getId(), bookId);
 
     rating.updateScore(ratingRequestDto.getScore());
     updateBookRating(bookId);
@@ -62,11 +62,8 @@ public class RatingService {
 
   @Transactional
   public void deleteRating(String bookId, CustomMemberDetails memberDetails) {
-    Member member = memberRepository.findById(memberDetails.getId())
-        .orElseThrow(
-            () -> new MemberNotFoundException("ID가 " + memberDetails.getId() + "인 회원을 찾을 수 없습니다."));
-    Rating rating = ratingRepository.findByMemberIdAndBookId(member.getId(), bookId)
-        .orElseThrow(() -> new RatingNotFoundException("해당 책에 대한 별점이 존재하지 않습니다."));
+    Member member = getMemberOrThrow(memberDetails.getId());
+    Rating rating = getRatingOrThrow(member.getId(), bookId);
 
     ratingRepository.delete(rating);
     updateBookRating(bookId);
@@ -80,5 +77,22 @@ public class RatingService {
 
     book.updateAvgRating(avgRating != null ? avgRating : 0.0);
     bookRepository.save(book);
+  }
+
+  // === 헬퍼 메서드 ===
+
+  private Member getMemberOrThrow(Long memberId) {
+    return memberRepository.findById(memberId)
+        .orElseThrow(() -> new MemberNotFoundException("ID가 " + memberId + "인 회원을 찾을 수 없습니다."));
+  }
+
+  private Book getBookOrThrow(String bookId) {
+    return bookRepository.findById(bookId)
+        .orElseThrow(() -> new BookNotFoundException("존재하지 않는 책입니다."));
+  }
+
+  private Rating getRatingOrThrow(Long memberId, String bookId) {
+    return ratingRepository.findByMemberIdAndBookId(memberId, bookId)
+        .orElseThrow(() -> new RatingNotFoundException("해당 책에 대한 별점이 존재하지 않습니다."));
   }
 }

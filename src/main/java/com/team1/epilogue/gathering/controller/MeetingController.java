@@ -73,7 +73,7 @@ public class MeetingController {
       @RequestParam(defaultValue = "10") int size
   ) {
 
-    Pageable pageable = PageRequest.of(page,size, Sort.by("createdAt").descending());
+    Pageable pageable = PageRequest.of(page - 1,size, Sort.by("createdAt").descending());
     Page<MeetingDto> meetingDtoPage = meetingService.getMeetings(pageable);
 
     return ResponseEntity.ok(meetingDtoPage);

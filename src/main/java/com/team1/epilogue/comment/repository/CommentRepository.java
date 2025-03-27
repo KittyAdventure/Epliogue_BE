@@ -20,10 +20,9 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
       + " WHERE c.review = :review")
   Page<Comment> findCommentsByReviewSortDate(Pageable pageable, Review review);
 
-  // 좋아요 순은 아직 주석처리. 댓글 좋아요 부분 완료되면 다시 작업
-//  @Query("SELECT c FROM Comment c JOIN FETCH c.member JOIN FETCH c.review"
-//      + " WHERE c.review = :review ORDER BY c.likes DESC")
-//  Page<Comment> findCommentsByReviewSortLike(Pageable pageable, Review review);
+  @Query("SELECT c FROM Comment c JOIN FETCH c.member JOIN FETCH c.review"
+      + " WHERE c.review = :review ORDER BY c.likeCount DESC")
+  Page<Comment> findCommentsByReviewSortLike(Pageable pageable, Review review);
 
   @Modifying
   @Query("UPDATE Comment c SET c.likeCount = c.likeCount + 1 WHERE c.id = :commentId")

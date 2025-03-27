@@ -20,4 +20,5 @@ public class CommentDetail {
   private LocalDateTime commentPostDateTime;
   private int commentLike;
   private String commentColor;
+  private boolean existLike;
 }

@@ -73,4 +73,3 @@ public class Review extends BaseEntity {
     this.imageUrls = imageUrls;
   }
 }
-
