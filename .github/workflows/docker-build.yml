@@ -39,4 +39,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: romaydev/epilogue:${{ github.sha }}
+          tags: romaydev/epilogue_kitty
