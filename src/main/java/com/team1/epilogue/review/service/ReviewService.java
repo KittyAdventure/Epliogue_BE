@@ -81,40 +81,11 @@ public class ReviewService {
     Pageable pageable = createPageable(page, size, sortType);
     Page<Review> reviews = reviewRepository.findByBookIdWithMember(bookId, pageable);
 
-    Long memberId = null;
-
-    // 토큰이 있을때만 사용자 ID 추출
-    if (token != null && token.startsWith("Bearer ")) {
-      try {
-        String pureToken = token.substring(7);
-        String memberIdStr = jwtTokenProvider.getMemberIdFromJWT(pureToken);
-        memberId = Long.parseLong(memberIdStr);
-      } catch (Exception e) {
-        memberId = null;
-      }
-    }
-
-    Map<Long, Boolean> likedMap = new HashMap<>();
-
-    if (memberId != null) {
-      // 현재 페이지의 리뷰 ID 목록 수집
-      List<Long> reviewIds = reviews.getContent().stream()
-          .map(Review::getId)
-          .collect(Collectors.toList());
-
-      List<Long> likedReviewIds = reviewLikeRepository.findLikedReviewIdsByMemberId(memberId,
-          reviewIds);
-      likedMap = likedReviewIds.stream()
-          .collect(Collectors.toMap(id -> id, id -> true)); // 빠른 조회를 위한 Map 변환
-    }
-
-    Map<Long, Boolean> finalLikedMap = likedMap;
+    Map<Long, Boolean> likedMap = getLikedMapFromToken(token, reviews.getContent());
 
     return reviews.map(review -> {
       ReviewResponseDto dto = ReviewResponseDto.from(review);
-
-      // Map을 활용해 좋아요 여부 설정
-      dto.setLiked(finalLikedMap.getOrDefault(review.getId(), false));
+      dto.setLiked(likedMap.getOrDefault(review.getId(), false));
       return dto;
     });
   }
@@ -141,10 +112,17 @@ public class ReviewService {
     return dto;
   }
 
-  public Page<ReviewResponseDto> getLatestReviews(int page, int size) {
+  public Page<ReviewResponseDto> getLatestReviews(int page, int size, String token) {
     Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
     Page<Review> reviews = reviewRepository.findAllReviewsSortedByLatest(pageable);
-    return reviews.map(ReviewResponseDto::from);
+
+    Map<Long, Boolean> likedMap = getLikedMapFromToken(token, reviews.getContent());
+
+    return reviews.map(review -> {
+      ReviewResponseDto dto = ReviewResponseDto.from(review);
+      dto.setLiked(likedMap.getOrDefault(review.getId(), false));
+      return dto;
+    });
   }
 
   @Transactional
@@ -272,6 +250,38 @@ public class ReviewService {
       }
     }
     return imageUrls;
+  }
+
+  /**
+   * 클라이언트의 JWT 토큰을 바탕으로, 로그인한 사용자가 좋아요한 리뷰 목록을 조회하여
+   * 리뷰 ID → 좋아요 여부(Boolean) 형태의 Map으로 반환합니다.
+   *
+   * @param token    클라이언트의 Authorization 헤더에서 전달된 JWT 토큰
+   * @param reviews  좋아요 여부를 판단할 리뷰 목록
+   * @return         리뷰 ID를 key로, 좋아요 여부를 value로 가지는 Map
+   */
+  private Map<Long, Boolean> getLikedMapFromToken(String token, List<Review> reviews) {
+    Long memberId = null;
+    if (token != null && token.startsWith("Bearer ")) {
+      try {
+        String pureToken = token.substring(7);
+        String memberIdStr = jwtTokenProvider.getMemberIdFromJWT(pureToken);
+        memberId = Long.parseLong(memberIdStr);
+      } catch (Exception e) {
+        return new HashMap<>();
+      }
+    }
+
+    if (memberId == null) return new HashMap<>();
+
+    List<Long> reviewIds = reviews.stream()
+        .map(Review::getId)
+        .collect(Collectors.toList());
+
+    List<Long> likedReviewIds = reviewLikeRepository.findLikedReviewIdsByMemberId(memberId, reviewIds);
+
+    return likedReviewIds.stream()
+        .collect(Collectors.toMap(id -> id, id -> true));
   }
 
   private Pageable createPageable(int page, int size, String sortType) {
