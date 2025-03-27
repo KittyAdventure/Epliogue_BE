@@ -21,6 +21,12 @@ jobs:
           EOF
         shell: bash
 
+      - name: Grant execute permission for Gradle
+        run: chmod +x ./gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build --no-daemon
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
