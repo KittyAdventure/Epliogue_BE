@@ -148,7 +148,7 @@ public class MyPageService {
     Member member = memberRepository.findByLoginId(memberId).orElseThrow(
         () -> new MemberNotFoundException("사용자 정보가 존재하지 않습니다.")
     );
-    PageRequest pageRequest = PageRequest.of(page, 4);
+    PageRequest pageRequest = PageRequest.of(page - 1, 4);
     Page<JoinMeeting> result = joinMeetingRepository
         .findAllByMember_LoginId(memberId, pageRequest);
 
