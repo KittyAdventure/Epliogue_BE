@@ -141,10 +141,40 @@ public class ReviewService {
     return dto;
   }
 
-  public Page<ReviewResponseDto> getLatestReviews(int page, int size) {
+  public Page<ReviewResponseDto> getLatestReviews(int page, int size, String token) {
     Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
     Page<Review> reviews = reviewRepository.findAllReviewsSortedByLatest(pageable);
-    return reviews.map(ReviewResponseDto::from);
+
+    Long memberId = null;
+    if (token != null && token.startsWith("Bearer ")) {
+      try {
+        String pureToken = token.substring(7);
+        String memberIdStr = jwtTokenProvider.getMemberIdFromJWT(pureToken);
+        memberId = Long.parseLong(memberIdStr);
+      } catch (Exception e) {
+        memberId = null;
+      }
+    }
+
+    Map<Long, Boolean> likedMap = new HashMap<>();
+    if (memberId != null) {
+      List<Long> reviewIds = reviews.getContent().stream()
+          .map(Review::getId)
+          .collect(Collectors.toList());
+
+      List<Long> likedReviewIds = reviewLikeRepository.findLikedReviewIdsByMemberId(memberId,
+          reviewIds);
+      likedMap = likedReviewIds.stream()
+          .collect(Collectors.toMap(id -> id, id -> true));
+    }
+
+    Map<Long, Boolean> finalLikedMap = likedMap;
+
+    return reviews.map(review -> {
+      ReviewResponseDto dto = ReviewResponseDto.from(review);
+      dto.setLiked(finalLikedMap.getOrDefault(review.getId(), false));
+      return dto;
+    });
   }
 
   @Transactional

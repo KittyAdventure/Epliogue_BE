@@ -95,9 +95,12 @@ public class ReviewController {
   @GetMapping("/reviews/latest")
   public ResponseEntity<Page<ReviewResponseDto>> getLatestReviews(
       @RequestParam("page") int page,
-      @RequestParam("size") int size
+      @RequestParam("size") int size,
+      HttpServletRequest request
   ) {
-    Page<ReviewResponseDto> reviews = reviewService.getLatestReviews(page, size);
+    String token = request.getHeader("Authorization");
+    Page<ReviewResponseDto> reviews = reviewService.getLatestReviews(page, size, token);
+
     return ResponseEntity.ok(reviews);
   }
 
