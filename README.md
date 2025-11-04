@@ -8,6 +8,13 @@
 
 **"에필로그 – 책을 읽고, 나누며 함께 성장하는 독서 커뮤니티입니다!"**   
 
+<img width="1920" height="1080" alt="에필로그 아키텍쳐" src="https://github.com/user-attachments/assets/db5a6310-6144-4805-aad4-756611be4bfb" />
+
+## ERD 
+![Epilogue (3)](https://github.com/user-attachments/assets/f8475b09-b6cf-4a84-9933-fd47491b2f28)
+URL : https://www.erdcloud.com/d/4sjqx5n55nPJKsNY5
+
+
 - **사용자 기능**
     - 로그인 기능
         - 소셜 로그인 지원(카카오 or 구글)
@@ -97,9 +104,7 @@
     - 이 작가의 다른책 추천 기능
         - 책 상세 페이지에서 같은 작가의 다른 책을 리스트로 보여주는 기능이다
 
-## ERD 
-![Epilogue (3)](https://github.com/user-attachments/assets/f8475b09-b6cf-4a84-9933-fd47491b2f28)
-URL : https://www.erdcloud.com/d/4sjqx5n55nPJKsNY5
+
 
 # Tech Stack
 ## Back-end
